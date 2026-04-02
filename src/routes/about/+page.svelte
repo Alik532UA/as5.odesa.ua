@@ -1,8 +1,8 @@
 <script lang="ts">
 	const galleryImages = [
 		{ src: '/photo/photoForAboutPage-01.jpg', alt: 'School Photo 1', title: 'Мистецька освіта' },
-		{ src: '/photo/photoForAboutPage-02.jpg', alt: 'School Photo 2', title: 'Творча майстерня' },
 		{ src: '/photo/photoForAboutPage-03.jpg', alt: 'School Photo 3', title: 'Юні музиканти' },
+		{ src: '/photo/photoForAboutPage-02.jpg', alt: 'School Photo 2', title: 'Творча майстерня' },
 		{ src: '/photo/photoForAboutPage-04.jpg', alt: 'School Photo 4', title: 'Виступ на сцені' },
 		{ src: '/photo/photoForAboutPage-05.jpg', alt: 'School Photo 5', title: 'Урок музики' },
 		{ src: '/photo/photoForAboutPage-06.jpg', alt: 'School Photo 6', title: 'Наші таланти' },
