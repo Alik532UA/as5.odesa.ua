@@ -6,7 +6,7 @@
 	import EmailIcon from "./icons/EmailIcon.svelte";
 	import FacebookIcon from "./icons/FacebookIcon.svelte";
 	import InstagramIcon from "./icons/InstagramIcon.svelte";
-	import { t } from 'svelte-i18n';
+	import { t } from "svelte-i18n";
 </script>
 
 <footer class="footer" id="main-footer">
@@ -27,7 +27,7 @@
 				<div class="footer__info" id="footer-address">
 					<div class="footer__info-item">
 						<LocationIcon className="footer__icon" size={18} />
-						<span>{$t('footer.address')}</span>
+						<span>{$t("footer.address")}</span>
 					</div>
 				</div>
 
@@ -36,7 +36,9 @@
 					<div class="footer__info-item">
 						<PhoneIcon className="footer__icon" size={18} />
 						<div>
-							<a href="tel:+380487238110" class="footer__link">{$t('footer.phone')}</a>
+							<a href="tel:+380487238110" class="footer__link"
+								>{$t("footer.phone")}</a
+							>
 						</div>
 					</div>
 				</div>
@@ -48,7 +50,7 @@
 						<div>
 							<a
 								href="mailto:{$t('footer.email')}"
-								class="footer__link">{$t('footer.email')}</a
+								class="footer__link">{$t("footer.email")}</a
 							>
 						</div>
 					</div>
@@ -58,7 +60,7 @@
 			<!-- Social icons -->
 			<div class="footer__social" id="footer-social">
 				<a
-					href="{$t('footer.facebook')}"
+					href={$t("footer.facebook")}
 					class="footer__social-link"
 					aria-label="Facebook"
 					target="_blank"
@@ -67,7 +69,7 @@
 					<FacebookIcon size={24} />
 				</a>
 				<a
-					href="{$t('footer.instagram')}"
+					href={$t("footer.instagram")}
 					class="footer__social-link"
 					aria-label="Instagram"
 					target="_blank"
@@ -134,7 +136,8 @@
 		display: flex;
 		gap: var(--space-xl);
 		align-items: center;
-		flex-wrap: wrap;
+		/* Removed flex-wrap as flex-direction: column handles stacking */
+		flex-wrap: nowrap; /* Changed to nowrap to avoid unexpected wrapping of contacts within the group */
 	}
 
 	/* Info items */
@@ -206,7 +209,21 @@
 	}
 
 	/* Responsive */
-	@media (max-width: 1024px) {
+	@media (max-width: 1100px) {
+		/* Contacts stack first */
+		.footer__contacts {
+			flex-direction: column;
+			align-items: center; /* Center items when stacked */
+			gap: var(--space-md);
+		}
+		/* Ensure footer__info-item doesn't break the column layout */
+		.footer__info-item {
+			justify-content: center; /* Center text and icon if needed */
+		}
+	}
+
+	@media (max-width: 768px) {
+		/* Then the entire footer content stacks */
 		.footer__content {
 			flex-direction: column;
 			align-items: center;
@@ -214,13 +231,8 @@
 			gap: var(--space-xl);
 		}
 
-		.footer__contacts {
-			flex-direction: column;
-			gap: var(--space-md);
-		}
-
 		.footer__info-item {
-			justify-content: center;
+			justify-content: center; /* Ensure consistent centering */
 		}
 
 		:global(.footer__seagull-1),
