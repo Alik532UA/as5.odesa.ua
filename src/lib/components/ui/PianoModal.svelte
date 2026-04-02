@@ -78,10 +78,16 @@
 		
 		<section id="wrap">
 			<header>
-				<h2>{$t("piano.hint")}</h2>
+				<h2 class="piano-hint">{$t("piano.hint")}</h2>
 			</header>
 			<section id="main">
-				<div class="nowplaying">{nowPlaying}</div>
+				<div class="nowplaying">
+					{#if nowPlaying}
+						<span class="note-name">{$t(`piano.notes.${nowPlaying}`)}</span>
+						<span class="note-divider">|</span>
+						<span class="note-symbol">{nowPlaying}</span>
+					{/if}
+				</div>
 				<div class="keys">
 					{#each keysData as key}
 						<div 
@@ -110,9 +116,9 @@
 		position: fixed;
 		inset: 0;
 		z-index: 9999;
-		background: rgba(0, 0, 0, 0.5);
-		backdrop-filter: blur(10px);
-		-webkit-backdrop-filter: blur(10px);
+		background: rgba(0, 0, 0, 0.75);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
 		font-family: var(--font-main);
 		-webkit-font-smoothing: antialiased;
 		text-align: center;
@@ -147,6 +153,7 @@
 		width: 100%;
 		max-width: 1200px;
 		padding: 20px;
+		transition: all 0.3s ease;
 	}
 
 	header {
@@ -167,7 +174,6 @@
 		font-size: clamp(60px, 10vw, 120px);
 		line-height: 1;
 		color: #eee;
-		text-shadow: 0 0 5rem #028ae9;
 		transition: all .07s ease;
 		min-height: 120px;
 	}
@@ -245,12 +251,51 @@
 		opacity: 1;
 	}
 
+	/* --- MOBILE OPTIMIZATIONS --- */
 	@media (max-width: 768px) {
-		.keys {
-			height: 250px;
+		.piano-hint, .hints {
+			display: none !important;
 		}
+
+		/* If in portrait mode, rotate to simulate landscape */
+		@media (orientation: portrait) {
+			#wrap {
+				width: 85vh; /* Viewport height becomes the width */
+				height: 90vw; /* Viewport width becomes the height */
+				transform: rotate(90deg);
+				position: absolute;
+				top: 50%;
+				left: 50%;
+				translate: -50% -50%;
+				padding: 0;
+			}
+			.keys {
+				height: 50vw; /* Using vw because container is rotated */
+				margin-top: 20px;
+			}
+			.nowplaying {
+				min-height: 80px;
+				font-size: 80px;
+			}
+		}
+
+		/* Standard mobile landscape */
+		@media (orientation: landscape) {
+			#wrap {
+				max-width: 100%;
+				padding: 10px;
+			}
+			.keys {
+				height: 180px;
+			}
+			.nowplaying {
+				min-height: 60px;
+				font-size: 60px;
+			}
+		}
+
 		.key.sharp {
-			height: 50%;
+			height: 55%;
 		}
 	}
 </style>

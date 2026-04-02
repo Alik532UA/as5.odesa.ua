@@ -18,14 +18,28 @@
 
 	<div class="container">
 		<div class="footer__content">
-			<!-- 1. Button "грати" -->
-			<button class="btn btn-primary footer__btn" onclick={() => isPianoOpen = true}>
-				грати
+			<!-- 1. Button "грати" - Piano Keyboard Style -->
+			<button
+				class="footer__btn-piano"
+				onclick={() => (isPianoOpen = true)}
+				aria-label="Грати на піаніно"
+			>
+				<div class="footer__piano-visual">
+					<span class="footer__piano-white"></span>
+					<span class="footer__piano-white"></span>
+					<span class="footer__piano-white"></span>
+					<span class="footer__piano-white"></span>
+					<span class="footer__piano-white"></span>
+					<span class="footer__piano-black" style="left: 20%"></span>
+					<!-- <span class="footer__piano-black" style="left: 35%"></span> -->
+					<span class="footer__piano-black" style="left: 60%"></span>
+					<span class="footer__piano-black" style="left: 80%"></span>
+				</div>
+				<span class="footer__btn-piano-text">грати</span>
 			</button>
 
 			<!-- 2. Contacts Group -->
 			<div class="footer__contacts">
-				<!-- Address -->
 				<div class="footer__info" id="footer-address">
 					<div class="footer__info-item">
 						<LocationIcon className="footer__icon" size={18} />
@@ -33,7 +47,6 @@
 					</div>
 				</div>
 
-				<!-- Phones -->
 				<div class="footer__info" id="footer-phones">
 					<div class="footer__info-item">
 						<PhoneIcon className="footer__icon" size={18} />
@@ -45,7 +58,6 @@
 					</div>
 				</div>
 
-				<!-- Email -->
 				<div class="footer__info" id="footer-email">
 					<div class="footer__info-item">
 						<EmailIcon className="footer__icon" size={18} />
@@ -82,7 +94,11 @@
 			</div>
 
 			<!-- 4. Button "замовити сайт" -->
-			<a href="https://t.me/ozapolnov" target="_blank" class="btn btn-outline footer__btn footer__btn--order">
+			<a
+				href="https://t.me/ozapolnov"
+				target="_blank"
+				class="footer__btn-order"
+			>
 				замовити сайт
 			</a>
 		</div>
@@ -101,12 +117,12 @@
 	</div>
 </footer>
 
-<PianoModal isOpen={isPianoOpen} onClose={() => isPianoOpen = false} />
+<PianoModal isOpen={isPianoOpen} onClose={() => (isPianoOpen = false)} />
 
 <style>
 	.footer {
 		background: var(--color-white);
-		padding: var(--space-2xl) 0;
+		padding: var(--space-xl) 0;
 		position: relative;
 		border-top: 1px solid var(--color-border);
 	}
@@ -117,7 +133,6 @@
 		top: 15px;
 		left: 15%;
 		animation: seagullFly 5s ease-in-out infinite;
-		animation-delay: 0.5s;
 	}
 
 	:global(.footer__seagull-2) {
@@ -133,58 +148,123 @@
 		display: flex;
 		align-items: center;
 		justify-content: space-between;
-		gap: var(--space-xl);
-		flex-wrap: wrap;
+		gap: var(--space-md);
 	}
 
-	.footer__btn {
-		min-width: 160px;
-		text-transform: uppercase;
+	/* Piano Button Style (Keyboard Segment) */
+	.footer__btn-piano {
+		position: relative;
+		display: flex;
+		align-items: flex-end;
+		justify-content: center;
+		width: 120px;
+		height: 36px;
+		background: #000;
+		border: 2px solid #000;
+		border-radius: 4px 4px 6px 6px;
+		cursor: pointer;
+		transition: all 0.2s ease;
+		box-shadow: 0 3px 0 #000;
+		overflow: hidden;
+		padding: 0;
+	}
+
+	.footer__piano-visual {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		background: #000;
+	}
+
+	.footer__piano-white {
+		flex: 1;
+		background: #fff;
+		border-right: 1px solid #ddd;
+		height: 100%;
+	}
+
+	.footer__piano-white:last-child {
+		border-right: none;
+	}
+
+	.footer__piano-black {
+		position: absolute;
+		top: 0;
+		width: 12%;
+		height: 60%;
+		background: #000;
+		border-radius: 0 0 2px 2px;
+		transform: translateX(-50%);
+		z-index: 1;
+	}
+
+	.footer__btn-piano:hover {
+		transform: translateY(1.5px);
+		box-shadow: 0 1.5px 0 #000;
+	}
+
+	.footer__btn-piano:active {
+		transform: translateY(3px);
+		box-shadow: 0 0 0 #000;
+	}
+
+	.footer__btn-piano-text {
+		font-family: var(--font-heading);
 		font-weight: 700;
-		letter-spacing: 0.05em;
-		font-size: 0.85rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		color: #000;
+		z-index: 2;
+		background: rgba(255, 255, 255, 0.7);
+		padding: 1px 4px;
+		border-radius: 3px;
+		pointer-events: none;
+		margin-bottom: 2px;
 	}
 
-	.footer__btn--order {
-		border-color: var(--color-deep-ocean);
+	/* Order Button Style */
+	.footer__btn-order {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 120px;
+		height: 36px;
+		background: transparent;
 		color: var(--color-deep-ocean);
+		border: 2px solid var(--color-deep-ocean);
+		border-radius: var(--radius-full);
+		font-family: var(--font-heading);
+		font-weight: 700;
+		font-size: 0.7rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		transition: all var(--transition-base);
+		text-align: center;
+		line-height: 1.1;
 	}
 
-	.footer__btn--order:hover {
+	.footer__btn-order:hover {
 		background: var(--color-deep-ocean);
 		color: white;
+		transform: translateY(-2px);
 	}
 
 	.footer__contacts {
 		display: flex;
-		gap: var(--space-xl);
+		gap: var(--space-lg);
 		align-items: center;
-		flex-wrap: nowrap;
-	}
-
-	/* Info items */
-	.footer__info {
-		display: flex;
-		flex-direction: column;
-		gap: var(--space-sm);
 	}
 
 	.footer__info-item {
 		display: flex;
-		align-items: flex-start;
-		gap: var(--space-sm);
-		font-size: 0.85rem;
+		align-items: center;
+		gap: var(--space-xs);
+		font-size: 0.8rem;
 		color: var(--color-body-text);
-		line-height: 1.5;
-	}
-
-	:global(.footer__icon) {
-		flex-shrink: 0;
-		margin-top: 2px;
+		white-space: nowrap;
 	}
 
 	.footer__link {
-		color: var(--color-body-text);
 		transition: color var(--transition-fast);
 	}
 
@@ -195,12 +275,12 @@
 	/* Social */
 	.footer__social {
 		display: flex;
-		gap: var(--space-md);
+		gap: var(--space-sm);
 	}
 
 	.footer__social-link {
-		width: 40px;
-		height: 40px;
+		width: 36px;
+		height: 36px;
 		border-radius: 50%;
 		display: flex;
 		align-items: center;
@@ -213,7 +293,6 @@
 	.footer__social-link:hover {
 		background: var(--color-golden);
 		transform: translateY(-3px);
-		box-shadow: var(--shadow-md);
 	}
 
 	/* Bottom wave */
@@ -227,44 +306,43 @@
 
 	.footer__wave-bottom svg {
 		width: 100%;
-		height: 20px;
+		height: 15px;
 	}
 
 	/* Responsive */
-	@media (max-width: 1100px) {
+	@media (max-width: 1200px) {
 		.footer__contacts {
-			flex-direction: column;
-			align-items: center;
 			gap: var(--space-md);
 		}
 		.footer__info-item {
-			justify-content: center;
+			font-size: 0.75rem;
 		}
+	}
+
+	@media (max-width: 1024px) {
 		.footer__content {
+			flex-wrap: wrap;
+			justify-content: center;
+			gap: var(--space-lg);
+		}
+		.footer__contacts {
+			order: 1;
+			width: 100%;
 			justify-content: center;
 		}
 	}
 
 	@media (max-width: 768px) {
+		.footer__contacts {
+			flex-direction: column;
+			gap: var(--space-sm);
+		}
 		.footer__content {
 			flex-direction: column;
-			align-items: center;
-			text-align: center;
-			gap: var(--space-xl);
 		}
-
-		.footer__info-item {
-			justify-content: center;
-		}
-
 		:global(.footer__seagull-1),
 		:global(.footer__seagull-2) {
 			display: none;
-		}
-
-		.footer__btn {
-			width: 100%;
-			max-width: 280px;
 		}
 	}
 </style>

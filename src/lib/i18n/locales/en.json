@@ -24,6 +24,20 @@
 		"additional_info": "Over 40 teachers work at our school – true professionals who find an approach to every student and help unlock talent. The educational process takes place in 19 classrooms, filled with music, inspiration, and creativity."
 	},
 	"piano": {
-		"hint": "Play using your mouse or keyboard. Hover over the piano to see which computer keys correspond to the notes."
+		"hint": "Play using your mouse or keyboard. Hover over the piano to see which computer keys correspond to the notes.",
+		"notes": {
+			"C": "do",
+			"C#": "do#",
+			"D": "re",
+			"D#": "re#",
+			"E": "mi",
+			"F": "fa",
+			"F#": "fa#",
+			"G": "sol",
+			"G#": "sol#",
+			"A": "la",
+			"A#": "la#",
+			"B": "si"
+		}
 	}
 }
