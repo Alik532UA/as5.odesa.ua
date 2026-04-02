@@ -1,35 +1,29 @@
 <script lang="ts">
-	const galleryImages = [
-		{ src: '/photo/photoForAboutPage-01.jpg', alt: 'School Photo 1', title: 'Мистецька освіта' },
-		{ src: '/photo/photoForAboutPage-03.jpg', alt: 'School Photo 3', title: 'Юні музиканти' },
-		{ src: '/photo/photoForAboutPage-02.jpg', alt: 'School Photo 2', title: 'Творча майстерня' },
-		{ src: '/photo/photoForAboutPage-04.jpg', alt: 'School Photo 4', title: 'Виступ на сцені' },
-		{ src: '/photo/photoForAboutPage-05.jpg', alt: 'School Photo 5', title: 'Урок музики' },
-		{ src: '/photo/photoForAboutPage-06.jpg', alt: 'School Photo 6', title: 'Наші таланти' },
-		{ src: '/photo/photoForAboutPage-07.jpg', alt: 'School Photo 7', title: 'Фестиваль' },
-		{ src: '/photo/photoForAboutPage-08.jpg', alt: 'School Photo 8', title: 'Мистецький захід' },
-	];
+	import { t } from 'svelte-i18n';
+
+	const galleryImages = $derived([
+		{ src: '/photo/photoForAboutPage-01.jpg', alt: 'School Photo 1', title: $t('about.gallery.edu') },
+		{ src: '/photo/photoForAboutPage-03.jpg', alt: 'School Photo 3', title: $t('about.gallery.musicians') },
+		{ src: '/photo/photoForAboutPage-02.jpg', alt: 'School Photo 2', title: $t('about.gallery.workshop') },
+		{ src: '/photo/photoForAboutPage-04.jpg', alt: 'School Photo 4', title: $t('about.gallery.stage') },
+		{ src: '/photo/photoForAboutPage-05.jpg', alt: 'School Photo 5', title: $t('about.gallery.lesson') },
+		{ src: '/photo/photoForAboutPage-06.jpg', alt: 'School Photo 6', title: $t('about.gallery.talents') },
+		{ src: '/photo/photoForAboutPage-07.jpg', alt: 'School Photo 7', title: $t('about.gallery.festival') },
+		{ src: '/photo/photoForAboutPage-08.jpg', alt: 'School Photo 8', title: $t('about.gallery.event') },
+	]);
 </script>
 
 <svelte:head>
-	<title>Про школу | Одеська школа мистецтв №5</title>
+	<title>{$t('about.title')} | Одеська школа мистецтв №5</title>
 </svelte:head>
 
 <section class="page-content container" style="padding: 160px 24px 6rem;">
-	<h1 style="font-family: var(--font-heading); font-size: 3rem; color: var(--color-deep-ocean); margin-bottom: 2rem;">Про школу</h1>
+	<h1 style="font-family: var(--font-heading); font-size: 3rem; color: var(--color-deep-ocean); margin-bottom: 2rem;">{$t('about.title')}</h1>
 	<div style="font-size: 1.2rem; line-height: 1.8; color: var(--color-body-text); margin-bottom: 4rem;">
-		<p style="margin-bottom: 1rem;">
-			Наші учні та викладачі живуть музикою і щедро діляться нею з іншими. Ми постійно виступаємо на різних локаціях міста — у бібліотеках, Одеському зоопарку, Спілці журналістів України — і кожен такий виступ стає маленьким святом для слухачів.
-		</p>
-		<p style="margin-bottom: 1rem;">
-			Юні музиканти не раз відкривали своїми виступами художні виставки, додаючи до картин особливий настрій і звучання.
-		</p>
-		<p style="margin-bottom: 1rem;">
-			А ще наша творчість звучала і за кордоном — викладачі разом з учнями вже двічі побували в Італії, де гідно представляли школу та дарували українську музику європейській публіці.
-		</p>
-		<p>
-			І, звичайно, наші учні неодноразово повертаються з конкурсів і фестивалів із призовими місцями — бо за кожним виступом стоїть талант, праця і велика любов до мистецтва 🎶
-		</p>
+		<p style="margin-bottom: 1rem;">{$t('about.p1')}</p>
+		<p style="margin-bottom: 1rem;">{$t('about.p2')}</p>
+		<p style="margin-bottom: 1rem;">{$t('about.p3')}</p>
+		<p>{$t('about.p4')}</p>
 	</div>
 
 	<div class="g-bento">

@@ -35,7 +35,7 @@
 			<button
 				class="footer__btn-piano"
 				onclick={() => (isPianoOpen = true)}
-				aria-label="Грати на піаніно"
+				aria-label={$t("footer.play")}
 			>
 				<div class="footer__piano-visual">
 					<span class="footer__piano-white"></span>
@@ -48,7 +48,7 @@
 					<span class="footer__piano-black" style="left: 60%"></span>
 					<span class="footer__piano-black" style="left: 80%"></span>
 				</div>
-				<span class="footer__btn-piano-text">грати</span>
+				<span class="footer__btn-piano-text">{$t("footer.play")}</span>
 			</button>
 
 			<!-- 2. Contacts Group -->
@@ -114,7 +114,7 @@
 				target="_blank"
 				class="footer__btn-order"
 			>
-				замовити сайт
+				{$t("footer.order")}
 			</a>
 		</div>
 	</div>

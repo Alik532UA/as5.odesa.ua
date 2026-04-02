@@ -68,7 +68,7 @@
 			</button>
 			<div class="header__settings-dropdown">
 				<div class="header__settings-group">
-					<span class="header__settings-label">Мова / Language</span>
+					<span class="header__settings-label">{$t("settings.language")}</span>
 					<div class="header__settings-options">
 						<button 
 							class="header__settings-opt" 
@@ -83,18 +83,18 @@
 					</div>
 				</div>
 				<div class="header__settings-group">
-					<span class="header__settings-label">Тема / Theme</span>
+					<span class="header__settings-label">{$t("settings.theme")}</span>
 					<div class="header__settings-options">
 						<button 
 							class="header__settings-opt" 
 							class:active={!isDarkTheme} 
-							onclick={toggleTheme}
-						>Світла</button>
+							onclick={() => { if (isDarkTheme) toggleTheme(); }}
+						>{$t("settings.light")}</button>
 						<button 
 							class="header__settings-opt" 
 							class:active={isDarkTheme} 
-							onclick={toggleTheme}
-						>Темна</button>
+							onclick={() => { if (!isDarkTheme) toggleTheme(); }}
+						>{$t("settings.dark")}</button>
 					</div>
 				</div>
 			</div>
@@ -188,7 +188,7 @@
 		gap: var(--space-xl);
 		width: 100%;
 		padding: var(--space-lg) var(--space-xl) var(--space-lg) 200px;
-		background: rgba(255, 255, 255, 0.95);
+		background: color-mix(in srgb, var(--color-white), transparent 5%);
 		backdrop-filter: blur(12px);
 		box-shadow: var(--shadow-sm);
 		transition: all var(--transition-base);
@@ -228,7 +228,7 @@
 
 	.header__nav-link:hover,
 	.header__nav-link.active {
-		color: var(--color-deep-ocean);
+		color: var(--color-sea-blue);
 	}
 
 	.header__nav-link.active::after {
@@ -238,7 +238,7 @@
 		left: var(--space-md);
 		right: var(--space-md);
 		height: 2px;
-		background: var(--color-deep-ocean);
+		background: var(--color-sea-blue);
 		border-radius: 1px;
 	}
 
@@ -375,7 +375,7 @@
 	.header__mobile-overlay {
 		position: fixed;
 		inset: 0;
-		background: rgba(255, 255, 255, 0.98);
+		background: color-mix(in srgb, var(--color-white), transparent 2%);
 		backdrop-filter: blur(20px);
 		z-index: 105;
 		display: flex;

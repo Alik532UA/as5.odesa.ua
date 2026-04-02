@@ -2,15 +2,16 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import Departments from '$lib/components/Departments.svelte';
 	import Wave from '$lib/components/Wave.svelte';
+	import { t } from 'svelte-i18n';
 	
-	const galleryImages = [
-		{ src: '/photo/photoForMainPage-01.jpg', alt: 'School Life 1', title: 'Творчий процес' },
-		{ src: '/photo/photoForMainPage-03.jpg', alt: 'School Life 2', title: 'Наші таланти' },
-		{ src: '/photo/photoForMainPage-04.jpg', alt: 'School Life 3', title: 'Мистецька атмосфера' },
-		{ src: '/photo/photoForMainPage-06.jpg', alt: 'School Life 4', title: 'Музичні вечори' },
-		{ src: '/photo/photoForMainPage-07.jpg', alt: 'School Life 5', title: 'Юні віртуози' },
-		{ src: '/photo/photoForMainPage-08.jpg', alt: 'School Life 6', title: 'Світ гармонії' },
-	];
+	const galleryImages = $derived([
+		{ src: '/photo/photoForMainPage-01.jpg', alt: 'School Life 1', title: $t('gallery.items.process') },
+		{ src: '/photo/photoForMainPage-03.jpg', alt: 'School Life 2', title: $t('gallery.items.talents') },
+		{ src: '/photo/photoForMainPage-04.jpg', alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
+		{ src: '/photo/photoForMainPage-06.jpg', alt: 'School Life 4', title: $t('gallery.items.evenings') },
+		{ src: '/photo/photoForMainPage-07.jpg', alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
+		{ src: '/photo/photoForMainPage-08.jpg', alt: 'School Life 6', title: $t('gallery.items.harmony') },
+	]);
 </script>
 
 <Hero />
@@ -33,8 +34,8 @@
 <section class="gallery-bento" id="gallery-bento">
 	<div class="container">
 		<div class="gallery-bento__header">
-			<h2 class="gallery-bento__title">ГАЛЕРЕЯ ШКОЛИ</h2>
-			<p class="gallery-bento__subtitle">Миттєвості творчого життя нашої спільноти</p>
+			<h2 class="gallery-bento__title">{$t('gallery.title')}</h2>
+			<p class="gallery-bento__subtitle">{$t('gallery.subtitle')}</p>
 		</div>
 
 		<div class="g-bento-4x3">
@@ -55,12 +56,7 @@
 		position: relative;
 		height: 80px;
 		z-index: 10;
-		background: linear-gradient(180deg, #ffffff 0%, var(--color-light-blue) 100%);
-	}
-
-	.section-divider--bottom {
-		height: 100px;
-		background: linear-gradient(180deg, var(--color-light-blue) 0%, #ffffff 100%);
+		background: linear-gradient(180deg, var(--color-white) 0%, var(--color-light-blue) 100%);
 	}
 
 	.section-divider__wave {
@@ -73,10 +69,6 @@
 
 	.section-divider--top .section-divider__wave {
 		bottom: -1px;
-	}
-
-	.section-divider--bottom .section-divider__wave {
-		top: -1px;
 	}
 
 	.gallery-bento {

@@ -81,6 +81,25 @@
 	--max-width: 1200px;
 }
 
+/* --- Dark Theme Overrides --- */
+.dark-theme {
+	--color-deep-ocean: #3AACCE;
+	--color-sea-blue: #2196BA;
+	--color-sea-blue-light: #1B5E7B;
+	--color-sky-blue: #1A3A4A;
+	--color-light-blue: #0D1F2D;
+	--color-ice-blue: #142B3B;
+	--color-page-bg: #0A1622;
+
+	--color-white: #122533;
+	--color-dark-text: #EAF6FB;
+	--color-body-text: #D6EEF5;
+	--color-muted-text: #7A9DAE;
+	--color-border: #1B5E7B;
+
+	--color-golden: #F5A623;
+}
+
 /* --- Reset & Base --- */
 *,
 *::before,
