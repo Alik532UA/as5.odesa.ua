@@ -2,16 +2,19 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import Departments from '$lib/components/Departments.svelte';
 	import News from '$lib/components/News.svelte';
+	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 </script>
-
-<svelte:head>
-	<title>Одеська школа мистецтв №5 — Ваш шлях до музичної майстерності</title>
-	<meta name="description" content="Одеська школа мистецтв №5 — фортепіано, вокал, інструментальні ансамблі. Класична музична освіта для дітей та молоді в Одесі." />
-	<meta property="og:title" content="Одеська школа мистецтв №5" />
-	<meta property="og:description" content="Ваш шлях до музичної майстерності. Фортепіано, вокал, інструментальні ансамблі." />
-	<meta property="og:type" content="website" />
-</svelte:head>
 
 <Hero />
 <Departments />
-<News />
+
+<ErrorBoundary>
+	{#snippet children()}
+		<News />
+	{/snippet}
+	{#snippet fallback()}
+		<div style="padding: 4rem; text-align: center; background: #f8f9fa;">
+			<p>Тимчасово не вдалося завантажити новини.</p>
+		</div>
+	{/snippet}
+</ErrorBoundary>

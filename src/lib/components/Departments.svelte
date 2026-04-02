@@ -5,58 +5,39 @@
 	import PopIcon from "./icons/PopIcon.svelte";
 	import TheoryIcon from "./icons/TheoryIcon.svelte";
 	import FolkIcon from "./icons/FolkIcon.svelte";
+	import type { Component } from "svelte";
+
+	interface Department {
+		id: string;
+		name: string;
+		icon: Component<any>;
+	}
+
+	const departments: Department[] = [
+		{ id: "piano", name: "Фортепіанний відділ", icon: PianoIcon },
+		{ id: "strings", name: "Відділ струнно-смичкових інструментів", icon: StringsIcon },
+		{ id: "vocal", name: "Відділ сольного співу", icon: VocalIcon },
+		{ id: "pop", name: "Естрадний відділ", icon: PopIcon },
+		{ id: "theory", name: "Відділ теоретичних дисциплін", icon: TheoryIcon },
+		{ id: "folk", name: "Відділ народних інструментів", icon: FolkIcon },
+	];
 </script>
+
+{#snippet DeptCard({ name, icon: Icon, id }: Department)}
+	<article class="dept-card" {id}>
+		<div class="dept-card__icon-wrap">
+			<Icon className="dept-card__icon" />
+		</div>
+		<h3 class="dept-card__name">{name}</h3>
+	</article>
+{/snippet}
 
 <section class="departments" id="departments" aria-label="Відділи школи">
 	<div class="container">
 		<div class="departments__grid">
-			<!-- Фортепіанний відділ -->
-			<article class="dept-card" id="dept-piano">
-				<div class="dept-card__icon-wrap">
-					<PianoIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Фортепіанний відділ</h3>
-			</article>
-
-			<!-- Відділ струнно-смичкових інструментів -->
-			<article class="dept-card" id="dept-strings">
-				<div class="dept-card__icon-wrap">
-					<StringsIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Відділ струнно-смичкових інструментів</h3>
-			</article>
-
-			<!-- Відділ сольного співу -->
-			<article class="dept-card" id="dept-vocal">
-				<div class="dept-card__icon-wrap">
-					<VocalIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Відділ сольного співу</h3>
-			</article>
-
-			<!-- Естрадний відділ -->
-			<article class="dept-card" id="dept-pop">
-				<div class="dept-card__icon-wrap">
-					<PopIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Естрадний відділ</h3>
-			</article>
-
-			<!-- Відділ теоретичних дисциплін -->
-			<article class="dept-card" id="dept-theory">
-				<div class="dept-card__icon-wrap">
-					<TheoryIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Відділ теоретичних дисциплін</h3>
-			</article>
-
-			<!-- Відділ народних інструментів -->
-			<article class="dept-card" id="dept-folk">
-				<div class="dept-card__icon-wrap">
-					<FolkIcon className="dept-card__icon" />
-				</div>
-				<h3 class="dept-card__name">Відділ народних інструментів</h3>
-			</article>
+			{#each departments as dept (dept.id)}
+				{@render DeptCard(dept)}
+			{/each}
 		</div>
 	</div>
 </section>

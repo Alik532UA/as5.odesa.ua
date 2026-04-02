@@ -3,15 +3,13 @@
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import ArrowIcon from "./icons/ArrowIcon.svelte";
 	import PhotoIcon from "./icons/PhotoIcon.svelte";
+	import { Carousel } from "$lib/controllers/Carousel.svelte";
+	import { page } from "$app/state";
+	import { replaceState } from "$app/navigation";
+	import { onMount } from "svelte";
+	import { validateNews, type NewsItem } from "$lib/schemas/news";
 
-	interface NewsItem {
-		id: number;
-		title: string;
-		date: string;
-		category?: string;
-	}
-
-	const newsItems: NewsItem[] = [
+	const rawNews = [
 		{
 			id: 1,
 			title: "Осінній фестиваль",
@@ -50,38 +48,61 @@
 		},
 	];
 
-	let currentSlide = $state(0);
+	const newsItems: NewsItem[] = validateNews(rawNews);
+
 	const visibleCount = 3;
-	const totalItems = newsItems.length;
-	const maxSlide = totalItems - visibleCount;
+	const carousel = new Carousel(newsItems.length, visibleCount);
+	let mounted = $state(false);
 
-	function nextSlide() {
-		if (currentSlide < maxSlide) {
-			currentSlide++;
+	// Sync slide with URL
+	$effect(() => {
+		if (!mounted) return;
+		
+		const slide = carousel.current;
+		const url = new URL(page.url.href);
+		if (slide > 0) {
+			url.searchParams.set("news_page", slide.toString());
 		} else {
-			currentSlide = 0;
+			url.searchParams.delete("news_page");
+		}
+		replaceState(url.toString(), {});
+	});
+
+	// Initialize from URL
+	onMount(() => {
+		const initial = page.url.searchParams.get("news_page");
+		if (initial) {
+			carousel.goTo(parseInt(initial));
+		}
+		mounted = true;
+	});
+
+	function handleKeydown(e: KeyboardEvent) {
+		// Only handle keys if no input/textarea is focused
+		if (
+			typeof document !== "undefined" &&
+			["INPUT", "TEXTAREA"].includes(
+				(document.activeElement as HTMLElement)?.tagName,
+			)
+		) {
+			return;
+		}
+
+		if (e.key === "ArrowLeft") {
+			carousel.prev();
+		} else if (e.key === "ArrowRight") {
+			carousel.next();
 		}
 	}
-
-	function prevSlide() {
-		if (currentSlide > 0) {
-			currentSlide--;
-		} else {
-			currentSlide = maxSlide;
-		}
-	}
-
-	function goToSlide(index: number) {
-		currentSlide = index;
-	}
-
-	// Calculate progress percentage for the modern indicator
-	const progress = $derived(
-		(currentSlide / (totalItems - visibleCount)) * 100,
-	);
 </script>
 
-<section class="news" id="news-section" aria-label="Новини">
+<svelte:window onkeydown={handleKeydown} />
+
+<section
+	class="news"
+	id="news-section"
+	aria-labelledby="news-title"
+>
 	<div class="news__wave-top" aria-hidden="true">
 		<Wave
 			height={80}
@@ -98,7 +119,10 @@
 			<div class="news__title-group">
 				<h2 class="news__title" id="news-title">
 					НОВИНИ ТА ПОДІЇ
-					<BirdIcon className="news__title-bird" size={45} />
+					<BirdIcon
+						className="news__title-bird"
+						size={45}
+					/>
 				</h2>
 				<p class="news__subtitle">Будьте в курсі життя нашої школи</p>
 			</div>
@@ -106,29 +130,32 @@
 			<div class="news__nav-desktop">
 				<button
 					class="news__nav-btn news__nav-btn--prev"
-					onclick={prevSlide}
-					disabled={currentSlide === 0}
-					aria-label="Попередній"
+					onclick={carousel.prev}
+					disabled={carousel.current === 0}
+					aria-label="Попередній слайд"
 				>
-					<ArrowIcon size={20} className="icon-flip" />
+					<ArrowIcon
+						size={20}
+						className="icon-flip"
+					/>
 				</button>
 				<button
 					class="news__nav-btn news__nav-btn--next"
-					onclick={nextSlide}
-					disabled={currentSlide === maxSlide}
-					aria-label="Наступний"
+					onclick={carousel.next}
+					disabled={carousel.current === carousel.max}
+					aria-label="Наступний слайд"
 				>
 					<ArrowIcon size={20} />
 				</button>
 			</div>
 		</div>
 
-		<div class="news__carousel-container">
+		<div class="news__carousel-container" role="region" aria-roledescription="carousel">
 			<div
 				class="news__track"
-				style="transform: translateX(calc(-{currentSlide} * (100% / {visibleCount} + var(--gap-fix))))"
+				style="transform: translateX(calc(-{carousel.current} * (100% / {carousel.visible} + var(--gap-fix))))"
 			>
-				{#each newsItems as item (item.id)}
+				{#snippet NewsCard(item: NewsItem)}
 					<article class="news-card">
 						<div class="news-card__image-wrap">
 							<div class="news-card__image image-placeholder">
@@ -153,6 +180,10 @@
 							>
 						</div>
 					</article>
+				{/snippet}
+
+				{#each newsItems as item (item.id)}
+					{@render NewsCard(item)}
 				{/each}
 			</div>
 		</div>
@@ -162,17 +193,17 @@
 				<div class="news__progress-bar">
 					<div
 						class="news__progress-fill"
-						style="width: {progress}%"
+						style="width: {carousel.progress}%"
 					></div>
 				</div>
 			</div>
 
 			<div class="news__dots">
-				{#each { length: maxSlide + 1 } as _, i}
+				{#each { length: carousel.max + 1 } as _, i}
 					<button
 						class="news__dot"
-						class:active={currentSlide === i}
-						onclick={() => goToSlide(i)}
+						class:active={carousel.current === i}
+						onclick={() => carousel.goTo(i)}
 						aria-label="Слайд {i + 1}"
 					></button>
 				{/each}

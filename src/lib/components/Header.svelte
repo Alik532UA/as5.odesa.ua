@@ -1,16 +1,17 @@
 <script lang="ts">
 	import Logo from "./Logo.svelte";
+	import { ui } from "$lib/states/ui.svelte";
+	import { t } from "svelte-i18n";
 
 	let scrolled = $state(false);
-	let mobileMenuOpen = $state(false);
 
-	const navItems = [
-		{ label: "Головна", href: "/" },
-		{ label: "Про Школу", href: "/pro-shkolu" },
-		{ label: "Історія", href: "/istoriia" },
-		{ label: "Конкурси", href: "/konkursy" },
-		{ label: "Оголошення", href: "/oholoshennia" },
-	];
+	const navItems = $derived([
+		{ label: $t("nav.home"), href: "/" },
+		{ label: $t("nav.about"), href: "/pro-shkolu" },
+		{ label: $t("nav.history"), href: "/istoriia" },
+		{ label: $t("nav.contests"), href: "/konkursy" },
+		{ label: $t("nav.announcements"), href: "/oholoshennia" },
+	]);
 
 	$effect(() => {
 		const handleScroll = () => {
@@ -19,22 +20,18 @@
 		window.addEventListener("scroll", handleScroll, { passive: true });
 		return () => window.removeEventListener("scroll", handleScroll);
 	});
-
-	function toggleMobileMenu() {
-		mobileMenuOpen = !mobileMenuOpen;
-	}
 </script>
 
 <header class="header" class:scrolled id="main-header">
 	<div class="header__logo-area">
-		<a href="/" class="header__logo-link" aria-label="На головну">
+		<a href="/" class="header__logo-link" aria-label="На головну" onclick={ui.closeMenu}>
 			<Logo size="large" />
 		</a>
 	</div>
 
 	<div class="header__bar">
 		<nav class="header__nav" aria-label="Головне меню" id="main-nav">
-			<ul class="header__nav-list" class:open={mobileMenuOpen}>
+			<ul class="header__nav-list" class:open={ui.isMenuOpen}>
 				{#each navItems as item, i}
 					<li class="header__nav-item">
 						<a
@@ -51,27 +48,27 @@
 		</nav>
 
 		<a href="/vstup" class="btn btn-outline header__cta" id="header-cta">
-			ДЛЯ ВСТУПУ
+			{$t("nav.admission")}
 		</a>
 
 		<button
 			class="header__burger"
-			onclick={toggleMobileMenu}
-			aria-label={mobileMenuOpen ? "Закрити меню" : "Відкрити меню"}
-			aria-expanded={mobileMenuOpen}
+			onclick={ui.toggleMenu}
+			aria-label={ui.isMenuOpen ? "Закрити меню" : "Відкрити меню"}
+			aria-expanded={ui.isMenuOpen}
 			id="burger-menu"
 		>
-			<span class="header__burger-line" class:open={mobileMenuOpen}
+			<span class="header__burger-line" class:open={ui.isMenuOpen}
 			></span>
-			<span class="header__burger-line" class:open={mobileMenuOpen}
+			<span class="header__burger-line" class:open={ui.isMenuOpen}
 			></span>
-			<span class="header__burger-line" class:open={mobileMenuOpen}
+			<span class="header__burger-line" class:open={ui.isMenuOpen}
 			></span>
 		</button>
 	</div>
 
 	<!-- Mobile overlay menu -->
-	{#if mobileMenuOpen}
+	{#if ui.isMenuOpen}
 		<div class="header__mobile-overlay" role="dialog" aria-modal="true">
 			<nav aria-label="Мобільне меню">
 				<ul class="header__mobile-list">
@@ -80,7 +77,7 @@
 							<a
 								href={item.href}
 								class="header__mobile-link"
-								onclick={() => (mobileMenuOpen = false)}
+								onclick={ui.closeMenu}
 							>
 								{item.label}
 							</a>
@@ -90,9 +87,9 @@
 						<a
 							href="/vstup"
 							class="btn btn-primary header__mobile-cta"
-							onclick={() => (mobileMenuOpen = false)}
+							onclick={ui.closeMenu}
 						>
-							ДЛЯ ВСТУПУ
+							{$t("nav.admission")}
 						</a>
 					</li>
 				</ul>

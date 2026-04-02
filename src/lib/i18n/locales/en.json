@@ -1,0 +1,14 @@
+{
+	"hero": {
+		"title": "Odesa School of Arts №5",
+		"subtitle": "Your Path to Musical Mastery"
+	},
+	"nav": {
+		"home": "Home",
+		"about": "About School",
+		"history": "History",
+		"contests": "Contests",
+		"announcements": "Announcements",
+		"admission": "ADMISSION"
+	}
+}
