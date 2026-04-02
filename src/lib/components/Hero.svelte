@@ -137,7 +137,7 @@
 		font-size: 1.1rem;
 		line-height: 1.7;
 		color: var(--color-body-text);
-		background: rgba(255, 255, 255, 0.4);
+		background: rgba(255, 255, 255, 0.5);
 		padding: var(--space-lg);
 		border-left: 4px solid var(--color-golden);
 		border-radius: 0 var(--radius-md) var(--radius-md) 0;

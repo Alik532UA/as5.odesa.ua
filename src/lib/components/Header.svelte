@@ -8,7 +8,7 @@
 	let scrolled = $state(false);
 
 	function toggleTheme() {
-		const newTheme = ui.theme === 'light' ? 'dark' : 'light';
+		const newTheme = ui.theme === "light" ? "dark" : "light";
 		ui.setTheme(newTheme);
 	}
 
@@ -34,7 +34,12 @@
 
 <header class="header" class:scrolled id="main-header">
 	<div class="header__logo-area">
-		<a href="/" class="header__logo-link" aria-label="На головну" onclick={ui.closeMenu}>
+		<a
+			href="/"
+			class="header__logo-link"
+			aria-label="На головну"
+			onclick={ui.closeMenu}
+		>
 			<Logo size="large" />
 		</a>
 	</div>
@@ -57,7 +62,11 @@
 			</ul>
 		</nav>
 
-		<a href="/admission" class="btn btn-outline header__cta" id="header-cta">
+		<a
+			href="/admission"
+			class="btn btn-outline header__cta"
+			id="header-cta"
+		>
 			{$t("nav.admission")}
 		</a>
 
@@ -67,33 +76,41 @@
 			</button>
 			<div class="header__settings-dropdown">
 				<div class="header__settings-group">
-					<span class="header__settings-label">{$t("settings.language")}</span>
+					<span class="header__settings-label"
+						>{$t("settings.language")}</span
+					>
 					<div class="header__settings-options">
-						<button 
-							class="header__settings-opt" 
-							class:active={$locale === 'uk'} 
-							onclick={() => changeLanguage('uk')}
-						>UA</button>
-						<button 
-							class="header__settings-opt" 
-							class:active={$locale === 'en'} 
-							onclick={() => changeLanguage('en')}
-						>EN</button>
+						<button
+							class="header__settings-opt"
+							class:active={$locale === "uk"}
+							onclick={() => changeLanguage("uk")}>UA</button
+						>
+						<button
+							class="header__settings-opt"
+							class:active={$locale === "en"}
+							onclick={() => changeLanguage("en")}>EN</button
+						>
 					</div>
 				</div>
 				<div class="header__settings-group">
-					<span class="header__settings-label">{$t("settings.theme")}</span>
+					<span class="header__settings-label"
+						>{$t("settings.theme")}</span
+					>
 					<div class="header__settings-options">
-						<button 
-							class="header__settings-opt" 
-							class:active={ui.theme === 'light'} 
-							onclick={() => { if (ui.theme === 'dark') toggleTheme(); }}
-						>{$t("settings.light")}</button>
-						<button 
-							class="header__settings-opt" 
-							class:active={ui.theme === 'dark'} 
-							onclick={() => { if (ui.theme === 'light') toggleTheme(); }}
-						>{$t("settings.dark")}</button>
+						<button
+							class="header__settings-opt"
+							class:active={ui.theme === "light"}
+							onclick={() => {
+								if (ui.theme === "dark") toggleTheme();
+							}}>{$t("settings.light")}</button
+						>
+						<button
+							class="header__settings-opt"
+							class:active={ui.theme === "dark"}
+							onclick={() => {
+								if (ui.theme === "light") toggleTheme();
+							}}>{$t("settings.dark")}</button
+						>
 					</div>
 				</div>
 			</div>
@@ -106,12 +123,9 @@
 			aria-expanded={ui.isMenuOpen}
 			id="burger-menu"
 		>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}
-			></span>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}
-			></span>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}
-			></span>
+			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
+			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
+			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
 		</button>
 	</div>
 
@@ -187,7 +201,7 @@
 		gap: var(--space-xl);
 		width: 100%;
 		padding: var(--space-lg) var(--space-xl) var(--space-lg) 200px;
-		background: color-mix(in srgb, var(--color-white), transparent 5%);
+		background: color-mix(in srgb, var(--color-white), transparent 30%);
 		backdrop-filter: blur(12px);
 		box-shadow: var(--shadow-sm);
 		transition: all var(--transition-base);

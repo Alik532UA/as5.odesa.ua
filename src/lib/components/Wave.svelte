@@ -137,7 +137,7 @@
 		let fishInterval: ReturnType<typeof setTimeout>;
 		if (showFish) {
 			const scheduleNextFish = () => {
-				const nextTime = 300 + Math.random() * 700; // Debug: 10x faster (was 3000 + 7000)
+				const nextTime = 1000 + Math.random() * 15000;
 				fishInterval = setTimeout(() => {
 					if (!isFishActive) {
 						isFishActive = true;
