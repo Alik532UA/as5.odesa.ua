@@ -146,6 +146,10 @@
 		text-align: left;
 	}
 
+	:global(.dark-theme) .hero__story {
+		background: rgba(255, 255, 255, 0.05);
+	}
+
 	/* Image area — Lower than seagulls */
 	.hero__image-wrap {
 		position: relative;
