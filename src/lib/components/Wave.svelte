@@ -117,7 +117,7 @@
 
 				if (isJumping) {
 					jumpProgress += fishSpeed;
-					if (jumpProgress >= currentJumpLength) {
+					if (jumpProgress >= currentJumpLength + 60) {
 						isJumping = false;
 						isFishActive = false;
 					}
@@ -143,16 +143,18 @@
 						isFishActive = true;
 						fishDirection = Math.random() > 0.5 ? 1 : -1;
 						isJumping = true;
-						jumpProgress = 0;
+						jumpProgress = -60;
 						// Randomize jump parameters
 						currentJumpHeight = 40 + Math.random() * 80; // height above wave (40 to 120px)
 						currentJumpLength = 150 + Math.random() * 200; // length of the jump (150 to 350px)
-						
+
 						// Random jump starting position across the whole width
 						if (fishDirection === 1) {
 							fishX = Math.random() * (width - currentJumpLength);
 						} else {
-							fishX = currentJumpLength + Math.random() * (width - currentJumpLength);
+							fishX =
+								currentJumpLength +
+								Math.random() * (width - currentJumpLength);
 						}
 					}
 					scheduleNextFish();
@@ -186,7 +188,8 @@
 			<g clip-path="url(#{clipId})">
 				<g
 					class="wave__fish"
-					transform="translate({fishX}, {fishY - 15}) rotate({fishRotation}) scale({0.08 * fishDirection}, 0.08)"
+					transform="translate({fishX}, {fishY}) rotate({fishRotation}) scale({0.08 *
+						fishDirection}, 0.08)"
 				>
 					<g transform="translate(-250, -240)">
 						<path d={fishPath} fill="#fcb712" />
