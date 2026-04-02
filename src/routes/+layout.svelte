@@ -5,6 +5,7 @@
 	import { seo } from '$lib/services/seo.svelte';
 	import '$lib/i18n';
 	import { waitLocale, isLoading } from 'svelte-i18n';
+	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 
 	let { children } = $props();
 </script>
@@ -29,7 +30,9 @@
 	<div class="app">
 		<Header />
 		<main id="main-content">
-			{@render children()}
+			<ErrorBoundary>
+				{@render children()}
+			</ErrorBoundary>
 		</main>
 		<Footer />
 	</div>

@@ -7,6 +7,7 @@
 	import { replaceState } from "$app/navigation";
 	import { onMount, untrack } from "svelte";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
+	import { CarouselController } from "$lib/controllers/Carousel.svelte";
 
 	const rawNews = [
 		{
@@ -57,43 +58,14 @@
 
 	// Логіка для БЕЗКІНЕЧНОГО слайдера
 	const infiniteNews = [newsItems[newsItems.length - 1], ...newsItems, newsItems[0]];
-	let currentIndex = $state(1);
-	let isTransitioning = $state(true);
+	
+	const carousel = new CarouselController(infiniteNews.length, 1);
 	let mounted = $state(false);
-
-	function next() {
-		if (!isTransitioning) return;
-		currentIndex++;
-		if (currentIndex >= infiniteNews.length - 1) {
-			setTimeout(() => {
-				isTransitioning = false;
-				currentIndex = 1;
-				setTimeout(() => (isTransitioning = true), 50);
-			}, 700);
-		}
-	}
-
-	function prev() {
-		if (!isTransitioning) return;
-		currentIndex--;
-		if (currentIndex <= 0) {
-			setTimeout(() => {
-				isTransitioning = false;
-				currentIndex = infiniteNews.length - 2;
-				setTimeout(() => (isTransitioning = true), 50);
-			}, 700);
-		}
-	}
-
-	function goTo(i: number) {
-		if (!isTransitioning) return;
-		currentIndex = i + 1;
-	}
 
 	// Sync slide with URL
 	$effect(() => {
 		if (!mounted || !browser) return;
-		const realIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
+		const realIndex = (carousel.currentIndex - 1 + newsItems.length) % newsItems.length;
 		
 		untrack(() => {
 			const currentParam = page.url.searchParams.get("news_page");
@@ -118,7 +90,7 @@
 	onMount(() => {
 		const initial = page.url.searchParams.get("news_page");
 		if (initial) {
-			currentIndex = parseInt(initial) + 1;
+			carousel.currentIndex = parseInt(initial) + 1;
 		}
 		// Даємо роутеру трохи часу після монтажу
 		setTimeout(() => {
@@ -128,8 +100,8 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (typeof document !== "undefined" && ["INPUT", "TEXTAREA"].includes((document.activeElement as HTMLElement)?.tagName)) return;
-		if (e.key === "ArrowLeft") prev();
-		else if (e.key === "ArrowRight") next();
+		if (e.key === "ArrowLeft") carousel.prev();
+		else if (e.key === "ArrowRight") carousel.next();
 	}
 </script>
 
@@ -164,44 +136,48 @@
 			<div
 				class="focus-track"
 				style="
-					transform: translateX(calc(50% - 300px - {currentIndex * 620}px));
-					transition: {isTransitioning ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'};
+					transform: translateX(calc(50% - 300px - {carousel.currentIndex * 620}px));
+					transition: {carousel.isTransitioning ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'};
 				"
 			>
 				{#each infiniteNews as item, i}
-					<article class="focus-card" class:is-active={currentIndex === i}>
-						<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {(item as any).color || '#eee'}, #fff)">
-							<PhotoIcon size={64} className="focus-card__placeholder" />
-						</div>
-						<div class="focus-card__content">
-							<div class="focus-card__meta">
-								<span class="tag">{item.category}</span>
-								<time datetime="2024" class="date">{item.date}</time>
-							</div>
-							<h3 class="focus-card__title">{item.title}</h3>
-							<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
-							<a href="/news/{item.id}" class="btn-more">Читати далі →</a>
-						</div>
-					</article>
+					{@render NewsCard(item, i)}
 				{/each}
 			</div>
 
-			<button class="nav-btn nav-btn--prev" onclick={prev} aria-label="Попередній слайд">←</button>
-			<button class="nav-btn nav-btn--next" onclick={next} aria-label="Наступний слайд">→</button>
+			<button class="nav-btn nav-btn--prev" onclick={carousel.prev} aria-label="Попередній слайд">←</button>
+			<button class="nav-btn nav-btn--next" onclick={carousel.next} aria-label="Наступний слайд">→</button>
 		</div>
 
 		<div class="focus-dots">
 			{#each newsItems as _, i}
 				<button
 					class="f-dot"
-					class:active={(currentIndex - 1 + newsItems.length) % newsItems.length === i}
-					onclick={() => goTo(i)}
+					class:active={(carousel.currentIndex - 1 + newsItems.length) % newsItems.length === i}
+					onclick={() => carousel.goTo(i)}
 					aria-label="Слайд {i + 1}"
 				></button>
 			{/each}
 		</div>
 	</div>
 </section>
+
+{#snippet NewsCard(item: any, i: number)}
+	<article class="focus-card" class:is-active={carousel.currentIndex === i}>
+		<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {item.color || '#eee'}, #fff)">
+			<PhotoIcon size={64} className="focus-card__placeholder" />
+		</div>
+		<div class="focus-card__content">
+			<div class="focus-card__meta">
+				<span class="tag">{item.category}</span>
+				<time datetime="2024" class="date">{item.date}</time>
+			</div>
+			<h3 class="focus-card__title">{item.title}</h3>
+			<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
+			<a href="/news/{item.id}" class="btn-more">Читати далі →</a>
+		</div>
+	</article>
+{/snippet}
 
 <div class="news-divider news-divider--bottom" aria-hidden="true">
 	<div class="news-divider__wave">

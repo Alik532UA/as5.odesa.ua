@@ -1,39 +1,39 @@
-export class Carousel {
-	current = $state(0);
-	total = $state(0);
-	visible = $state(1);
-
-	constructor(total: number, visible: number = 1) {
-		this.total = total;
-		this.visible = visible;
+export class CarouselController {
+	currentIndex = $state(1);
+	isTransitioning = $state(true);
+	itemsCount = $state(0);
+	
+	constructor(itemsCount: number, initialIndex = 1) {
+		this.itemsCount = itemsCount;
+		this.currentIndex = initialIndex;
 	}
-
-	get max() {
-		return Math.max(0, this.total - this.visible);
-	}
-
-	get progress() {
-		if (this.max === 0) return 0;
-		return (this.current / this.max) * 100;
-	}
-
+	
 	next = () => {
-		if (this.current < this.max) {
-			this.current++;
-		} else {
-			this.current = 0;
+		if (!this.isTransitioning) return;
+		this.currentIndex++;
+		if (this.currentIndex >= this.itemsCount - 1) {
+			setTimeout(() => {
+				this.isTransitioning = false;
+				this.currentIndex = 1;
+				setTimeout(() => (this.isTransitioning = true), 50);
+			}, 700);
 		}
-	};
-
+	}
+	
 	prev = () => {
-		if (this.current > 0) {
-			this.current--;
-		} else {
-			this.current = this.max;
+		if (!this.isTransitioning) return;
+		this.currentIndex--;
+		if (this.currentIndex <= 0) {
+			setTimeout(() => {
+				this.isTransitioning = false;
+				this.currentIndex = this.itemsCount - 2;
+				setTimeout(() => (this.isTransitioning = true), 50);
+			}, 700);
 		}
-	};
-
+	}
+	
 	goTo = (index: number) => {
-		this.current = Math.min(Math.max(0, index), this.max);
-	};
+		if (!this.isTransitioning) return;
+		this.currentIndex = index + 1;
+	}
 }

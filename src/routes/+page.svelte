@@ -3,7 +3,27 @@
 	import Departments from '$lib/components/Departments.svelte';
 	import Wave from '$lib/components/Wave.svelte';
 	import { t } from 'svelte-i18n';
+	import { onMount } from 'svelte';
 	
+	let showDepartments = $state(false);
+	let departmentsRef: HTMLElement | null = $state(null);
+
+	onMount(() => {
+		if (typeof window !== 'undefined' && 'IntersectionObserver' in window && departmentsRef) {
+			const observer = new IntersectionObserver((entries) => {
+				if (entries[0].isIntersecting) {
+					showDepartments = true;
+					observer.disconnect();
+				}
+			}, { rootMargin: '200px' });
+			observer.observe(departmentsRef);
+			return () => observer.disconnect();
+		} else {
+			// Fallback if no IntersectionObserver or SSR
+			showDepartments = true;
+		}
+	});
+
 	const galleryImages = $derived([
 		{ src: '/photo/photoForMainPage-01.jpg', alt: 'School Life 1', title: $t('gallery.items.process') },
 		{ src: '/photo/photoForMainPage-03.jpg', alt: 'School Life 2', title: $t('gallery.items.talents') },
@@ -15,7 +35,16 @@
 </script>
 
 <Hero />
-<Departments />
+
+<div bind:this={departmentsRef} class="lazy-section">
+	{#if showDepartments}
+		<Departments />
+	{:else}
+		<div style="height: 600px; display: flex; align-items: center; justify-content: center; background: var(--color-light-blue);">
+			Завантаження...
+		</div>
+	{/if}
+</div>
 
 <!-- Bento Grid 4:3 Section -->
 <div class="section-divider section-divider--top" aria-hidden="true">
