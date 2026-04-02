@@ -24,10 +24,9 @@
 		</div>
 
 		<div class="hero__image-wrap">
-			<div class="hero__image image-placeholder" id="hero-image">
+			<div class="hero__image" id="hero-image">
 				<!-- Placeholder for hero photo -->
-				<HeroPhotoIcon />
-				<span>Фото учнів з інструментами</span>
+				<img src="/photo/photoForMainPage-03.jpg" alt="" />
 			</div>
 			<!-- Decorative blue cloud shapes -->
 			<div class="hero__cloud hero__cloud--1" aria-hidden="true"></div>

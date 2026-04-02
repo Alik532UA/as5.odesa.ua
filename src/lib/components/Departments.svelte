@@ -48,6 +48,9 @@
 				{@render DeptCard(dept)}
 			{/each}
 		</div>
+		<p class="departments__additional-info">
+			{$t('departments.additional_info')}
+		</p>
 	</div>
 </section>
 
@@ -65,6 +68,19 @@
 		text-align: center;
 		margin-bottom: var(--space-3xl);
 		font-weight: 500;
+	}
+
+	.departments__additional-info {
+		font-family: var(--font-body);
+		font-size: 1rem;
+		color: var(--color-body-text);
+		line-height: 1.7;
+		text-align: center;
+		margin-top: 64px;
+		margin-bottom: 0px;
+		max-width: 800px; /* Constrain width for better readability */
+		margin-left: auto;
+		margin-right: auto;
 	}
 
 	.departments__grid {
