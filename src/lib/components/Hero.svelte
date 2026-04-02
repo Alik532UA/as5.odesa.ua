@@ -1,16 +1,15 @@
 <script lang="ts">
 	import Wave from "./Wave.svelte";
-	import BirdIcon from "./icons/BirdIcon.svelte";
-	import HeroPhotoIcon from "./icons/HeroPhotoIcon.svelte";
+	import Seagull from "./ui/Seagull.svelte";
 	import { t } from "svelte-i18n";
 </script>
 
 <section class="hero" id="hero-section" aria-label="Головна секція">
-	<!-- Decorative seagulls -->
-	<BirdIcon className="hero__seagull hero__seagull--1" size={40} />
-	<BirdIcon className="hero__seagull hero__seagull--2" size={30} />
-	<BirdIcon className="hero__seagull hero__seagull--3" size={25} />
-	<BirdIcon className="hero__seagull hero__seagull--4" size={35} />
+	<!-- Decorative seagulls — adjusted sizes -->
+	<Seagull className="hero__seagull hero__seagull--1" size={60} />
+	<Seagull className="hero__seagull hero__seagull--2" size={45} />
+	<Seagull className="hero__seagull hero__seagull--3" size={35} />
+	<Seagull className="hero__seagull hero__seagull--4" size={50} />
 
 	<div class="hero__content container">
 		<div class="hero__text">
@@ -25,7 +24,6 @@
 
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
-				<!-- Placeholder for hero photo -->
 				<img src="/photo/photoForMainPage-02.jpg" alt="" />
 			</div>
 			<!-- Decorative blue cloud shapes -->
@@ -38,7 +36,7 @@
 	<div class="hero__waves" aria-hidden="true">
 		<Wave
 			className="hero__wave-svg"
-			height={55}
+			height={110}
 			amplitude={15}
 			frequency={5}
 			speed={0.003}
@@ -63,11 +61,13 @@
 		min-height: 600px;
 	}
 
-	/* Seagulls */
+	/* Seagulls Layering */
 	:global(.hero__seagull) {
 		position: absolute;
 		animation: seagullFly 4s ease-in-out infinite;
-		z-index: 2;
+		z-index: 5; /* Above images and buttons, below text */
+		color: #36c7f3;
+		opacity: 0.8;
 	}
 
 	:global(.hero__seagull--1) {
@@ -101,11 +101,13 @@
 		gap: var(--space-3xl);
 		align-items: center;
 		position: relative;
-		z-index: 3;
+		z-index: 1; /* Base layer */
 	}
 
-	/* Text */
+	/* Text — Highest Layer */
 	.hero__text {
+		position: relative;
+		z-index: 10;
 		animation: fadeInUp 0.8s ease-out;
 	}
 
@@ -144,9 +146,10 @@
 		text-align: left;
 	}
 
-	/* Image area */
+	/* Image area — Lower than seagulls */
 	.hero__image-wrap {
 		position: relative;
+		z-index: 2;
 		animation: fadeInUp 0.8s ease-out 0.2s both;
 	}
 
@@ -202,7 +205,7 @@
 		left: -30px;
 	}
 
-	/* Wave divider */
+	/* Wave divider — Lower than seagulls if needed */
 	.hero__waves {
 		position: absolute;
 		bottom: -5px;

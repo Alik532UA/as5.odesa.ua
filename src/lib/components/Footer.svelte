@@ -1,7 +1,7 @@
 <script lang="ts">
 	import PianoModal from "./ui/PianoModal.svelte";
 	import Wave from "./Wave.svelte";
-	import BirdIcon from "./icons/BirdIcon.svelte";
+	import Seagull from "./ui/Seagull.svelte";
 	import LocationIcon from "./icons/LocationIcon.svelte";
 	import PhoneIcon from "./icons/PhoneIcon.svelte";
 	import EmailIcon from "./icons/EmailIcon.svelte";
@@ -22,12 +22,13 @@
 			speed={0.003}
 			color="#005fae"
 			strokeWidth={15}
+			showFish={true}
 		/>
 	</div>
 
 	<!-- Decorative seagulls -->
-	<BirdIcon className="footer__seagull-1" size={30} />
-	<BirdIcon className="footer__seagull-2" size={22} />
+	<Seagull className="footer__seagull-1" size={45} />
+	<Seagull className="footer__seagull-2" size={35} />
 
 	<div class="container">
 		<div class="footer__content">

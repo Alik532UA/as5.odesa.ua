@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { ui } from "$lib/states/ui.svelte";
+
 	let { size = 'large' }: { size?: 'large' | 'small' } = $props();
 
 	const dimensions = {
@@ -7,10 +9,11 @@
 	};
 
 	const d = $derived(dimensions[size]);
+	const logoSrc = $derived(ui.theme === 'dark' ? '/ods-as5-logo-full-inverted.png' : '/ods-as5-logo-full_AlphaChannel.png');
 </script>
 
 <img
-	src="/ods-as5-logo-full_AlphaChannel.png"
+	src={logoSrc}
 	alt="Логотип Одеської школи мистецтв №5"
 	class="logo-img"
 	width={d.width}

@@ -16,14 +16,14 @@
 		iconPath: string; 
 	}
 
-	const departments: Department[] = [
-		{ id: "piano", name: "Фортепіанний відділ", iconPath: "/departments/piano.png" },
-		{ id: "strings", name: "Відділ струнно-смичкових інструментів", iconPath: "/departments/strings.png" },
-		{ id: "vocal", name: "Відділ сольного співу", iconPath: "/departments/vocal.png" },
-		{ id: "pop", name: "Естрадний відділ", iconPath: "/departments/pop.png" },
-		{ id: "theory", name: "Відділ теоретичних дисциплін", iconPath: "/departments/theory.png" },
-		{ id: "folk", name: "Відділ народних інструментів", iconPath: "/departments/folk.png" },
-	];
+	const departments = $derived([
+		{ id: "piano", name: $t("departments.list.piano"), iconPath: "/departments/piano.png" },
+		{ id: "strings", name: $t("departments.list.strings"), iconPath: "/departments/strings.png" },
+		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: "/departments/vocal.png" },
+		{ id: "pop", name: $t("departments.list.pop"), iconPath: "/departments/pop.png" },
+		{ id: "theory", name: $t("departments.list.theory"), iconPath: "/departments/theory.png" },
+		{ id: "folk", name: $t("departments.list.folk"), iconPath: "/departments/folk.png" },
+	]);
 </script>
 
 {#snippet DeptCard({ name, iconPath, id }: Department)}

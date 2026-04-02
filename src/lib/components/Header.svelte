@@ -6,11 +6,11 @@
 	import { page } from "$app/state";
 
 	let scrolled = $state(false);
-	let isDarkTheme = $state(false);
 
 	function toggleTheme() {
-		isDarkTheme = !isDarkTheme;
-		document.body.classList.toggle('dark-theme', isDarkTheme);
+		const newTheme = ui.theme === 'light' ? 'dark' : 'light';
+		ui.setTheme(newTheme);
+		document.body.classList.toggle('dark-theme', newTheme === 'dark');
 	}
 
 	function changeLanguage(lang: string) {
@@ -87,13 +87,13 @@
 					<div class="header__settings-options">
 						<button 
 							class="header__settings-opt" 
-							class:active={!isDarkTheme} 
-							onclick={() => { if (isDarkTheme) toggleTheme(); }}
+							class:active={ui.theme === 'light'} 
+							onclick={() => { if (ui.theme === 'dark') toggleTheme(); }}
 						>{$t("settings.light")}</button>
 						<button 
 							class="header__settings-opt" 
-							class:active={isDarkTheme} 
-							onclick={() => { if (!isDarkTheme) toggleTheme(); }}
+							class:active={ui.theme === 'dark'} 
+							onclick={() => { if (ui.theme === 'light') toggleTheme(); }}
 						>{$t("settings.dark")}</button>
 					</div>
 				</div>
