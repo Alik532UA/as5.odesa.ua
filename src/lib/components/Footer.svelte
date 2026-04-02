@@ -40,13 +40,15 @@
 
 			<!-- 2. Contacts Group -->
 			<div class="footer__contacts">
+				<!-- Address -->
 				<div class="footer__info" id="footer-address">
 					<div class="footer__info-item">
 						<LocationIcon className="footer__icon" size={18} />
-						<span>{$t("footer.address")}</span>
+						<a href="https://maps.app.goo.gl/khSVpMmKieTdW2Ao7" target="_blank" rel="noopener noreferrer" class="footer__link">
+							{$t("footer.address")}
+						</a>
 					</div>
 				</div>
-
 				<div class="footer__info" id="footer-phones">
 					<div class="footer__info-item">
 						<PhoneIcon className="footer__icon" size={18} />

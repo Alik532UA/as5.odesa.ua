@@ -148,9 +148,27 @@
 
 	@media (max-width: 480px) {
 		.departments__grid {
-			grid-template-columns: 1fr;
-			max-width: 320px;
-			margin: 0 auto;
+			grid-template-columns: repeat(2, 1fr);
+			gap: var(--space-md);
+		}
+
+		.dept-card {
+			padding: var(--space-lg) var(--space-sm);
+			border-radius: var(--radius-md);
+		}
+
+		.dept-card__icon {
+			width: 60px;
+			height: 60px;
+		}
+
+		.dept-card__name {
+			font-size: 0.8rem;
+		}
+
+		.departments__description {
+			font-size: 1.1rem;
+			margin-bottom: var(--space-xl);
 		}
 	}
 

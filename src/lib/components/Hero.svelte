@@ -2,7 +2,7 @@
 	import Wave from "./Wave.svelte";
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import HeroPhotoIcon from "./icons/HeroPhotoIcon.svelte";
-	import { t } from 'svelte-i18n';
+	import { t } from "svelte-i18n";
 </script>
 
 <section class="hero" id="hero-section" aria-label="Головна секція">
@@ -15,18 +15,18 @@
 	<div class="hero__content container">
 		<div class="hero__text">
 			<h1 class="hero__title" id="hero-title">
-				{$t('hero.title')}
+				{$t("hero.title")}
 			</h1>
-			<p class="hero__subtitle">{$t('hero.subtitle')}</p>
+			<p class="hero__subtitle">{$t("hero.subtitle")}</p>
 			<p class="hero__story">
-				{$t('hero.story')}
+				{$t("hero.story")}
 			</p>
 		</div>
 
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
 				<!-- Placeholder for hero photo -->
-				<img src="/photo/photoForMainPage-03.jpg" alt="" />
+				<img src="/photo/photoForMainPage-02.jpg" alt="" />
 			</div>
 			<!-- Decorative blue cloud shapes -->
 			<div class="hero__cloud hero__cloud--1" aria-hidden="true"></div>
@@ -154,6 +154,21 @@
 		width: 100%;
 		aspect-ratio: 4 / 3;
 		min-height: 300px;
+		border-radius: 40px;
+		overflow: hidden;
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+		cursor: pointer;
+	}
+
+	.hero__image img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	.hero__image:hover img {
+		transform: scale(1.08);
 	}
 
 	/* Decorative clouds */

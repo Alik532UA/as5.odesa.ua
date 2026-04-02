@@ -2,6 +2,7 @@
 	import Logo from "./Logo.svelte";
 	import { ui } from "$lib/states/ui.svelte";
 	import { t } from "svelte-i18n";
+	import { page } from "$app/state";
 
 	let scrolled = $state(false);
 
@@ -36,7 +37,7 @@
 						<a
 							href={item.href}
 							class="header__nav-link"
-							class:active={item.href === "/"}
+							class:active={page.url.pathname === item.href}
 							id="nav-{item.href.replace('/', '') || 'home'}"
 						>
 							{item.label}

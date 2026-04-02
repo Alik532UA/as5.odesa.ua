@@ -176,6 +176,24 @@
 		color: #eee;
 		transition: all .07s ease;
 		min-height: 120px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 20px;
+	}
+
+	.note-name {
+		min-width: 300px;
+		text-align: right;
+	}
+
+	.note-symbol {
+		min-width: 150px;
+		text-align: left;
+	}
+
+	.note-divider {
+		color: rgba(255, 255, 255, 0.3);
 	}
 
 	.keys {
@@ -260,8 +278,8 @@
 		/* If in portrait mode, rotate to simulate landscape */
 		@media (orientation: portrait) {
 			#wrap {
-				width: 85vh; /* Viewport height becomes the width */
-				height: 90vw; /* Viewport width becomes the height */
+				width: 90vh; /* Increased slightly */
+				height: 95vw; /* Increased slightly */
 				transform: rotate(90deg);
 				position: absolute;
 				top: 50%;
@@ -270,28 +288,34 @@
 				padding: 0;
 			}
 			.keys {
-				height: 50vw; /* Using vw because container is rotated */
-				margin-top: 20px;
+				height: 60vw; /* More space for keys */
+				margin-top: 10px;
 			}
 			.nowplaying {
-				min-height: 80px;
-				font-size: 80px;
+				min-height: 40px;
+				font-size: 40px;
+				gap: 10px;
 			}
+			.note-name { min-width: 120px; }
+			.note-symbol { min-width: 60px; }
 		}
 
 		/* Standard mobile landscape */
 		@media (orientation: landscape) {
 			#wrap {
 				max-width: 100%;
-				padding: 10px;
+				padding: 5px;
 			}
 			.keys {
-				height: 180px;
+				height: 200px; /* Slightly taller keys */
 			}
 			.nowplaying {
-				min-height: 60px;
-				font-size: 60px;
+				min-height: 40px;
+				font-size: 30px;
+				gap: 10px;
 			}
+			.note-name { min-width: 100px; }
+			.note-symbol { min-width: 50px; }
 		}
 
 		.key.sharp {
