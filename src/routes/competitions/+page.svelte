@@ -5,7 +5,7 @@
 	<title>Конкурси | Одеська школа мистецтв №5</title>
 </svelte:head>
 
-<section class="page-content container" style="padding: 6rem 0;">
+<section class="page-content container" style="padding: 160px 24px 6rem;">
 	<h1 style="font-family: var(--font-heading); font-size: 3rem; color: var(--color-deep-ocean); margin-bottom: 2rem;">Конкурси</h1>
 	<div style="font-size: 1.2rem; line-height: 1.8; color: var(--color-body-text);">
 		<p style="margin-bottom: 1rem;">
