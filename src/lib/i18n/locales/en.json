@@ -22,5 +22,8 @@
 	"departments": {
 		"description": "Today, the school has 6 departments where 335 students study:",
 		"additional_info": "Over 40 teachers work at our school – true professionals who find an approach to every student and help unlock talent. The educational process takes place in 19 classrooms, filled with music, inspiration, and creativity."
+	},
+	"piano": {
+		"hint": "Play using your mouse or keyboard. Hover over the piano to see which computer keys correspond to the notes."
 	}
 }

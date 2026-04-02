@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Logo from "./Logo.svelte";
+	import PianoModal from "./ui/PianoModal.svelte";
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import LocationIcon from "./icons/LocationIcon.svelte";
 	import PhoneIcon from "./icons/PhoneIcon.svelte";
@@ -7,6 +7,8 @@
 	import FacebookIcon from "./icons/FacebookIcon.svelte";
 	import InstagramIcon from "./icons/InstagramIcon.svelte";
 	import { t } from "svelte-i18n";
+
+	let isPianoOpen = $state(false);
 </script>
 
 <footer class="footer" id="main-footer">
@@ -16,12 +18,12 @@
 
 	<div class="container">
 		<div class="footer__content">
-			<!-- Logo -->
-			<div class="footer__logo">
-				<Logo size="small" />
-			</div>
+			<!-- 1. Button "грати" -->
+			<button class="btn btn-primary footer__btn" onclick={() => isPianoOpen = true}>
+				грати
+			</button>
 
-			<!-- Contacts Group -->
+			<!-- 2. Contacts Group -->
 			<div class="footer__contacts">
 				<!-- Address -->
 				<div class="footer__info" id="footer-address">
@@ -57,7 +59,7 @@
 				</div>
 			</div>
 
-			<!-- Social icons -->
+			<!-- 3. Social icons -->
 			<div class="footer__social" id="footer-social">
 				<a
 					href={$t("footer.facebook")}
@@ -78,6 +80,11 @@
 					<InstagramIcon size={24} />
 				</a>
 			</div>
+
+			<!-- 4. Button "замовити сайт" -->
+			<a href="https://t.me/ozapolnov" target="_blank" class="btn btn-outline footer__btn footer__btn--order">
+				замовити сайт
+			</a>
 		</div>
 	</div>
 
@@ -93,6 +100,8 @@
 		</svg>
 	</div>
 </footer>
+
+<PianoModal isOpen={isPianoOpen} onClose={() => isPianoOpen = false} />
 
 <style>
 	.footer {
@@ -128,16 +137,29 @@
 		flex-wrap: wrap;
 	}
 
-	.footer__logo {
-		flex-shrink: 0;
+	.footer__btn {
+		min-width: 160px;
+		text-transform: uppercase;
+		font-weight: 700;
+		letter-spacing: 0.05em;
+		font-size: 0.85rem;
+	}
+
+	.footer__btn--order {
+		border-color: var(--color-deep-ocean);
+		color: var(--color-deep-ocean);
+	}
+
+	.footer__btn--order:hover {
+		background: var(--color-deep-ocean);
+		color: white;
 	}
 
 	.footer__contacts {
 		display: flex;
 		gap: var(--space-xl);
 		align-items: center;
-		/* Removed flex-wrap as flex-direction: column handles stacking */
-		flex-wrap: nowrap; /* Changed to nowrap to avoid unexpected wrapping of contacts within the group */
+		flex-wrap: nowrap;
 	}
 
 	/* Info items */
@@ -210,20 +232,20 @@
 
 	/* Responsive */
 	@media (max-width: 1100px) {
-		/* Contacts stack first */
 		.footer__contacts {
 			flex-direction: column;
-			align-items: center; /* Center items when stacked */
+			align-items: center;
 			gap: var(--space-md);
 		}
-		/* Ensure footer__info-item doesn't break the column layout */
 		.footer__info-item {
-			justify-content: center; /* Center text and icon if needed */
+			justify-content: center;
+		}
+		.footer__content {
+			justify-content: center;
 		}
 	}
 
 	@media (max-width: 768px) {
-		/* Then the entire footer content stacks */
 		.footer__content {
 			flex-direction: column;
 			align-items: center;
@@ -232,12 +254,17 @@
 		}
 
 		.footer__info-item {
-			justify-content: center; /* Ensure consistent centering */
+			justify-content: center;
 		}
 
 		:global(.footer__seagull-1),
 		:global(.footer__seagull-2) {
 			display: none;
+		}
+
+		.footer__btn {
+			width: 100%;
+			max-width: 280px;
 		}
 	}
 </style>
