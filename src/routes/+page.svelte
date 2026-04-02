@@ -50,19 +50,6 @@
 	</div>
 </section>
 
-<div class="section-divider section-divider--bottom" aria-hidden="true">
-	<div class="section-divider__wave">
-		<Wave
-			height={100}
-			amplitude={15}
-			frequency={5}
-			speed={0.003}
-			color="#005fae"
-			strokeWidth={15}
-		/>
-	</div>
-</div>
-
 <style>
 	.section-divider {
 		position: relative;

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import PianoModal from "./ui/PianoModal.svelte";
+	import Wave from "./Wave.svelte";
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import LocationIcon from "./icons/LocationIcon.svelte";
 	import PhoneIcon from "./icons/PhoneIcon.svelte";
@@ -12,6 +13,18 @@
 </script>
 
 <footer class="footer" id="main-footer">
+	<!-- Top wave divider -->
+	<div class="footer__wave-top" aria-hidden="true">
+		<Wave
+			height={100}
+			amplitude={15}
+			frequency={5}
+			speed={0.003}
+			color="#005fae"
+			strokeWidth={15}
+		/>
+	</div>
+
 	<!-- Decorative seagulls -->
 	<BirdIcon className="footer__seagull-1" size={30} />
 	<BirdIcon className="footer__seagull-2" size={22} />
@@ -126,7 +139,19 @@
 		background: var(--color-white);
 		padding: var(--space-xl) 0;
 		position: relative;
-		border-top: 1px solid var(--color-border);
+		border: none;
+		margin-top: 100px; /* Space for the wave */
+	}
+
+	.footer__wave-top {
+		position: absolute;
+		top: -100px;
+		left: 0;
+		right: 0;
+		height: 100px;
+		line-height: 0;
+		z-index: 5;
+		background: linear-gradient(180deg, var(--color-light-blue) 0%, var(--color-white) 100%);
 	}
 
 	/* Seagulls */

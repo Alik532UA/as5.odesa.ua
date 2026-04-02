@@ -38,7 +38,7 @@
 	<div class="hero__waves" aria-hidden="true">
 		<Wave
 			className="hero__wave-svg"
-			height={140}
+			height={55}
 			amplitude={15}
 			frequency={5}
 			speed={0.003}

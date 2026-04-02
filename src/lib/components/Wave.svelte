@@ -53,10 +53,9 @@
 	});
 </script>
 
-<div class="wave-container {className}" style:height="{height}px">
+<div class="wave-container {className}">
 	<svg
 		viewBox="0 0 {width} {height}"
-		preserveAspectRatio="none"
 		xmlns="http://www.w3.org/2000/svg"
 		aria-hidden="true"
 	>
@@ -81,7 +80,7 @@
 
 	svg {
 		width: 100%;
-		height: 100%;
+		height: auto;
 		display: block;
 	}
 </style>
