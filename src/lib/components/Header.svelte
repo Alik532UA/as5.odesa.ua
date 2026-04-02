@@ -1,10 +1,21 @@
 <script lang="ts">
 	import Logo from "./Logo.svelte";
+	import SettingsIcon from "./icons/SettingsIcon.svelte";
 	import { ui } from "$lib/states/ui.svelte";
-	import { t } from "svelte-i18n";
+	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
 
 	let scrolled = $state(false);
+	let isDarkTheme = $state(false);
+
+	function toggleTheme() {
+		isDarkTheme = !isDarkTheme;
+		document.body.classList.toggle('dark-theme', isDarkTheme);
+	}
+
+	function changeLanguage(lang: string) {
+		locale.set(lang);
+	}
 
 	const navItems = $derived([
 		{ label: $t("nav.home"), href: "/" },
@@ -50,6 +61,44 @@
 		<a href="/admission" class="btn btn-outline header__cta" id="header-cta">
 			{$t("nav.admission")}
 		</a>
+
+		<div class="header__settings">
+			<button class="header__settings-btn" aria-label="Налаштування">
+				<SettingsIcon size={24} />
+			</button>
+			<div class="header__settings-dropdown">
+				<div class="header__settings-group">
+					<span class="header__settings-label">Мова / Language</span>
+					<div class="header__settings-options">
+						<button 
+							class="header__settings-opt" 
+							class:active={$locale === 'uk'} 
+							onclick={() => changeLanguage('uk')}
+						>UA</button>
+						<button 
+							class="header__settings-opt" 
+							class:active={$locale === 'en'} 
+							onclick={() => changeLanguage('en')}
+						>EN</button>
+					</div>
+				</div>
+				<div class="header__settings-group">
+					<span class="header__settings-label">Тема / Theme</span>
+					<div class="header__settings-options">
+						<button 
+							class="header__settings-opt" 
+							class:active={!isDarkTheme} 
+							onclick={toggleTheme}
+						>Світла</button>
+						<button 
+							class="header__settings-opt" 
+							class:active={isDarkTheme} 
+							onclick={toggleTheme}
+						>Темна</button>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<button
 			class="header__burger"
@@ -191,6 +240,98 @@
 		height: 2px;
 		background: var(--color-deep-ocean);
 		border-radius: 1px;
+	}
+
+	/* Settings */
+	.header__settings {
+		position: relative;
+		margin-left: var(--space-sm);
+	}
+
+	.header__settings-btn {
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-deep-ocean);
+		transition: all var(--transition-base);
+		background: var(--color-ice-blue);
+	}
+
+	.header__settings:hover .header__settings-btn {
+		background: var(--color-sky-blue);
+		transform: rotate(45deg);
+	}
+
+	.header__settings-dropdown {
+		position: absolute;
+		top: 100%;
+		right: 0;
+		width: 220px;
+		background: var(--color-white);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		padding: var(--space-md);
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(10px);
+		transition: all var(--transition-base);
+		z-index: 150;
+		border: 1px solid var(--color-sky-blue);
+	}
+
+	.header__settings:hover .header__settings-dropdown {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(5px);
+	}
+
+	.header__settings-group {
+		margin-bottom: var(--space-md);
+	}
+
+	.header__settings-group:last-child {
+		margin-bottom: 0;
+	}
+
+	.header__settings-label {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-muted-text);
+		text-transform: uppercase;
+		margin-bottom: var(--space-xs);
+		letter-spacing: 0.05em;
+	}
+
+	.header__settings-options {
+		display: flex;
+		gap: var(--space-xs);
+		background: var(--color-ice-blue);
+		padding: 4px;
+		border-radius: var(--radius-md);
+	}
+
+	.header__settings-opt {
+		flex: 1;
+		padding: 6px;
+		font-size: 0.8rem;
+		font-weight: 700;
+		border-radius: var(--radius-sm);
+		transition: all var(--transition-fast);
+		color: var(--color-deep-ocean);
+	}
+
+	.header__settings-opt:hover {
+		background: rgba(255, 255, 255, 0.5);
+	}
+
+	.header__settings-opt.active {
+		background: var(--color-white);
+		box-shadow: var(--shadow-sm);
+		color: var(--color-golden);
 	}
 
 	/* CTA Button */
