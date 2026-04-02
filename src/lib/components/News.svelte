@@ -1,9 +1,7 @@
 <script lang="ts">
 	import Wave from "./Wave.svelte";
-	import BirdIcon from "./icons/BirdIcon.svelte";
-	import ArrowIcon from "./icons/ArrowIcon.svelte";
 	import PhotoIcon from "./icons/PhotoIcon.svelte";
-	import { Carousel } from "$lib/controllers/Carousel.svelte";
+	import BirdIcon from "./icons/BirdIcon.svelte";
 	import { page } from "$app/state";
 	import { browser } from "$app/environment";
 	import { replaceState } from "$app/navigation";
@@ -16,97 +14,129 @@
 			title: "Осінній фестиваль",
 			date: "15 жов. 2024",
 			category: "Фестиваль",
+			color: "#FF6B6B"
 		},
 		{
 			id: 2,
 			title: "Осінній концерт",
 			date: "22 лис. 2024",
 			category: "Концерт",
+			color: "#4ECDC4"
 		},
 		{
 			id: 3,
 			title: "Зимовий фестиваль",
 			date: "20 гру. 2024",
 			category: "Фестиваль",
+			color: "#FFE66D"
 		},
 		{
 			id: 4,
 			title: "Зимовий концерт",
 			date: "15 січ. 2025",
 			category: "Концерт",
+			color: "#1A535C"
 		},
 		{
 			id: 5,
 			title: "Весняний фестиваль",
 			date: "20 бер. 2025",
 			category: "Фестиваль",
+			color: "#F7FFF7"
 		},
 		{
 			id: 6,
 			title: "Весняний концерт",
 			date: "28 тра. 2025",
 			category: "Концерт",
+			color: "#FF9F1C"
 		},
 	];
 
 	const newsItems: NewsItem[] = validateNews(rawNews);
 
-	const visibleCount = 3;
-	const carousel = new Carousel(newsItems.length, visibleCount);
+	// Логіка для БЕЗКІНЕЧНОГО слайдера
+	const infiniteNews = [newsItems[newsItems.length - 1], ...newsItems, newsItems[0]];
+	let currentIndex = $state(1);
+	let isTransitioning = $state(true);
 	let mounted = $state(false);
+
+	function next() {
+		if (!isTransitioning) return;
+		currentIndex++;
+		if (currentIndex >= infiniteNews.length - 1) {
+			setTimeout(() => {
+				isTransitioning = false;
+				currentIndex = 1;
+				setTimeout(() => (isTransitioning = true), 50);
+			}, 700);
+		}
+	}
+
+	function prev() {
+		if (!isTransitioning) return;
+		currentIndex--;
+		if (currentIndex <= 0) {
+			setTimeout(() => {
+				isTransitioning = false;
+				currentIndex = infiniteNews.length - 2;
+				setTimeout(() => (isTransitioning = true), 50);
+			}, 700);
+		}
+	}
+
+	function goTo(i: number) {
+		if (!isTransitioning) return;
+		currentIndex = i + 1;
+	}
 
 	// Sync slide with URL
 	$effect(() => {
-		const slide = carousel.current;
 		if (!mounted || !browser) return;
+		const realIndex = (currentIndex - 1 + newsItems.length) % newsItems.length;
 		
 		untrack(() => {
+			const currentParam = page.url.searchParams.get("news_page");
+			if (currentParam === realIndex.toString() && (realIndex !== 0 || !currentParam)) return;
+
 			const url = new URL(page.url.href);
-			if (slide > 0) {
-				url.searchParams.set("news_page", slide.toString());
+			if (realIndex > 0) {
+				url.searchParams.set("news_page", realIndex.toString());
 			} else {
 				url.searchParams.delete("news_page");
 			}
-			replaceState(url.toString(), {});
+			
+			// Використовуємо спробу-відлов, якщо роутер ще не готовий
+			try {
+				replaceState(url.toString(), { keepfocus: true });
+			} catch (e) {
+				// Роутер ще ініціалізується, ігноруємо перший невдалий виклик
+			}
 		});
 	});
 
-	// Initialize from URL
 	onMount(() => {
 		const initial = page.url.searchParams.get("news_page");
 		if (initial) {
-			carousel.goTo(parseInt(initial));
+			currentIndex = parseInt(initial) + 1;
 		}
-		mounted = true;
+		// Даємо роутеру трохи часу після монтажу
+		setTimeout(() => {
+			mounted = true;
+		}, 100);
 	});
 
 	function handleKeydown(e: KeyboardEvent) {
-		// Only handle keys if no input/textarea is focused
-		if (
-			typeof document !== "undefined" &&
-			["INPUT", "TEXTAREA"].includes(
-				(document.activeElement as HTMLElement)?.tagName,
-			)
-		) {
-			return;
-		}
-
-		if (e.key === "ArrowLeft") {
-			carousel.prev();
-		} else if (e.key === "ArrowRight") {
-			carousel.next();
-		}
+		if (typeof document !== "undefined" && ["INPUT", "TEXTAREA"].includes((document.activeElement as HTMLElement)?.tagName)) return;
+		if (e.key === "ArrowLeft") prev();
+		else if (e.key === "ArrowRight") next();
 	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
 
-<section
-	class="news"
-	id="news-section"
-	aria-labelledby="news-title"
->
-	<div class="news__wave-top" aria-hidden="true">
+<div class="news-divider news-divider--top" aria-hidden="true">
+	<div class="news-divider__wave">
 		<Wave
 			height={80}
 			amplitude={15}
@@ -116,105 +146,65 @@
 			strokeWidth={15}
 		/>
 	</div>
+</div>
 
+<section class="news" id="news-section" aria-labelledby="news-title">
 	<div class="container">
 		<div class="news__header">
 			<div class="news__title-group">
 				<h2 class="news__title" id="news-title">
 					НОВИНИ ТА ПОДІЇ
-					<BirdIcon
-						className="news__title-bird"
-						size={45}
-					/>
+					<BirdIcon className="news__title-bird" size={45} />
 				</h2>
 				<p class="news__subtitle">Будьте в курсі життя нашої школи</p>
 			</div>
-
-			<div class="news__nav-desktop">
-				<button
-					class="news__nav-btn news__nav-btn--prev"
-					onclick={carousel.prev}
-					disabled={carousel.current === 0}
-					aria-label="Попередній слайд"
-				>
-					<ArrowIcon
-						size={20}
-						className="icon-flip"
-					/>
-				</button>
-				<button
-					class="news__nav-btn news__nav-btn--next"
-					onclick={carousel.next}
-					disabled={carousel.current === carousel.max}
-					aria-label="Наступний слайд"
-				>
-					<ArrowIcon size={20} />
-				</button>
-			</div>
 		</div>
 
-		<div class="news__carousel-container" role="region" aria-roledescription="carousel">
+		<div class="focus-viewport">
 			<div
-				class="news__track"
-				style="transform: translateX(calc(-{carousel.current} * (100% / {carousel.visible} + var(--gap-fix))))"
+				class="focus-track"
+				style="
+					transform: translateX(calc(50% - 300px - {currentIndex * 620}px));
+					transition: {isTransitioning ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'};
+				"
 			>
-				{#snippet NewsCard(item: NewsItem)}
-					<article class="news-card">
-						<div class="news-card__image-wrap">
-							<div class="news-card__image image-placeholder">
-								<PhotoIcon
-									size={48}
-									className="news-card__placeholder-icon"
-								/>
-								<div class="news-card__overlay">
-									<span class="news-card__category"
-										>{item.category}</span
-									>
-								</div>
-							</div>
+				{#each infiniteNews as item, i}
+					<article class="focus-card" class:is-active={currentIndex === i}>
+						<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {(item as any).color || '#eee'}, #fff)">
+							<PhotoIcon size={64} className="focus-card__placeholder" />
 						</div>
-						<div class="news-card__content">
-							<time class="news-card__date" datetime="2024"
-								>{item.date}</time
-							>
-							<h3 class="news-card__card-title">{item.title}</h3>
-							<a href="/news/{item.id}" class="news-card__more"
-								>Читати повністю →</a
-							>
+						<div class="focus-card__content">
+							<div class="focus-card__meta">
+								<span class="tag">{item.category}</span>
+								<time datetime="2024" class="date">{item.date}</time>
+							</div>
+							<h3 class="focus-card__title">{item.title}</h3>
+							<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
+							<a href="/news/{item.id}" class="btn-more">Читати далі →</a>
 						</div>
 					</article>
-				{/snippet}
-
-				{#each newsItems as item (item.id)}
-					{@render NewsCard(item)}
 				{/each}
 			</div>
+
+			<button class="nav-btn nav-btn--prev" onclick={prev} aria-label="Попередній слайд">←</button>
+			<button class="nav-btn nav-btn--next" onclick={next} aria-label="Наступний слайд">→</button>
 		</div>
 
-		<div class="news__footer">
-			<div class="news__progress-wrap">
-				<div class="news__progress-bar">
-					<div
-						class="news__progress-fill"
-						style="width: {carousel.progress}%"
-					></div>
-				</div>
-			</div>
-
-			<div class="news__dots">
-				{#each { length: carousel.max + 1 } as _, i}
-					<button
-						class="news__dot"
-						class:active={carousel.current === i}
-						onclick={() => carousel.goTo(i)}
-						aria-label="Слайд {i + 1}"
-					></button>
-				{/each}
-			</div>
+		<div class="focus-dots">
+			{#each newsItems as _, i}
+				<button
+					class="f-dot"
+					class:active={(currentIndex - 1 + newsItems.length) % newsItems.length === i}
+					onclick={() => goTo(i)}
+					aria-label="Слайд {i + 1}"
+				></button>
+			{/each}
 		</div>
 	</div>
+</section>
 
-	<div class="news__wave-bottom" aria-hidden="true">
+<div class="news-divider news-divider--bottom" aria-hidden="true">
+	<div class="news-divider__wave">
 		<Wave
 			height={100}
 			amplitude={15}
@@ -224,186 +214,160 @@
 			strokeWidth={15}
 		/>
 	</div>
-</section>
+</div>
 
 <style>
-	.news {
-		background: linear-gradient(
-			180deg,
-			var(--color-light-blue) 0%,
-			#ffffff 100%
-		);
-		padding: 8rem 0 10rem;
+	.news-divider {
 		position: relative;
+		height: 80px;
+		z-index: 10;
+		background: linear-gradient(180deg, #ffffff 0%, var(--color-light-blue) 100%);
+	}
+
+	.news-divider--bottom {
+		height: 100px;
+		background: linear-gradient(180deg, var(--color-light-blue) 0%, #ffffff 100%);
+	}
+
+	.news-divider__wave {
+		position: absolute;
+		left: 0;
+		right: 0;
+		width: 100%;
+		line-height: 0;
+	}
+
+	.news-divider--top .news-divider__wave {
+		bottom: -1px;
+	}
+
+	.news-divider--bottom .news-divider__wave {
+		top: -1px;
+	}
+
+	.news {
+		background: var(--color-light-blue);
+		padding: 4rem 0 6rem;
 		overflow: hidden;
-		--gap: 2rem;
-		--gap-fix: 0.65rem; /* Correction for flex gap in transform */
-	}
-
-	.news__wave-top {
-		position: absolute;
-		top: -40px;
-		left: 0;
-		right: 0;
-		z-index: 5;
-	}
-
-	.news__wave-bottom {
-		position: absolute;
-		bottom: -5px;
-		left: 0;
-		right: 0;
-		z-index: 5;
+		position: relative;
 	}
 
 	.news__header {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		margin-bottom: 3.5rem;
+		margin-bottom: 4rem;
+		text-align: center;
 	}
 
 	.news__title {
 		font-family: var(--font-heading);
-		font-size: 2.8rem;
+		font-size: 3rem;
 		font-weight: 900;
 		color: var(--color-deep-ocean);
 		display: flex;
 		align-items: center;
+		justify-content: center;
 		gap: 1.5rem;
-		line-height: 1;
-		margin-bottom: 0.5rem;
+		margin-bottom: 1rem;
 	}
 
 	.news__subtitle {
-		font-size: 1.1rem;
+		font-size: 1.2rem;
 		color: var(--color-body-text);
-		opacity: 0.8;
+		opacity: 0.7;
 	}
 
-	/* Desktop Navigation Buttons */
-	.news__nav-desktop {
-		display: flex;
-		gap: 1rem;
+	.focus-viewport {
+		position: relative;
+		height: 480px;
+		margin: 0 auto;
 	}
 
-	.news__nav-btn {
-		width: 54px;
-		height: 54px;
-		border-radius: 50%;
+	.focus-track {
 		display: flex;
+		gap: 20px;
 		align-items: center;
-		justify-content: center;
-		background: white;
-		color: var(--color-deep-ocean);
-		box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-		transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-		border: 1px solid rgba(0, 0, 0, 0.05);
-	}
-
-	.news__nav-btn:hover:not(:disabled) {
-		background: var(--color-deep-ocean);
-		color: white;
-		transform: translateY(-3px);
-		box-shadow: 0 8px 25px rgba(27, 94, 123, 0.25);
-	}
-
-	.news__nav-btn:disabled {
-		opacity: 0.3;
-		cursor: not-allowed;
-	}
-
-	:global(.icon-flip) {
-		transform: rotate(180deg);
-	}
-
-	/* Carousel Structure */
-	.news__carousel-container {
-		width: 100%;
-		overflow: visible; /* To allow shadows not to be cut */
-		padding: 1rem 0;
-	}
-
-	.news__track {
-		display: flex;
-		gap: var(--gap);
-		transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+		height: 100%;
 		will-change: transform;
 	}
 
-	/* News Card */
-	.news-card {
-		flex: 0 0 calc((100% - var(--gap) * 2) / 3);
+	.focus-card {
+		flex: 0 0 600px;
+		height: 400px;
 		background: white;
-		border-radius: 24px;
-		overflow: hidden;
-		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
-		transition: all 0.4s ease;
+		border-radius: 40px;
 		display: flex;
-		flex-direction: column;
+		overflow: hidden;
+		transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+		opacity: 0.3;
+		transform: scale(0.85);
+		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
 		border: 1px solid rgba(0, 0, 0, 0.03);
 	}
 
-	.news-card:hover {
-		transform: translateY(-10px);
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+	.focus-card.is-active {
+		opacity: 1;
+		transform: scale(1);
+		box-shadow: 0 40px 80px rgba(0, 0, 0, 0.12);
 	}
 
-	.news-card__image-wrap {
+	.focus-card__img-wrap {
+		flex: 0 0 40%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		position: relative;
-		overflow: hidden;
-		aspect-ratio: 16 / 10;
 	}
 
-	.news-card__image {
-		width: 100%;
-		height: 100%;
-		transition: transform 0.7s ease;
+	:global(.focus-card__placeholder) {
+		opacity: 0.2;
+		color: var(--color-deep-ocean);
 	}
 
-	.news-card:hover .news-card__image {
-		transform: scale(1.1);
+	.focus-card__content {
+		padding: 3rem;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		flex: 1;
 	}
 
-	.news-card__overlay {
-		position: absolute;
-		top: 1.5rem;
-		left: 1.5rem;
+	.focus-card__meta {
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
 	}
 
-	.news-card__category {
-		background: rgba(255, 255, 255, 0.9);
-		backdrop-filter: blur(4px);
+	.tag {
+		background: var(--color-deep-ocean);
+		color: white;
 		padding: 0.4rem 1rem;
 		border-radius: 100px;
 		font-size: 0.75rem;
 		font-weight: 700;
-		color: var(--color-deep-ocean);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
 	}
 
-	.news-card__content {
-		padding: 1.8rem;
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-	}
-
-	.news-card__date {
-		font-size: 0.85rem;
+	.date {
+		font-size: 0.9rem;
 		color: #888;
 		font-weight: 500;
-		margin-bottom: 0.8rem;
 	}
 
-	.news-card__card-title {
+	.focus-card__title {
 		font-family: var(--font-heading);
-		font-size: 1.4rem;
+		font-size: 1.8rem;
 		font-weight: 800;
 		color: var(--color-deep-ocean);
-		line-height: 1.3;
-		margin-bottom: 1.5rem;
+		line-height: 1.2;
+		margin-bottom: 1rem;
+	}
+
+	.focus-card__excerpt {
+		color: var(--color-body-text);
+		line-height: 1.6;
+		margin-bottom: 2rem;
+		opacity: 0.8;
 		display: -webkit-box;
 		line-clamp: 2;
 		-webkit-line-clamp: 2;
@@ -411,93 +375,106 @@
 		overflow: hidden;
 	}
 
-	.news-card__more {
-		margin-top: auto;
-		font-size: 0.9rem;
-		font-weight: 700;
-		color: #40c8f4;
-		text-decoration: none;
-		transition: color 0.2s ease;
-	}
-
-	.news-card__more:hover {
-		color: var(--color-deep-ocean);
-	}
-
-	/* Footer Navigation */
-	.news__footer {
-		margin-top: 4rem;
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.news__progress-wrap {
-		flex: 1;
-		max-width: 300px;
-	}
-
-	.news__progress-bar {
-		height: 4px;
-		background: rgba(0, 0, 0, 0.05);
-		border-radius: 10px;
-		overflow: hidden;
-	}
-
-	.news__progress-fill {
-		height: 100%;
+	.btn-more {
 		background: var(--color-deep-ocean);
-		transition: width 0.4s ease;
-	}
-
-	.news__dots {
-		display: flex;
-		gap: 0.8rem;
-	}
-
-	.news__dot {
-		width: 10px;
-		height: 10px;
-		border-radius: 50%;
-		background: #ddd;
+		color: white;
+		text-decoration: none;
+		padding: 0.8rem 1.8rem;
+		border-radius: 16px;
+		font-weight: 700;
+		width: fit-content;
 		transition: all 0.3s ease;
 	}
 
-	.news__dot.active {
-		background: var(--color-deep-ocean);
-		width: 30px;
-		border-radius: 10px;
+	.btn-more:hover {
+		transform: translateY(-3px);
+		box-shadow: 0 10px 20px rgba(27, 94, 123, 0.2);
 	}
 
-	/* Responsive */
+	.nav-btn {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		width: 60px;
+		height: 60px;
+		border-radius: 50%;
+		background: white;
+		border: none;
+		box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+		cursor: pointer;
+		z-index: 10;
+		font-size: 1.5rem;
+		color: var(--color-deep-ocean);
+		transition: all 0.3s ease;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.nav-btn:hover {
+		background: var(--color-deep-ocean);
+		color: white;
+		transform: translateY(-50%) scale(1.1);
+	}
+
+	.nav-btn--prev {
+		left: 40px;
+	}
+	.nav-btn--next {
+		right: 40px;
+	}
+
+	.focus-dots {
+		display: flex;
+		justify-content: center;
+		gap: 1rem;
+		margin-top: 4rem;
+	}
+
+	.f-dot {
+		width: 40px;
+		height: 6px;
+		border-radius: 3px;
+		border: none;
+		background: #cbd5e0;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.f-dot.active {
+		background: var(--color-deep-ocean);
+		width: 80px;
+	}
+
 	@media (max-width: 1024px) {
-		.news-card {
-			flex: 0 0 calc((100% - var(--gap)) / 2);
-		}
-		.news {
-			--gap-fix: 1rem;
+		.focus-card {
+			flex: 0 0 500px;
 		}
 	}
 
 	@media (max-width: 768px) {
 		.news {
-			padding: 4rem 0 6rem;
+			padding: 4rem 0;
+		}
+		.focus-card {
+			flex: 0 0 90%;
+			flex-direction: column;
+			height: auto;
+		}
+		.focus-card__img-wrap {
+			height: 200px;
+		}
+		.nav-btn {
+			display: none;
+		}
+		.focus-card__content {
+			padding: 2rem;
+		}
+		.focus-card__title {
+			font-size: 1.5rem;
 		}
 		.news__title {
 			font-size: 2.2rem;
-		}
-		.news-card {
-			flex: 0 0 100%;
-		}
-		.news__nav-desktop {
-			display: none;
-		}
-		.news__header {
-			text-align: center;
-			justify-content: center;
-		}
-		.news__title {
-			justify-content: center;
 		}
 	}
 </style>
