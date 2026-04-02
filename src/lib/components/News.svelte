@@ -5,8 +5,9 @@
 	import PhotoIcon from "./icons/PhotoIcon.svelte";
 	import { Carousel } from "$lib/controllers/Carousel.svelte";
 	import { page } from "$app/state";
+	import { browser } from "$app/environment";
 	import { replaceState } from "$app/navigation";
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
 
 	const rawNews = [
@@ -56,16 +57,18 @@
 
 	// Sync slide with URL
 	$effect(() => {
-		if (!mounted) return;
-		
 		const slide = carousel.current;
-		const url = new URL(page.url.href);
-		if (slide > 0) {
-			url.searchParams.set("news_page", slide.toString());
-		} else {
-			url.searchParams.delete("news_page");
-		}
-		replaceState(url.toString(), {});
+		if (!mounted || !browser) return;
+		
+		untrack(() => {
+			const url = new URL(page.url.href);
+			if (slide > 0) {
+				url.searchParams.set("news_page", slide.toString());
+			} else {
+				url.searchParams.delete("news_page");
+			}
+			replaceState(url.toString(), {});
+		});
 	});
 
 	// Initialize from URL
