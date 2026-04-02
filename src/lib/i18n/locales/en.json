@@ -10,5 +10,13 @@
 		"contests": "Contests",
 		"announcements": "Announcements",
 		"admission": "ADMISSION"
+	},
+	"footer": {
+		"address": "18 Chornomorskoho Kozatstva St, Odesa",
+		"phone": "+38 048 723 81 10",
+		"email_label": "school's e-mail",
+		"email": "dmsh-5odesa@ukr.net",
+		"facebook": "https://www.facebook.com/odesaartschool5",
+		"instagram": "https://www.instagram.com/odesa_art_school_5"
 	}
 }

@@ -4,10 +4,9 @@
 	import LocationIcon from "./icons/LocationIcon.svelte";
 	import PhoneIcon from "./icons/PhoneIcon.svelte";
 	import EmailIcon from "./icons/EmailIcon.svelte";
-	import GlobeIcon from "./icons/GlobeIcon.svelte";
 	import FacebookIcon from "./icons/FacebookIcon.svelte";
 	import InstagramIcon from "./icons/InstagramIcon.svelte";
-	import TikTokIcon from "./icons/TikTokIcon.svelte";
+	import { t } from 'svelte-i18n';
 </script>
 
 <footer class="footer" id="main-footer">
@@ -26,7 +25,7 @@
 			<div class="footer__info" id="footer-address">
 				<div class="footer__info-item">
 					<LocationIcon className="footer__icon" size={18} />
-					<span>Лермонтовський пров.,<br />д. 2, Одеса</span>
+					<span>{$t('footer.address')}</span>
 				</div>
 			</div>
 
@@ -35,12 +34,7 @@
 				<div class="footer__info-item">
 					<PhoneIcon className="footer__icon" size={18} />
 					<div>
-						<a href="tel:+380000000000" class="footer__link"
-							>+380 00 000 00 00</a
-						><br />
-						<a href="tel:+380000000000" class="footer__link"
-							>+380 00 000 00 00</a
-						>
+						<a href="tel:+380487238110" class="footer__link">{$t('footer.phone')}</a>
 					</div>
 				</div>
 			</div>
@@ -50,25 +44,19 @@
 				<div class="footer__info-item">
 					<EmailIcon className="footer__icon" size={18} />
 					<div>
+						<span class="footer__label">{$t('footer.email_label')} </span>
 						<a
-							href="mailto:example@gmail.com"
-							class="footer__link">example@gmail.com</a
+							href="mailto:{$t('footer.email')}"
+							class="footer__link">{$t('footer.email')}</a
 						>
 					</div>
-				</div>
-				<div class="footer__info-item">
-					<GlobeIcon className="footer__icon" size={18} />
-					<a
-						href="mailto:example@gmail.com"
-						class="footer__link">example@gmail.com</a
-					>
 				</div>
 			</div>
 
 			<!-- Social icons -->
 			<div class="footer__social" id="footer-social">
 				<a
-					href="https://facebook.com"
+					href="{$t('footer.facebook')}"
 					class="footer__social-link"
 					aria-label="Facebook"
 					target="_blank"
@@ -77,22 +65,13 @@
 					<FacebookIcon size={24} />
 				</a>
 				<a
-					href="https://instagram.com"
+					href="{$t('footer.instagram')}"
 					class="footer__social-link"
 					aria-label="Instagram"
 					target="_blank"
 					rel="noopener noreferrer"
 				>
 					<InstagramIcon size={24} />
-				</a>
-				<a
-					href="https://tiktok.com"
-					class="footer__social-link"
-					aria-label="TikTok"
-					target="_blank"
-					rel="noopener noreferrer"
-				>
-					<TikTokIcon size={24} />
 				</a>
 			</div>
 		</div>
