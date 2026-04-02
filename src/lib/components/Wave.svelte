@@ -186,10 +186,11 @@
 			<g clip-path="url(#{clipId})">
 				<g
 					class="wave__fish"
-					style="transform-origin: center;"
 					transform="translate({fishX}, {fishY - 15}) rotate({fishRotation}) scale({0.08 * fishDirection}, 0.08)"
 				>
-					<path d={fishPath} fill="#fcb712" />
+					<g transform="translate(-250, -240)">
+						<path d={fishPath} fill="#fcb712" />
+					</g>
 				</g>
 			</g>
 		{/if}
