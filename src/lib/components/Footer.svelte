@@ -27,8 +27,8 @@
 	</div>
 
 	<!-- Decorative seagulls -->
-	<Seagull className="footer__seagull-1" size={45} />
-	<Seagull className="footer__seagull-2" size={35} />
+	<Seagull className="footer__seagull-1" size={36} />
+	<Seagull className="footer__seagull-2" size={28} />
 
 	<div class="container">
 		<div class="footer__content">
@@ -120,17 +120,6 @@
 		</div>
 	</div>
 
-	<!-- Bottom wave decoration -->
-	<div class="footer__wave-bottom" aria-hidden="true">
-		<svg viewBox="0 0 1440 30" preserveAspectRatio="none" fill="none">
-			<path
-				d="M0,15 Q120,5 240,15 Q360,25 480,15 Q600,5 720,15 Q840,25 960,15 Q1080,5 1200,15 Q1320,25 1440,15"
-				stroke="#D6EEF5"
-				stroke-width="1.5"
-				fill="none"
-			/>
-		</svg>
-	</div>
 </footer>
 
 <PianoModal isOpen={isPianoOpen} onClose={() => (isPianoOpen = false)} />
@@ -321,20 +310,6 @@
 	.footer__social-link:hover {
 		background: var(--color-golden);
 		transform: translateY(-3px);
-	}
-
-	/* Bottom wave */
-	.footer__wave-bottom {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		line-height: 0;
-	}
-
-	.footer__wave-bottom svg {
-		width: 100%;
-		height: 15px;
 	}
 
 	/* Responsive */

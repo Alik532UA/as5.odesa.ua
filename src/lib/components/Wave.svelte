@@ -35,6 +35,12 @@
 	let isFishActive = $state(false);
 	const fishSpeed = 1; // Швидкість рибки
 
+	// Jump state
+	let isJumping = $state(false);
+	let jumpProgress = $state(0);
+	let currentJumpHeight = $state(0);
+	let currentJumpLength = $state(0);
+
 	// Formula: y = A * sin(2 * PI * f * (x/W) + phase) + baseline
 	let pathData = $derived.by(() => {
 		const baseline = height / 2;
@@ -52,15 +58,52 @@
 		return d;
 	});
 
-	// Fish Y calculation based on current wave shape
+	// Fish Y calculation based on current wave shape and jump offset
 	let fishY = $derived.by(() => {
 		const baseline = height / 2;
-		// Normalize fishX to 0..1 range relative to SVG width
 		const normalizedX = fishX / width;
-		return (
+		const waveY =
 			baseline +
-			amplitude * Math.sin(normalizedX * Math.PI * 2 * frequency + phase)
-		);
+			amplitude * Math.sin(normalizedX * Math.PI * 2 * frequency + phase);
+
+		let jumpOffset = 0;
+		if (isJumping) {
+			const progressRatio = jumpProgress / currentJumpLength;
+			jumpOffset = -(
+				4 *
+				currentJumpHeight *
+				progressRatio *
+				(1 - progressRatio)
+			);
+		}
+
+		return waveY + jumpOffset;
+	});
+
+	let clipPathData = $derived(`${pathData} L ${width} -1000 L 0 -1000 Z`);
+	const clipId = `wave-clip-${Math.random().toString(36).slice(2, 9)}`;
+
+	// Fish Rotation calculation
+	let fishRotation = $derived.by(() => {
+		const normalizedX = fishX / width;
+		// Derivative of the sine wave
+		const waveDerivative =
+			amplitude *
+			Math.cos(normalizedX * Math.PI * 2 * frequency + phase) *
+			((Math.PI * 2 * frequency) / width);
+
+		let jumpDerivative = 0;
+		if (isJumping) {
+			const progressRatio = jumpProgress / currentJumpLength;
+			// Derivative of the parabola
+			jumpDerivative =
+				-(4 * currentJumpHeight * (1 - 2 * progressRatio)) /
+				currentJumpLength;
+		}
+
+		// Combined slope
+		const totalSlope = waveDerivative + jumpDerivative;
+		return Math.atan(totalSlope) * (180 / Math.PI);
 	});
 
 	onMount(() => {
@@ -70,8 +113,30 @@
 
 			if (showFish && isFishActive) {
 				fishX += fishSpeed;
+
+				if (!isJumping) {
+					// Random chance to start a jump
+					if (
+						Math.random() < 0.005 &&
+						fishX > 100 &&
+						fishX < width - 200
+					) {
+						isJumping = true;
+						jumpProgress = 0;
+						// Randomize jump parameters
+						currentJumpHeight = 40 + Math.random() * 80; // height above wave (40 to 120px)
+						currentJumpLength = 150 + Math.random() * 200; // length of the jump (150 to 350px)
+					}
+				} else {
+					jumpProgress += fishSpeed;
+					if (jumpProgress >= currentJumpLength) {
+						isJumping = false;
+					}
+				}
+
 				if (fishX > width + 100) {
 					isFishActive = false;
+					isJumping = false;
 					fishX = -100;
 				}
 			}
@@ -107,6 +172,23 @@
 		xmlns="http://www.w3.org/2000/svg"
 		aria-hidden="true"
 	>
+		{#if showFish && isFishActive}
+			<defs>
+				<clipPath id={clipId}>
+					<path d={clipPathData} />
+				</clipPath>
+			</defs>
+			<g clip-path="url(#{clipId})">
+				<g
+					class="wave__fish"
+					style="transform-origin: center;"
+					transform="translate({fishX}, {fishY - 15}) rotate({fishRotation}) scale(0.08)"
+				>
+					<path d={fishPath} fill="#fcb712" />
+				</g>
+			</g>
+		{/if}
+
 		<path
 			d={pathData}
 			stroke={color}
@@ -116,22 +198,14 @@
 			fill="none"
 			style:opacity
 		/>
-
-		{#if showFish && isFishActive}
-			<g
-				class="wave__fish"
-				transform="translate({fishX}, {fishY - 15}) scale(0.08)"
-			>
-				<path d={fishPath} fill="#fcb712" />
-			</g>
-		{/if}
 	</svg>
 </div>
 
 <style>
 	.wave-container {
 		width: 100%;
-		overflow: hidden;
+		overflow-y: visible;
+		overflow-x: clip;
 		line-height: 0;
 	}
 
@@ -139,5 +213,6 @@
 		width: 100%;
 		height: auto;
 		display: block;
+		overflow: visible;
 	}
 </style>
