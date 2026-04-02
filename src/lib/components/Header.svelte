@@ -10,7 +10,6 @@
 	function toggleTheme() {
 		const newTheme = ui.theme === 'light' ? 'dark' : 'light';
 		ui.setTheme(newTheme);
-		document.body.classList.toggle('dark-theme', newTheme === 'dark');
 	}
 
 	function changeLanguage(lang: string) {

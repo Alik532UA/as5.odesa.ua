@@ -22,7 +22,7 @@
 		opacity = 1,
 		height = 100,
 		className = "",
-		showFish = false,
+		showFish = true,
 	}: Props = $props();
 
 	let phase = $state(0);
@@ -32,6 +32,7 @@
 
 	// Fish state
 	let fishX = $state(-100);
+	let fishDirection = $state(1); // 1 for right, -1 for left
 	let isFishActive = $state(false);
 	const fishSpeed = 1; // Швидкість рибки
 
@@ -102,7 +103,7 @@
 		}
 
 		// Combined slope
-		const totalSlope = waveDerivative + jumpDerivative;
+		const totalSlope = waveDerivative + jumpDerivative * fishDirection;
 		return Math.atan(totalSlope) * (180 / Math.PI);
 	});
 
@@ -112,29 +113,17 @@
 			phase += speed; // Changed to += for Right to Left direction
 
 			if (showFish && isFishActive) {
-				fishX += fishSpeed;
+				fishX += fishSpeed * fishDirection;
 
-				if (!isJumping) {
-					// Random chance to start a jump
-					if (
-						Math.random() < 0.005 &&
-						fishX > 100 &&
-						fishX < width - 200
-					) {
-						isJumping = true;
-						jumpProgress = 0;
-						// Randomize jump parameters
-						currentJumpHeight = 40 + Math.random() * 80; // height above wave (40 to 120px)
-						currentJumpLength = 150 + Math.random() * 200; // length of the jump (150 to 350px)
-					}
-				} else {
+				if (isJumping) {
 					jumpProgress += fishSpeed;
 					if (jumpProgress >= currentJumpLength) {
 						isJumping = false;
+						isFishActive = false;
 					}
 				}
 
-				if (fishX > width + 100) {
+				if (fishX > width + 100 || fishX < -100) {
 					isFishActive = false;
 					isJumping = false;
 					fishX = -100;
@@ -145,20 +134,36 @@
 		};
 		frame = requestAnimationFrame(animate);
 
-		// Fish spawn timer (every 5 seconds)
-		let fishInterval: any;
+		let fishInterval: ReturnType<typeof setTimeout>;
 		if (showFish) {
-			fishInterval = setInterval(() => {
-				if (!isFishActive) {
-					isFishActive = true;
-					fishX = -100;
-				}
-			}, 5000);
+			const scheduleNextFish = () => {
+				const nextTime = 300 + Math.random() * 700; // Debug: 10x faster (was 3000 + 7000)
+				fishInterval = setTimeout(() => {
+					if (!isFishActive) {
+						isFishActive = true;
+						fishDirection = Math.random() > 0.5 ? 1 : -1;
+						isJumping = true;
+						jumpProgress = 0;
+						// Randomize jump parameters
+						currentJumpHeight = 40 + Math.random() * 80; // height above wave (40 to 120px)
+						currentJumpLength = 150 + Math.random() * 200; // length of the jump (150 to 350px)
+						
+						// Random jump starting position across the whole width
+						if (fishDirection === 1) {
+							fishX = Math.random() * (width - currentJumpLength);
+						} else {
+							fishX = currentJumpLength + Math.random() * (width - currentJumpLength);
+						}
+					}
+					scheduleNextFish();
+				}, nextTime);
+			};
+			fishInterval = setTimeout(scheduleNextFish, Math.random() * 500); // Debug: 10x faster (was 5000)
 		}
 
 		return () => {
 			cancelAnimationFrame(frame);
-			if (fishInterval) clearInterval(fishInterval);
+			if (fishInterval) clearTimeout(fishInterval);
 		};
 	});
 
@@ -182,7 +187,7 @@
 				<g
 					class="wave__fish"
 					style="transform-origin: center;"
-					transform="translate({fishX}, {fishY - 15}) rotate({fishRotation}) scale(0.08)"
+					transform="translate({fishX}, {fishY - 15}) rotate({fishRotation}) scale({0.08 * fishDirection}, 0.08)"
 				>
 					<path d={fishPath} fill="#fcb712" />
 				</g>
