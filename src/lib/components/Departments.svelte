@@ -1,33 +1,38 @@
 <script lang="ts">
-	import PianoIcon from "./icons/PianoIcon.svelte";
-	import StringsIcon from "./icons/StringsIcon.svelte";
-	import VocalIcon from "./icons/VocalIcon.svelte";
-	import PopIcon from "./icons/PopIcon.svelte";
-	import TheoryIcon from "./icons/TheoryIcon.svelte";
-	import FolkIcon from "./icons/FolkIcon.svelte";
-	import type { Component } from "svelte";
-	import { t } from 'svelte-i18n';
+	// Removed SVG icon imports as we are now using PNG images
+	// import PianoIcon from "./icons/PianoIcon.svelte";
+	// import StringsIcon from "./icons/StringsIcon.svelte";
+	// import VocalIcon from "./icons/VocalIcon.svelte";
+	// import PopIcon from "./icons/PopIcon.svelte";
+	// import TheoryIcon from "./icons/TheoryIcon.svelte";
+	// import FolkIcon from "./icons/FolkIcon.svelte";
+	
+	import { t } from 'svelte-i18n'; // Ensure t is correctly imported
 
 	interface Department {
 		id: string;
 		name: string;
-		icon: Component<any>;
+		// Changed icon type to string for image path
+		iconPath: string; 
 	}
 
 	const departments: Department[] = [
-		{ id: "piano", name: "Фортепіанний відділ", icon: PianoIcon },
-		{ id: "strings", name: "Відділ струнно-смичкових інструментів", icon: StringsIcon },
-		{ id: "vocal", name: "Відділ сольного співу", icon: VocalIcon },
-		{ id: "pop", name: "Естрадний відділ", icon: PopIcon },
-		{ id: "theory", name: "Відділ теоретичних дисциплін", icon: TheoryIcon },
-		{ id: "folk", name: "Відділ народних інструментів", icon: FolkIcon },
+		{ id: "piano", name: "Фортепіанний відділ", iconPath: "/departments/piano.png" },
+		{ id: "strings", name: "Відділ струнно-смичкових інструментів", iconPath: "/departments/strings.png" },
+		{ id: "vocal", name: "Відділ сольного співу", iconPath: "/departments/vocal.png" },
+		{ id: "pop", name: "Естрадний відділ", iconPath: "/departments/pop.png" },
+		{ id: "theory", name: "Відділ теоретичних дисциплін", iconPath: "/departments/theory.png" },
+		{ id: "folk", name: "Відділ народних інструментів", iconPath: "/departments/folk.png" },
 	];
 </script>
 
-{#snippet DeptCard({ name, icon: Icon, id }: Department)}
+{#snippet DeptCard({ name, iconPath, id }: Department)}
 	<article class="dept-card" {id}>
 		<div class="dept-card__icon-wrap">
-			<Icon className="dept-card__icon" size={80} />
+			<!-- Render image instead of SVG icon -->
+			<img src={iconPath} alt="{name} icon" class="dept-card__icon" />
+			<!-- SVG icons were the first version, kept here for reference -->
+			<!-- <Icon className="dept-card__icon" size={80} /> -->
 		</div>
 		<h3 class="dept-card__name">{name}</h3>
 	</article>
@@ -91,11 +96,15 @@
 		margin-bottom: var(--space-lg);
 	}
 
-	:global(.dept-card__icon) {
+	/* Image styles */
+	.dept-card__icon {
+		width: 80px; /* Keep the size from previous step */
+		height: 80px;
+		object-fit: contain; /* Ensure image is scaled correctly */
 		transition: transform var(--transition-base);
 	}
 
-	.dept-card:hover :global(.dept-card__icon) {
+	.dept-card:hover .dept-card__icon {
 		transform: scale(1.05);
 	}
 
