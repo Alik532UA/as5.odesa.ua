@@ -7,10 +7,9 @@
 
 	const navItems = $derived([
 		{ label: $t("nav.home"), href: "/" },
-		{ label: $t("nav.about"), href: "/pro-shkolu" },
-		{ label: $t("nav.history"), href: "/istoriia" },
-		{ label: $t("nav.contests"), href: "/konkursy" },
-		{ label: $t("nav.announcements"), href: "/oholoshennia" },
+		{ label: $t("nav.about"), href: "/about" },
+		{ label: $t("nav.history"), href: "/history" },
+		{ label: $t("nav.contests"), href: "/competitions" },
 	]);
 
 	$effect(() => {
@@ -47,7 +46,7 @@
 			</ul>
 		</nav>
 
-		<a href="/vstup" class="btn btn-outline header__cta" id="header-cta">
+		<a href="/admission" class="btn btn-outline header__cta" id="header-cta">
 			{$t("nav.admission")}
 		</a>
 
@@ -85,7 +84,7 @@
 					{/each}
 					<li>
 						<a
-							href="/vstup"
+							href="/admission"
 							class="btn btn-primary header__mobile-cta"
 							onclick={ui.closeMenu}
 						>
