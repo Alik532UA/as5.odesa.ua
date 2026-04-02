@@ -21,34 +21,36 @@
 				<Logo size="small" />
 			</div>
 
-			<!-- Address -->
-			<div class="footer__info" id="footer-address">
-				<div class="footer__info-item">
-					<LocationIcon className="footer__icon" size={18} />
-					<span>{$t('footer.address')}</span>
-				</div>
-			</div>
-
-			<!-- Phones -->
-			<div class="footer__info" id="footer-phones">
-				<div class="footer__info-item">
-					<PhoneIcon className="footer__icon" size={18} />
-					<div>
-						<a href="tel:+380487238110" class="footer__link">{$t('footer.phone')}</a>
+			<!-- Contacts Group -->
+			<div class="footer__contacts">
+				<!-- Address -->
+				<div class="footer__info" id="footer-address">
+					<div class="footer__info-item">
+						<LocationIcon className="footer__icon" size={18} />
+						<span>{$t('footer.address')}</span>
 					</div>
 				</div>
-			</div>
 
-			<!-- Email -->
-			<div class="footer__info" id="footer-email">
-				<div class="footer__info-item">
-					<EmailIcon className="footer__icon" size={18} />
-					<div>
-						<span class="footer__label">{$t('footer.email_label')} </span>
-						<a
-							href="mailto:{$t('footer.email')}"
-							class="footer__link">{$t('footer.email')}</a
-						>
+				<!-- Phones -->
+				<div class="footer__info" id="footer-phones">
+					<div class="footer__info-item">
+						<PhoneIcon className="footer__icon" size={18} />
+						<div>
+							<a href="tel:+380487238110" class="footer__link">{$t('footer.phone')}</a>
+						</div>
+					</div>
+				</div>
+
+				<!-- Email -->
+				<div class="footer__info" id="footer-email">
+					<div class="footer__info-item">
+						<EmailIcon className="footer__icon" size={18} />
+						<div>
+							<a
+								href="mailto:{$t('footer.email')}"
+								class="footer__link">{$t('footer.email')}</a
+							>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -128,6 +130,13 @@
 		flex-shrink: 0;
 	}
 
+	.footer__contacts {
+		display: flex;
+		gap: var(--space-xl);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+
 	/* Info items */
 	.footer__info {
 		display: flex;
@@ -197,12 +206,17 @@
 	}
 
 	/* Responsive */
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
 		.footer__content {
 			flex-direction: column;
 			align-items: center;
 			text-align: center;
-			gap: var(--space-lg);
+			gap: var(--space-xl);
+		}
+
+		.footer__contacts {
+			flex-direction: column;
+			gap: var(--space-md);
 		}
 
 		.footer__info-item {

@@ -2,6 +2,7 @@
 	import Wave from "./Wave.svelte";
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import HeroPhotoIcon from "./icons/HeroPhotoIcon.svelte";
+	import { t } from 'svelte-i18n';
 </script>
 
 <section class="hero" id="hero-section" aria-label="Головна секція">
@@ -14,14 +15,12 @@
 	<div class="hero__content container">
 		<div class="hero__text">
 			<h1 class="hero__title" id="hero-title">
-				Одеська школа<br />мистецтв №<span class="hero__title-accent"
-					>5</span
-				>
+				{$t('hero.title')}
 			</h1>
-			<p class="hero__subtitle">Ваш шлях до музичної майстерності</p>
-			<a href="#departments" class="btn btn-primary hero__cta" id="hero-cta">
-				Дізнатися більше
-			</a>
+			<p class="hero__subtitle">{$t('hero.subtitle')}</p>
+			<p class="hero__story">
+				{$t('hero.story')}
+			</p>
 		</div>
 
 		<div class="hero__image-wrap">
@@ -122,12 +121,6 @@
 		letter-spacing: -0.01em;
 	}
 
-	.hero__title-accent {
-		font-family: var(--font-accent);
-		color: var(--color-golden);
-		font-size: 1.15em;
-	}
-
 	.hero__subtitle {
 		font-family: var(--font-heading);
 		font-size: clamp(1rem, 2vw, 1.25rem);
@@ -135,11 +128,21 @@
 		color: var(--color-body-text);
 		text-transform: uppercase;
 		letter-spacing: 0.05em;
-		margin-bottom: var(--space-2xl);
+		margin-bottom: var(--space-xl);
 	}
 
-	.hero__cta {
+	.hero__story {
+		font-family: var(--font-body);
+		font-size: 1.1rem;
+		line-height: 1.7;
+		color: var(--color-body-text);
+		background: rgba(255, 255, 255, 0.4);
+		padding: var(--space-lg);
+		border-left: 4px solid var(--color-golden);
+		border-radius: 0 var(--radius-md) var(--radius-md) 0;
 		animation: fadeInUp 0.8s ease-out 0.3s both;
+		font-style: italic;
+		text-align: left;
 	}
 
 	/* Image area */
@@ -210,10 +213,6 @@
 
 		.hero__image {
 			min-height: 220px;
-		}
-
-		.hero__cta {
-			margin: 0 auto;
 		}
 
 		:global(.hero__seagull--3),

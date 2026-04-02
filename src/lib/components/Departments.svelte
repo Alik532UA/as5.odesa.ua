@@ -6,6 +6,7 @@
 	import TheoryIcon from "./icons/TheoryIcon.svelte";
 	import FolkIcon from "./icons/FolkIcon.svelte";
 	import type { Component } from "svelte";
+	import { t } from 'svelte-i18n';
 
 	interface Department {
 		id: string;
@@ -26,7 +27,7 @@
 {#snippet DeptCard({ name, icon: Icon, id }: Department)}
 	<article class="dept-card" {id}>
 		<div class="dept-card__icon-wrap">
-			<Icon className="dept-card__icon" />
+			<Icon className="dept-card__icon" size={80} />
 		</div>
 		<h3 class="dept-card__name">{name}</h3>
 	</article>
@@ -34,6 +35,9 @@
 
 <section class="departments" id="departments" aria-label="Відділи школи">
 	<div class="container">
+		<p class="departments__description">
+			{$t('departments.description')}
+		</p>
 		<div class="departments__grid">
 			{#each departments as dept (dept.id)}
 				{@render DeptCard(dept)}
@@ -47,6 +51,15 @@
 		background: var(--color-white);
 		padding: var(--space-4xl) 0;
 		position: relative;
+	}
+
+	.departments__description {
+		font-family: var(--font-body);
+		font-size: 1.25rem;
+		color: var(--color-deep-ocean);
+		text-align: center;
+		margin-bottom: var(--space-3xl);
+		font-weight: 500;
 	}
 
 	.departments__grid {

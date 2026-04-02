@@ -1,7 +1,8 @@
 {
 	"hero": {
 		"title": "Odesa School of Arts №5",
-		"subtitle": "Your Path to Musical Mastery"
+		"subtitle": "Your Path to Musical Mastery",
+		"story": "I come from the year 1938. Or maybe even earlier... I don't even remember anymore. Decades pass, generations change, but there is one thing that remains unchanged — I am always friends with bright, creative people ✨"
 	},
 	"nav": {
 		"home": "Home",
@@ -14,9 +15,11 @@
 	"footer": {
 		"address": "18 Chornomorskoho Kozatstva St, Odesa",
 		"phone": "+38 048 723 81 10",
-		"email_label": "school's e-mail",
 		"email": "dmsh-5odesa@ukr.net",
 		"facebook": "https://www.facebook.com/odesaartschool5",
 		"instagram": "https://www.instagram.com/odesa_art_school_5"
+	},
+	"departments": {
+		"description": "Today, the school has 6 departments where 335 students study:"
 	}
 }
