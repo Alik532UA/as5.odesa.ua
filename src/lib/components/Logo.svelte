@@ -9,7 +9,7 @@
 	};
 
 	const d = $derived(dimensions[size]);
-	const logoSrc = $derived(ui.theme === 'dark' ? '/ods-as5-logo-full-inverted.png' : '/ods-as5-logo-full_AlphaChannel.png');
+	const logoSrc = $derived(ui.theme === 'dark' ? '/ods-as5-logo-full-inverted.svg' : '/ods-as5-logo-full.svg');
 </script>
 
 <img
