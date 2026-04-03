@@ -74,6 +74,9 @@ class UIState {
 		this.theme = t;
 		if (typeof document !== 'undefined') {
 			document.documentElement.setAttribute('data-theme', t);
+			// Tell browser we handle color schemes — prevents auto-dark-mode
+			const csMeta = document.querySelector('meta[name="color-scheme"]');
+			if (csMeta) csMeta.setAttribute('content', t === 'dark' ? 'dark' : 'light dark');
 			if (t === 'dark') {
 				document.documentElement.classList.add('dark-theme');
 			} else {

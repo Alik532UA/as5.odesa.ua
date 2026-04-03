@@ -16,15 +16,18 @@
 		<meta name="twitter:description" content="Ваш шлях до музичної майстерності" />
 		<meta name="twitter:image" content="https://alik532ua.github.io/as5.odesa.ua/og/og-default-1200x630.jpg" />
 		<meta name="theme-color" content="#1B5E7B" />
+		<meta name="color-scheme" content="light dark" />
 		<script>
 			try {
 				var t = localStorage.getItem('theme');
 				if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 					document.documentElement.setAttribute('data-theme', 'dark');
 					document.documentElement.classList.add('dark-theme');
+					document.querySelector('meta[name="color-scheme"]').content = 'dark';
 				} else {
 					document.documentElement.setAttribute('data-theme', 'light');
 					document.documentElement.classList.remove('dark-theme');
+					document.querySelector('meta[name="color-scheme"]').content = 'light dark';
 				}
 				// Mark home page before JS hydration to avoid flash
 				var p = window.location.pathname;

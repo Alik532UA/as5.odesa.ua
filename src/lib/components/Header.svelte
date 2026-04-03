@@ -82,6 +82,10 @@
 	});
 </script>
 
+<a href="#main-content" class="skip-link">
+	Перейти до основного контенту
+</a>
+
 <header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header">
 	<div class="header__logo-area">
 		<a
@@ -223,6 +227,25 @@
 </header>
 
 <style>
+	.skip-link {
+		position: absolute;
+		top: -100%;
+		left: var(--space-md);
+		background: var(--color-deep-ocean);
+		color: var(--color-white);
+		padding: var(--space-sm) var(--space-md);
+		border-radius: var(--radius-sm);
+		z-index: 200;
+		font-size: 0.875rem;
+		font-weight: 700;
+		text-decoration: none;
+		transition: top var(--transition-fast);
+	}
+
+	.skip-link:focus {
+		top: var(--space-sm);
+	}
+
 	.header {
 		position: fixed;
 		top: 0;
