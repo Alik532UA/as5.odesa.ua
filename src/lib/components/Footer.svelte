@@ -58,7 +58,12 @@
 				<div class="footer__info" id="footer-address">
 					<div class="footer__info-item">
 						<LocationIcon className="footer__icon" size={18} />
-						<a href="https://maps.app.goo.gl/khSVpMmKieTdW2Ao7" target="_blank" rel="noopener noreferrer" class="footer__link">
+						<a
+							href="https://maps.app.goo.gl/khSVpMmKieTdW2Ao7"
+							target="_blank"
+							rel="noopener noreferrer"
+							class="footer__link"
+						>
 							{$t("footer.address")}
 						</a>
 					</div>
@@ -111,7 +116,7 @@
 
 			<!-- 4. Button "замовити сайт" -->
 			<a
-				href="https://t.me/ozapolnov"
+				href="https://alik532ua.github.io/DigitalWorkshop/?tab=promo&theme=colorful"
 				target="_blank"
 				class="footer__btn-order"
 			>
@@ -119,7 +124,6 @@
 			</a>
 		</div>
 	</div>
-
 </footer>
 
 <PianoModal isOpen={isPianoOpen} onClose={() => (isPianoOpen = false)} />
@@ -146,7 +150,11 @@
 		height: 100px;
 		line-height: 0;
 		z-index: 5;
-		background: linear-gradient(180deg, var(--color-light-blue) 0%, var(--color-white) 100%);
+		background: linear-gradient(
+			180deg,
+			var(--color-light-blue) 0%,
+			var(--color-white) 100%
+		);
 		transition: background 800ms ease-in-out;
 	}
 

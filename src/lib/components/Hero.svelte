@@ -255,11 +255,15 @@
 		:global(.hero__seagull--1) {
 			top: 24%;
 			right: 48%;
+			width: 66px;
+			height: 30px;
 		}
 
 		:global(.hero__seagull--2) {
 			top: 10%;
 			right: 8%;
+			width: 49.5px;
+			height: 22.5px;
 		}
 
 		:global(.hero__seagull--3),
