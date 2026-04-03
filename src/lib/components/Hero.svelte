@@ -1,17 +1,10 @@
 <script lang="ts">
 	import Wave from "./Wave.svelte";
-	import Seagull from "./ui/Seagull.svelte";
 	import { t } from "svelte-i18n";
 	import { base } from "$app/paths";
 </script>
 
 <section class="hero" id="hero-section" aria-label="Головна секція">
-	<!-- Decorative seagulls — adjusted sizes -->
-	<Seagull className="hero__seagull hero__seagull--1" size={60} />
-	<Seagull className="hero__seagull hero__seagull--2" size={45} />
-	<Seagull className="hero__seagull hero__seagull--3" size={35} />
-	<Seagull className="hero__seagull hero__seagull--4" size={50} />
-	<Seagull className="hero__seagull hero__seagull--5" size={42} />
 
 	<div class="hero__content container">
 		<div class="hero__text">
@@ -76,45 +69,6 @@
 		background: transparent;
 	}
 
-	/* Seagulls Layering */
-	:global(.hero__seagull) {
-		position: absolute;
-		animation: seagullFly 4s ease-in-out infinite;
-		z-index: 5; /* Above images and buttons, below text */
-		color: var(--theme-seagull-color);
-		opacity: 0.8;
-	}
-
-	:global(.hero__seagull--1) {
-		top: 18%;
-		right: 35%;
-		animation-delay: 0s;
-	}
-
-	:global(.hero__seagull--2) {
-		top: 16%;
-		right: 14%;
-		animation-delay: 1s;
-	}
-
-	:global(.hero__seagull--3) {
-		top: 25%;
-		right: 45%;
-		animation-delay: 2s;
-	}
-
-	:global(.hero__seagull--4) {
-		top: 14%;
-		right: 62%;
-		animation-delay: 0.5s;
-	}
-
-	:global(.hero__seagull--5) {
-		top: 34%;
-		right: 86%;
-		animation-delay: 1.5s;
-	}
-
 	/* Content layout */
 	.hero__content {
 		display: grid;
@@ -122,7 +76,6 @@
 		gap: var(--space-3xl);
 		align-items: center;
 		position: relative;
-		z-index: 1; /* Base layer */
 	}
 
 	/* Text — Highest Layer */
@@ -253,24 +206,5 @@
 			min-height: 220px;
 		}
 
-		:global(.hero__seagull--1) {
-			top: 24%;
-			right: 48%;
-			width: 66px;
-			height: 30px;
-		}
-
-		:global(.hero__seagull--2) {
-			top: 10%;
-			right: 8%;
-			width: 49.5px;
-			height: 22.5px;
-		}
-
-		:global(.hero__seagull--3),
-		:global(.hero__seagull--4),
-		:global(.hero__seagull--5) {
-			display: none;
-		}
 	}
 </style>

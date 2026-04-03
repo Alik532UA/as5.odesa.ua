@@ -26,6 +26,12 @@
 					document.documentElement.setAttribute('data-theme', 'light');
 					document.documentElement.classList.remove('dark-theme');
 				}
+				// Mark home page before JS hydration to avoid flash
+				var p = window.location.pathname;
+				var base = '/as5.odesa.ua';
+				if (p === base + '/' || p === base || p === '/') {
+					document.body.classList.add('page-home');
+				}
 			} catch (e) {}
 		</script>
 		%sveltekit.head%

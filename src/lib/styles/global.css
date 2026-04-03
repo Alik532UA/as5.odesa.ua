@@ -71,6 +71,7 @@ html {
 	scroll-behavior: smooth;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+	overflow-x: hidden;
 }
 
 body {
@@ -217,6 +218,85 @@ button {
 	25% { transform: translateX(5px) translateY(-3px); }
 	50% { transform: translateX(10px) translateY(0); }
 	75% { transform: translateX(5px) translateY(3px); }
+}
+
+/* Global seagulls — fixed on all pages */
+.hero__seagull {
+	position: absolute;
+	animation: seagullFly 4s ease-in-out infinite;
+	z-index: 3;
+	color: var(--theme-seagull-color);
+	opacity: 0.6;
+	pointer-events: none;
+}
+
+.hero__seagull--1 {
+	top: 18%;
+	right: 35%;
+	animation-delay: 0s;
+}
+
+.hero__seagull--2 {
+	top: 16%;
+	right: 14%;
+	animation-delay: 1s;
+}
+
+.hero__seagull--3 {
+	top: 25%;
+	right: 45%;
+	animation-delay: 2s;
+}
+
+.hero__seagull--4 {
+	top: 14%;
+	right: 62%;
+	animation-delay: 0.5s;
+}
+
+.hero__seagull--5 {
+	top: 34%;
+	right: 86%;
+	animation-delay: 1.5s;
+}
+
+/* hero__seagull--3 is more subtle on non-home pages */
+body:not(.page-home) .hero__seagull--3 {
+	opacity: 0.2;
+}
+
+/* on home page hero__seagull--3 same opacity as others */
+body.page-home .hero__seagull--3 {
+	opacity: 0.6;
+}
+
+@media (max-width: 768px) {
+	.hero__seagull--1 {
+		top: 24%;
+		right: 48%;
+		width: 66px;
+		height: 30px;
+	}
+
+	.hero__seagull--2 {
+		top: 10%;
+		right: 8%;
+		width: 49.5px;
+		height: 22.5px;
+	}
+
+	.hero__seagull--3,
+	.hero__seagull--4,
+	.hero__seagull--5 {
+		display: none;
+	}
+}
+
+/* Smooth page content appearance */
+.page-content {
+	position: relative;
+	z-index: 10;
+	animation: fadeInUp 0.6s ease-out both;
 }
 
 /* --- Responsive Breakpoints (used in components) --- */

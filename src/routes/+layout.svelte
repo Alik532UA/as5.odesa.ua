@@ -2,6 +2,7 @@
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
 	import DynamicBackground from '$lib/components/DynamicBackground.svelte';
+	import Seagull from '$lib/components/ui/Seagull.svelte';
 	import '$lib/styles/global.css';
 	import '$lib/i18n';
 	import { browser } from '$app/environment';
@@ -12,6 +13,12 @@
 	import { ui } from '$lib/states/ui.svelte';
 
 	let { children } = $props();
+
+	$effect(() => {
+		if (browser) {
+			document.body.classList.toggle('page-home', page.route.id === '/');
+		}
+	});
 
 	const SITE_FALLBACK_ORIGIN = 'https://as5.odesa.ua';
 	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission';
@@ -181,7 +188,14 @@
 	<!-- Blur overlay for theme/language changes -->
 	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
 
-	<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground}>
+	<!-- Global decorative seagulls — outside .app for guaranteed viewport-fixed positioning -->
+	<Seagull className="hero__seagull hero__seagull--1" size={60} />
+	<Seagull className="hero__seagull hero__seagull--2" size={45} />
+	<Seagull className="hero__seagull hero__seagull--3" size={35} />
+	<Seagull className="hero__seagull hero__seagull--4" size={50} />
+	<Seagull className="hero__seagull hero__seagull--5" size={42} />
+
+	<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground} class:page-home={page.route.id === '/'}>
 		<div class="app__base-bg" aria-hidden="true"></div>
 
 		<!-- Dynamic background -->
@@ -240,6 +254,5 @@
 		flex: 1;
 		background: transparent;
 		position: relative;
-		z-index: 1;
 	}
 </style>
