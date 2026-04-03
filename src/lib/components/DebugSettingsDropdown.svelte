@@ -69,14 +69,14 @@
 				class:active={!ui.enableBlurEffect}
 				onclick={() => ui.toggleBlurEffect()}
 			>
-				{!ui.enableBlurEffect ? 'Вимк' : 'Вкл'}
+				Вимк
 			</button>
 			<button
 				class="header__settings-opt"
 				class:active={ui.enableBlurEffect}
 				onclick={() => ui.toggleBlurEffect()}
 			>
-				{ui.enableBlurEffect ? 'Вкл' : 'Вимк'}
+				Вкл
 			</button>
 		</div>
 	</div>

@@ -13,8 +13,86 @@
 	let { children } = $props();
 
 	const SITE_FALLBACK_ORIGIN = 'https://as5.odesa.ua';
+	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission';
+	type SeoLangKey = 'uk' | 'en';
+	const FALLBACK_LANG: SeoLangKey = 'uk';
 
-	function routeToSeoKey(pathname: string): string {
+	const SEO_FALLBACK = {
+		uk: {
+			brandTitle: 'Одеська школа мистецтв №5',
+			orgName: 'Одеська школа мистецтв №5',
+			orgDescription:
+				'Одеська школа мистецтв №5: музична освіта для дітей та молоді в Одесі, творчий розвиток та концертна діяльність.',
+			pages: {
+				home: {
+					title: 'Одеська школа мистецтв №5',
+					description:
+						'Офіційний сайт Одеської школи мистецтв №5. Відділи, галерея, історія, конкурси та умови вступу.'
+				},
+				about: {
+					title: 'Про школу',
+					description:
+						'Дізнайтеся більше про Одеську школу мистецтв №5: творче життя, виступи, викладачі та учні.'
+				},
+				history: {
+					title: 'Історія',
+					description: 'Історія Одеської школи мистецтв №5 від перших згадок до сучасності.'
+				},
+				competitions: {
+					title: 'Конкурси',
+					description:
+						'Творчі конкурси та фестивалі Одеської школи мистецтв №5 для підтримки юних талантів.'
+				},
+				admission: {
+					title: 'Для вступу',
+					description:
+						'Інформація для вступу до Одеської школи мистецтв №5: документи, контакти та умови навчання.'
+				}
+			}
+		},
+		en: {
+			brandTitle: 'Odesa School of Arts №5',
+			orgName: 'Odesa School of Arts №5',
+			orgDescription:
+				'Odesa School of Arts №5: music education for children and youth in Odesa, creative growth, and concert activity.',
+			pages: {
+				home: {
+					title: 'Odesa School of Arts №5',
+					description:
+						'Official website of Odesa School of Arts №5. Departments, gallery, history, competitions, and admission details.'
+				},
+				about: {
+					title: 'About School',
+					description:
+						'Learn more about Odesa School of Arts №5: creative life, performances, teachers, and students.'
+				},
+				history: {
+					title: 'History',
+					description: 'The history of Odesa School of Arts №5 from early records to the present day.'
+				},
+				competitions: {
+					title: 'Competitions',
+					description:
+						'Creative competitions and festivals of Odesa School of Arts №5 that support young talents.'
+				},
+				admission: {
+					title: 'Admission',
+					description:
+						'Admission information for Odesa School of Arts №5: documents, contacts, and study conditions.'
+				}
+			}
+		}
+	} as const;
+
+	function safeT(key: string, fallback: string): string {
+		try {
+			return $t(key);
+		} catch {
+			return fallback;
+		}
+	}
+
+	function routeToSeoKey(pathname: string): SeoPageKey {
 		switch (pathname) {
 			case '/':
 				return 'home';
@@ -32,10 +110,15 @@
 	}
 
 	const seoKey = $derived(routeToSeoKey(page.url.pathname));
-	const brandTitle = $derived($t('seo.brandTitle'));
-	const metaTitle = $derived($t(`seo.pages.${seoKey}.title`));
-	const metaDescription = $derived($t(`seo.pages.${seoKey}.description`));
 	const currentLocale = $derived(($locale as string) || 'uk');
+	const activeLang = $derived<SeoLangKey>(currentLocale === 'en' ? 'en' : FALLBACK_LANG);
+	const brandTitle = $derived(safeT('seo.brandTitle', SEO_FALLBACK[activeLang].brandTitle));
+	const metaTitle = $derived(
+		safeT(`seo.pages.${seoKey}.title`, SEO_FALLBACK[activeLang].pages[seoKey].title)
+	);
+	const metaDescription = $derived(
+		safeT(`seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
+	);
 	const baseOrigin = $derived(browser ? window.location.origin : SITE_FALLBACK_ORIGIN);
 	const canonicalUrl = $derived(`${baseOrigin}${page.url.pathname}`);
 	const ogImageUrl = $derived(`${baseOrigin}/ods-as5-logo-full_AlphaChannel.png`);
@@ -44,15 +127,15 @@
 	const schemaOrg = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'EducationalOrganization',
-		name: $t('seo.org.name'),
+		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
 		url: baseOrigin,
 		logo: `${baseOrigin}/ods-as5-logo-full.svg`,
-		description: $t('seo.org.description'),
+		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',
 		address: {
 			'@type': 'PostalAddress',
-			streetAddress: $t('footer.address'),
+			streetAddress: safeT('footer.address', 'вулиця Чорноморського Козацтва, 18, Одеса'),
 			addressLocality: 'Odesa',
 			addressCountry: 'UA'
 		},

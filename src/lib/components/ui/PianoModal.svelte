@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from "svelte";
+	import { fade, scale } from "svelte/transition";
 	import { t } from "svelte-i18n";
 
 	interface Props {
@@ -73,7 +74,7 @@
 {#if isOpen}
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="piano-modal" onclick={(e) => e.target === e.currentTarget && onClose()}>
+	<div class="piano-modal" transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()}>
 		<button class="close-btn" onclick={onClose}>&times;</button>
 		
 		<section id="wrap">
@@ -154,6 +155,18 @@
 		max-width: 1200px;
 		padding: 20px;
 		transition: all 0.3s ease;
+		animation: modalSlideIn 0.3s ease-out;
+	}
+
+	@keyframes modalSlideIn {
+		from {
+			transform: scale(0.95) translateY(-20px);
+			opacity: 0;
+		}
+		to {
+			transform: scale(1) translateY(0);
+			opacity: 1;
+		}
 	}
 
 	header {
