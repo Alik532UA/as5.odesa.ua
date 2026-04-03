@@ -124,7 +124,7 @@
 	);
 	const baseOrigin = $derived(browser ? window.location.origin : SITE_FALLBACK_ORIGIN);
 	const canonicalUrl = $derived(`${baseOrigin}${page.url.pathname}`);
-	const ogImageUrl = $derived(`${baseOrigin}/ods-as5-logo-full_AlphaChannel.png`);
+	const ogImageUrl = $derived(`${baseOrigin}${base}/ods-as5-logo-full_AlphaChannel.png`);
 	const seoTitle = $derived(`${metaTitle} | ${brandTitle}`);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
 	const schemaOrg = $derived({
@@ -132,7 +132,7 @@
 		'@type': 'EducationalOrganization',
 		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
 		url: baseOrigin,
-		logo: `${baseOrigin}/ods-as5-logo-full.svg`,
+		logo: `${baseOrigin}${base}/ods-as5-logo-full.svg`,
 		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',
@@ -152,11 +152,11 @@
 <svelte:head>
 	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href={canonicalUrl} />
-	
+
 	<title>{seoTitle}</title>
 	<meta name="description" content={metaDescription} />
 	<meta name="robots" content="index, follow" />
-	
+
 	<meta property="og:title" content={seoTitle} />
 	<meta property="og:description" content={metaDescription} />
 	<meta property="og:image" content={ogImageUrl} />
@@ -178,6 +178,16 @@
 		<!-- Simple placeholder or nothing during transition -->
 	</div>
 {:then}
+	<svelte:head>
+		<title>{seoTitle}</title>
+		<meta name="description" content={metaDescription} />
+		<meta property="og:title" content={seoTitle} />
+		<meta property="og:description" content={metaDescription} />
+		<meta property="og:site_name" content={brandTitle} />
+		<meta name="twitter:title" content={seoTitle} />
+		<meta name="twitter:description" content={metaDescription} />
+	</svelte:head>
+
 	<!-- Blur overlay for theme/language changes -->
 	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
 
