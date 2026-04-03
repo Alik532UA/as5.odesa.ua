@@ -2,10 +2,6 @@
 	import { t } from 'svelte-i18n';
 </script>
 
-<svelte:head>
-	<title>{$t('competitions.title')} | Одеська школа мистецтв №5</title>
-</svelte:head>
-
 <section class="page-content container" style="padding: 160px 24px 6rem;">
 	<h1 style="font-family: var(--font-heading); font-size: 3rem; color: var(--color-deep-ocean); margin-bottom: 2rem;">{$t('competitions.title')}</h1>
 	<div style="font-size: 1.2rem; line-height: 1.8; color: var(--color-body-text);">

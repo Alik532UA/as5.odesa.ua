@@ -1,3 +1,5 @@
 # allow crawling everything by default
 User-agent: *
 Disallow:
+Host: https://as5.odesa.ua
+Sitemap: https://as5.odesa.ua/sitemap.xml

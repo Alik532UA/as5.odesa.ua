@@ -122,5 +122,34 @@
 		"address": "📍 18 Chornomorskoho Kozatstva St, Odesa",
 		"phone": "📞 Phone for inquiries: (048) 723-81-10",
 		"p6": "Come — and perhaps here your great creative story will begin ✨"
+	},
+	"seo": {
+		"brandTitle": "Odesa School of Arts №5",
+		"org": {
+			"name": "Odesa School of Arts №5",
+			"description": "Odesa School of Arts №5: music education for children and youth in Odesa, creative growth, and concert activity."
+		},
+		"pages": {
+			"home": {
+				"title": "Odesa School of Arts №5",
+				"description": "Official website of Odesa School of Arts №5. Departments, gallery, history, competitions, and admission details."
+			},
+			"about": {
+				"title": "About School",
+				"description": "Learn more about Odesa School of Arts №5: creative life, performances, teachers, and students."
+			},
+			"history": {
+				"title": "History",
+				"description": "The history of Odesa School of Arts №5 from early records to the present day."
+			},
+			"competitions": {
+				"title": "Competitions",
+				"description": "Creative competitions and festivals of Odesa School of Arts №5 that support young talents."
+			},
+			"admission": {
+				"title": "Admission",
+				"description": "Admission information for Odesa School of Arts №5: documents, contacts, and study conditions."
+			}
+		}
 	}
 }
