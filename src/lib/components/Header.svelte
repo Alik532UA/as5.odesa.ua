@@ -7,6 +7,11 @@
 	import { page } from "$app/state";
 
 	let scrolled = $state(false);
+	let settingsOpen = $state(false);
+
+	function toggleSettings() {
+		settingsOpen = !settingsOpen;
+	}
 
 	function toggleTheme() {
 		const newTheme = ui.theme === "light" ? "dark" : "light";
@@ -71,8 +76,8 @@
 			{$t("nav.admission")}
 		</a>
 
-		<div class="header__settings">
-			<button class="header__settings-btn" aria-label="Налаштування">
+		<div class="header__settings" class:open={settingsOpen}>
+			<button class="header__settings-btn" aria-label="Налаштування" onclick={toggleSettings} aria-expanded={settingsOpen}>
 				<SettingsIcon size={24} />
 			</button>
 			<div class="header__settings-dropdown">
@@ -279,7 +284,8 @@
 		background: var(--color-ice-blue);
 	}
 
-	.header__settings:hover .header__settings-btn {
+	.header__settings:hover .header__settings-btn,
+	.header__settings.open .header__settings-btn {
 		background: var(--color-sky-blue);
 		transform: rotate(45deg);
 	}
@@ -301,7 +307,8 @@
 		border: 1px solid var(--color-sky-blue);
 	}
 
-	.header__settings:hover .header__settings-dropdown {
+	.header__settings:hover .header__settings-dropdown,
+	.header__settings.open .header__settings-dropdown {
 		opacity: 1;
 		visibility: visible;
 		transform: translateY(5px);
