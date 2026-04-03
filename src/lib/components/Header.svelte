@@ -189,7 +189,7 @@
 		position: absolute;
 		top: 10px;
 		left: 30px;
-		z-index: 110;
+		z-index: 300;
 		filter: drop-shadow(0 4px 12px rgba(27, 94, 123, 0.15));
 		transition: transform var(--transition-base);
 	}
@@ -212,10 +212,18 @@
 		gap: var(--space-xl);
 		width: 100%;
 		padding: var(--space-lg) var(--space-xl) var(--space-lg) 200px;
-		background: color-mix(in srgb, var(--color-white), transparent 30%);
-		backdrop-filter: blur(12px);
 		box-shadow: var(--shadow-sm);
 		transition: all var(--transition-base);
+		position: relative;
+	}
+
+	.header__bar::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background: color-mix(in srgb, var(--color-white), transparent 30%);
+		backdrop-filter: blur(12px);
+		z-index: -1;
 	}
 
 	.scrolled .header__bar {
@@ -270,6 +278,7 @@
 	.header__settings {
 		position: relative;
 		margin-left: var(--space-sm);
+		z-index: 130;
 	}
 
 	.header__settings-btn {
@@ -284,7 +293,6 @@
 		background: var(--color-ice-blue);
 	}
 
-	.header__settings:hover .header__settings-btn,
 	.header__settings.open .header__settings-btn {
 		background: var(--color-sky-blue);
 		transform: rotate(45deg);
@@ -303,11 +311,10 @@
 		visibility: hidden;
 		transform: translateY(10px);
 		transition: all var(--transition-base);
-		z-index: 150;
+		z-index: 200;
 		border: 1px solid var(--color-sky-blue);
 	}
 
-	.header__settings:hover .header__settings-dropdown,
 	.header__settings.open .header__settings-dropdown {
 		opacity: 1;
 		visibility: visible;
@@ -390,7 +397,7 @@
 		inset: 0;
 		background: color-mix(in srgb, var(--color-white), transparent 2%);
 		backdrop-filter: blur(20px);
-		z-index: 105;
+		z-index: 200;
 		display: flex;
 		align-items: center;
 		justify-content: center;
