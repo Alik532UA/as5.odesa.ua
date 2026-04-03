@@ -124,7 +124,7 @@
 
 		<button
 			class="header__burger"
-			onclick={ui.toggleMenu}
+			onclick={() => { settingsOpen = false; ui.toggleMenu(); }}
 			aria-label="Відкрити меню"
 			aria-expanded={ui.isMenuOpen}
 			id="burger-menu"
@@ -310,7 +310,7 @@
 		visibility: hidden;
 		transform: translateY(10px);
 		transition: all var(--transition-base);
-		z-index: 400;
+		z-index: 310;
 	}
 
 	.header__settings.open .header__settings-dropdown {
@@ -395,11 +395,10 @@
 		inset: 0;
 		background: color-mix(in srgb, var(--color-white), transparent 2%);
 		backdrop-filter: blur(20px);
-		z-index: 200;
+		z-index: 350;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		animation: fadeIn 0.3s ease;
 	}
 
 	.header__mobile-close {
