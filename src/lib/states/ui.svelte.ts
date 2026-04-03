@@ -1,11 +1,11 @@
 class UIState {
 	isMenuOpen = $state(false);
 	theme = $state<'light' | 'dark'>('light');
-	backgroundType = $state<0 | 1 | 2 | 3>(0);
+	backgroundType = $state<0 | 1 | 2 | 3>(2);
 	isThemeChanging = $state(false);
 	isLangChanging = $state(false);
 	// Debug toggles
-	enableDynamicBackground = $state(false);
+	enableDynamicBackground = $state(true);
 	enableBlurEffect = $state(true);
 
 	constructor() {

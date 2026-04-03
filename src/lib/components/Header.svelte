@@ -12,12 +12,17 @@
 
 	let scrolled = $state(false);
 	let settingsOpen = $state(false);
+	let settingsRef: HTMLDivElement | null = $state(null);
 
 	function toggleSettings() {
 		if (ui.isMenuOpen) {
 			ui.closeMenu();
 		}
 		settingsOpen = !settingsOpen;
+	}
+
+	function closeSettings() {
+		settingsOpen = false;
 	}
 
 	function toggleTheme() {
@@ -62,6 +67,19 @@
 			settingsOpen = false;
 		}
 	});
+
+	$effect(() => {
+		const handleClickOutside = (e: MouseEvent) => {
+			if (settingsOpen && settingsRef && !settingsRef.contains(e.target as Node)) {
+				closeSettings();
+			}
+		};
+
+		if (settingsOpen) {
+			document.addEventListener('mousedown', handleClickOutside);
+			return () => document.removeEventListener('mousedown', handleClickOutside);
+		}
+	});
 </script>
 
 <header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header">
@@ -102,7 +120,7 @@
 			{$t("nav.admission")}
 		</a>
 
-		<div class="header__settings" class:open={settingsOpen}>
+		<div class="header__settings" class:open={settingsOpen} bind:this={settingsRef}>
 			<button class="header__settings-btn" aria-label="Налаштування" onclick={toggleSettings} aria-expanded={settingsOpen}>
 				<SettingsIcon size={24} />
 			</button>
