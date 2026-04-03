@@ -29,7 +29,7 @@
 	<div class="g-bento">
 		{#each galleryImages as img, i}
 			<div class="g-bento__item g-bento__item--{i}">
-				<img src={img.src} alt={img.alt} />
+				<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
 				<div class="g-bento__overlay">
 					<span class="g-bento__caption">{img.title}</span>
 				</div>

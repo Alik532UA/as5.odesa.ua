@@ -30,7 +30,7 @@
 	<article class="dept-card" {id}>
 		<div class="dept-card__icon-wrap">
 			<!-- Render image instead of SVG icon -->
-			<img src={iconPath} alt="{name} icon" class="dept-card__icon" />
+			<img src={iconPath} alt="{name} icon" class="dept-card__icon" width="160" height="160" loading="lazy" decoding="async" />
 			<!-- SVG icons were the first version, kept here for reference -->
 			<!-- <Icon className="dept-card__icon" size={80} /> -->
 		</div>

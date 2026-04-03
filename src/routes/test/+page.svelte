@@ -239,7 +239,7 @@
 			<div class="g-bento">
 				{#each galleryImages as img, i}
 					<div class="g-bento__item g-bento__item--{i}">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-bento__overlay">
 							<span class="g-bento__caption">{img.title}</span>
 						</div>
@@ -254,7 +254,7 @@
 			<div class="g-accordion">
 				{#each galleryImages.slice(0, 5) as img}
 					<div class="g-accordion__item">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-accordion__content">
 							<span class="g-accordion__title">{img.title}</span>
 						</div>
@@ -270,7 +270,7 @@
 				{#each galleryImages as img}
 					<div class="g-card">
 						<div class="g-card__img-wrap">
-							<img src={img.src} alt={img.alt} />
+							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						</div>
 						<div class="g-card__info">
 							<span class="g-card__tag">Відділ</span>
@@ -287,7 +287,7 @@
 			<div class="g-asym">
 				{#each galleryImages.slice(0, 3) as img, i}
 					<div class="g-asym__item g-asym__item--{i}">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-asym__label">{img.title}</div>
 					</div>
 				{/each}
@@ -300,7 +300,7 @@
 			<div class="g-scroll">
 				{#each [...galleryImages, ...galleryImages] as img}
 					<div class="g-scroll__item">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-scroll__overlay">
 							<span class="g-scroll__title">{img.title}</span>
 						</div>
@@ -314,7 +314,7 @@
 			<h3 class="g-block__title">6. Hero Stack (Акцентна Галерея)</h3>
 			<div class="g-feat">
 				<div class="g-feat__main">
-					<img src={galleryImages[0].src} alt={galleryImages[0].alt} />
+					<img src={galleryImages[0].src} alt={galleryImages[0].alt} loading="lazy" decoding="async" />
 					<div class="g-feat__main-info">
 						<span class="g-feat__tag">Популярне</span>
 						<h2>{galleryImages[0].title}</h2>
@@ -323,7 +323,7 @@
 				<div class="g-feat__side">
 					{#each galleryImages.slice(1, 4) as img}
 						<div class="g-feat__side-item">
-							<img src={img.src} alt={img.alt} />
+							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						</div>
 					{/each}
 				</div>
@@ -336,7 +336,7 @@
 			<div class="g-bento-3x4">
 				{#each galleryImages as img}
 					<div class="g-bento-3x4__item">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-bento-3x4__overlay">
 							<span class="g-bento-3x4__caption">{img.title}</span>
 						</div>
@@ -351,7 +351,7 @@
 			<div class="g-bento-4x3">
 				{#each galleryImages as img}
 					<div class="g-bento-4x3__item">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-bento-4x3__overlay">
 							<span class="g-bento-4x3__caption">{img.title}</span>
 						</div>
@@ -375,7 +375,7 @@
 			<div class="gallery-grid">
 				{#each galleryImages as img, i}
 					<div class="gallery-item">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
 					</div>
 				{/each}
@@ -388,7 +388,7 @@
 			<div class="gallery-dynamic-grid">
 				{#each galleryImages as img, i}
 					<div class="gallery-item-dynamic">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
 					</div>
 				{/each}
@@ -401,7 +401,7 @@
 			<div class="gallery-masonry">
 				{#each galleryImages as img, i}
 					<div class="gallery-item-masonry">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
 					</div>
 				{/each}
@@ -414,7 +414,7 @@
 			<div class="gallery-minimal-list">
 				{#each galleryImages as img, i}
 					<div class="gallery-item-minimal">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
 					</div>
 				{/each}
@@ -426,13 +426,13 @@
 			<h3>Шаблон 5: Галерея з Акцентом</h3>
 			<div class="gallery-hero">
 				<div class="gallery-hero-main">
-					<img src={galleryImages[0].src} alt={galleryImages[0].alt} />
+					<img src={galleryImages[0].src} alt={galleryImages[0].alt} loading="lazy" decoding="async" />
 					<div class="gallery-caption">{galleryImages[0].title}</div>
 				</div>
 				<div class="gallery-hero-thumbnails">
 					{#each galleryImages.slice(1, 4) as img, i}
 						<div class="gallery-thumb">
-							<img src={img.src} alt={img.alt} />
+							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						</div>
 					{/each}
 				</div>
@@ -445,7 +445,7 @@
 			<div class="gallery-overlay-caption">
 				{#each galleryImages as img, i}
 					<div class="gallery-item-overlay">
-						<img src={img.src} alt={img.alt} />
+						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption-overlay">{img.title}</div>
 					</div>
 				{/each}

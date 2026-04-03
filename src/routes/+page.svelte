@@ -70,7 +70,7 @@
 		<div class="g-bento-4x3">
 			{#each galleryImages as img}
 				<div class="g-bento-4x3__item">
-					<img src={img.src} alt={img.alt} />
+					<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
 					<div class="g-bento-4x3__overlay">
 						<span class="g-bento-4x3__caption">{img.title}</span>
 					</div>

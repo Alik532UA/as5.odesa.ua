@@ -24,7 +24,15 @@
 
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
-				<img src="/photo/photoForMainPage-02.jpg" alt="" />
+				<img
+					src="/photo/photoForMainPage-02.jpg"
+					alt=""
+					width="1200"
+					height="900"
+					loading="eager"
+					fetchpriority="high"
+					decoding="async"
+				/>
 			</div>
 			<!-- Decorative blue cloud shapes -->
 			<div class="hero__cloud hero__cloud--1" aria-hidden="true"></div>
