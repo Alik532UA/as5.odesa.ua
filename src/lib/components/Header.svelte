@@ -278,7 +278,6 @@
 	.header__settings {
 		position: relative;
 		margin-left: var(--space-sm);
-		z-index: 130;
 	}
 
 	.header__settings-btn {
@@ -311,8 +310,7 @@
 		visibility: hidden;
 		transform: translateY(10px);
 		transition: all var(--transition-base);
-		z-index: 200;
-		border: 1px solid var(--color-sky-blue);
+		z-index: 400;
 	}
 
 	.header__settings.open .header__settings-dropdown {
