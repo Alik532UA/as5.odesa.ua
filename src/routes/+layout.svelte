@@ -178,16 +178,6 @@
 		<!-- Simple placeholder or nothing during transition -->
 	</div>
 {:then}
-	<svelte:head>
-		<title>{seoTitle}</title>
-		<meta name="description" content={metaDescription} />
-		<meta property="og:title" content={seoTitle} />
-		<meta property="og:description" content={metaDescription} />
-		<meta property="og:site_name" content={brandTitle} />
-		<meta name="twitter:title" content={seoTitle} />
-		<meta name="twitter:description" content={metaDescription} />
-	</svelte:head>
-
 	<!-- Blur overlay for theme/language changes -->
 	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
 
