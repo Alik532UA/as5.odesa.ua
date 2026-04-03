@@ -2,6 +2,8 @@
 	import Logo from "./Logo.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
 	import { Menu, X } from "lucide-svelte";
+	import { fly } from "svelte/transition";
+	import { cubicInOut } from "svelte/easing";
 	import { ui } from "$lib/states/ui.svelte";
 	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
@@ -10,6 +12,9 @@
 	let settingsOpen = $state(false);
 
 	function toggleSettings() {
+		if (ui.isMenuOpen) {
+			ui.closeMenu();
+		}
 		settingsOpen = !settingsOpen;
 	}
 
@@ -36,9 +41,15 @@
 		window.addEventListener("scroll", handleScroll, { passive: true });
 		return () => window.removeEventListener("scroll", handleScroll);
 	});
+
+	$effect(() => {
+		if (ui.isMenuOpen && settingsOpen) {
+			settingsOpen = false;
+		}
+	});
 </script>
 
-<header class="header" class:scrolled id="main-header">
+<header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header">
 	<div class="header__logo-area">
 		<a
 			href="/"
@@ -135,7 +146,13 @@
 
 	<!-- Mobile overlay menu -->
 	{#if ui.isMenuOpen}
-		<div class="header__mobile-overlay" role="dialog" aria-modal="true">
+		<div
+			class="header__mobile-overlay"
+			role="dialog"
+			aria-modal="true"
+			in:fly={{ y: -24, duration: 260, opacity: 0.2, easing: cubicInOut }}
+			out:fly={{ y: -24, duration: 220, opacity: 0.2, easing: cubicInOut }}
+		>
 			<button
 				class="header__mobile-close"
 				onclick={ui.closeMenu}
@@ -278,6 +295,7 @@
 	.header__settings {
 		position: relative;
 		margin-left: var(--space-sm);
+		z-index: 320;
 	}
 
 	.header__settings-btn {
@@ -310,7 +328,7 @@
 		visibility: hidden;
 		transform: translateY(10px);
 		transition: all var(--transition-base);
-		z-index: 310;
+		z-index: 330;
 	}
 
 	.header__settings.open .header__settings-dropdown {
@@ -382,7 +400,7 @@
 		color: var(--color-deep-ocean);
 		background: var(--color-ice-blue);
 		transition: all var(--transition-base);
-		z-index: 120;
+		z-index: 180;
 	}
 
 	.header__burger:hover {
@@ -395,16 +413,22 @@
 		inset: 0;
 		background: color-mix(in srgb, var(--color-white), transparent 2%);
 		backdrop-filter: blur(20px);
-		z-index: 350;
+		z-index: 250;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		will-change: transform, opacity;
+	}
+
+	.header.menu-open .header__settings,
+	.header.menu-open .header__burger {
+		z-index: 180;
 	}
 
 	.header__mobile-close {
-		position: absolute;
-		top: 20px;
-		right: 20px;
+		position: fixed;
+		top: var(--space-lg);
+		right: var(--space-xl);
 		width: 40px;
 		height: 40px;
 		border-radius: 50%;
@@ -417,6 +441,10 @@
 		z-index: 110;
 		border: none;
 		cursor: pointer;
+	}
+
+	.header.scrolled .header__mobile-close {
+		top: var(--space-md);
 	}
 
 	.header__mobile-close:hover {
