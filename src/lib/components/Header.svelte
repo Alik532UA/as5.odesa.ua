@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Logo from "./Logo.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
+	import { Menu, X } from "lucide-svelte";
 	import { ui } from "$lib/states/ui.svelte";
 	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
@@ -119,19 +120,24 @@
 		<button
 			class="header__burger"
 			onclick={ui.toggleMenu}
-			aria-label={ui.isMenuOpen ? "Закрити меню" : "Відкрити меню"}
+			aria-label="Відкрити меню"
 			aria-expanded={ui.isMenuOpen}
 			id="burger-menu"
 		>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
-			<span class="header__burger-line" class:open={ui.isMenuOpen}></span>
+			<Menu size={24} />
 		</button>
 	</div>
 
 	<!-- Mobile overlay menu -->
 	{#if ui.isMenuOpen}
 		<div class="header__mobile-overlay" role="dialog" aria-modal="true">
+			<button
+				class="header__mobile-close"
+				onclick={ui.closeMenu}
+				aria-label="Закрити меню"
+			>
+				<X size={24} />
+			</button>
 			<nav aria-label="Мобільне меню">
 				<ul class="header__mobile-list">
 					{#each navItems as item}
@@ -356,32 +362,19 @@
 	/* Burger */
 	.header__burger {
 		display: none;
-		flex-direction: column;
-		gap: 5px;
-		width: 30px;
-		padding: 4px 0;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-deep-ocean);
+		background: var(--color-ice-blue);
+		transition: all var(--transition-base);
 		z-index: 120;
 	}
 
-	.header__burger-line {
-		width: 100%;
-		height: 2.5px;
-		background: var(--color-deep-ocean);
-		border-radius: 2px;
-		transition: all var(--transition-base);
-		transform-origin: center;
-	}
-
-	.header__burger-line.open:nth-child(1) {
-		transform: rotate(45deg) translate(5px, 5px);
-	}
-
-	.header__burger-line.open:nth-child(2) {
-		opacity: 0;
-	}
-
-	.header__burger-line.open:nth-child(3) {
-		transform: rotate(-45deg) translate(6px, -6px);
+	.header__burger:hover {
+		background: var(--color-sky-blue);
 	}
 
 	/* Mobile overlay */
@@ -395,6 +388,29 @@
 		align-items: center;
 		justify-content: center;
 		animation: fadeIn 0.3s ease;
+	}
+
+	.header__mobile-close {
+		position: absolute;
+		top: 20px;
+		right: 20px;
+		width: 40px;
+		height: 40px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		color: var(--color-deep-ocean);
+		background: var(--color-ice-blue);
+		transition: all var(--transition-base);
+		z-index: 110;
+		border: none;
+		cursor: pointer;
+	}
+
+	.header__mobile-close:hover {
+		background: var(--color-sky-blue);
+		transform: rotate(90deg);
 	}
 
 	.header__mobile-list {
