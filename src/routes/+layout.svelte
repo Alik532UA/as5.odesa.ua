@@ -87,7 +87,9 @@
 
 	function safeT(key: string, fallback: string): string {
 		try {
-			return $t(key);
+			const result = $t(key);
+			// $t returns the key itself if translation not found (locale not loaded yet)
+			return (result && result !== key) ? result : fallback;
 		} catch {
 			return fallback;
 		}
