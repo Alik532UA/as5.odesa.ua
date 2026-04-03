@@ -28,7 +28,7 @@
 	});
 </script>
 
-<canvas bind:this={canvas} class="bg-canvas"></canvas>
+<canvas bind:this={canvas} class="bg-canvas" style="background: transparent;"></canvas>
 
 <style>
 	.bg-canvas {
@@ -39,5 +39,6 @@
 		height: 100%;
 		z-index: 0;
 		pointer-events: none;
+		background: transparent;
 	}
 </style>

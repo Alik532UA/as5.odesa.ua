@@ -61,5 +61,6 @@
 		z-index: 0;
 		pointer-events: none;
 		opacity: 1;
+		background: transparent;
 	}
 </style>
