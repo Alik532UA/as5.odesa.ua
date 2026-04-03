@@ -1,11 +1,13 @@
 <script lang="ts">
 	import Header from '$lib/components/Header.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import DynamicBackground from '$lib/components/DynamicBackground.svelte';
 	import '$lib/styles/global.css';
 	import { seo } from '$lib/services/seo.svelte';
 	import '$lib/i18n';
 	import { waitLocale, isLoading } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
+	import { ui } from '$lib/states/ui.svelte';
 
 	let { children } = $props();
 </script>
@@ -27,7 +29,15 @@
 		<!-- Simple placeholder or nothing during transition -->
 	</div>
 {:then}
-	<div class="app">
+	<!-- Blur overlay for theme/language changes -->
+	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
+
+	<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground}>
+		<!-- Dynamic background -->
+		{#if ui.enableDynamicBackground}
+			<DynamicBackground backgroundType={ui.backgroundType} theme={ui.theme} />
+		{/if}
+
 		<Header />
 		<main id="main-content">
 			<ErrorBoundary>
@@ -39,14 +49,39 @@
 {/await}
 
 <style>
+	.theme-transition-overlay {
+		position: fixed;
+		inset: 0;
+		pointer-events: none;
+		opacity: 0;
+		backdrop-filter: blur(0px);
+		transition:
+			opacity 0.3s ease-in-out,
+			backdrop-filter 0.3s ease-in-out;
+		z-index: 9999;
+	}
+
+	.theme-transition-overlay.active {
+		opacity: 1;
+		backdrop-filter: blur(6px);
+	}
+
 	.app {
 		display: flex;
 		flex-direction: column;
 		min-height: 100vh;
+		position: relative;
+		isolation: isolate;
 	}
 
 	main {
 		flex: 1;
 		background-color: var(--color-light-blue);
+		position: relative;
+		z-index: 1;
+	}
+
+	.app.with-dynamic-bg main {
+		background-color: transparent;
 	}
 </style>

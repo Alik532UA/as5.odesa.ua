@@ -26,7 +26,15 @@
 		"language": "Language",
 		"theme": "Theme",
 		"light": "Light",
-		"dark": "Dark"
+		"dark": "Dark",
+		"dynamicBg": "Dynamic Background",
+		"bgType": "Background Type",
+		"bgNone": "None",
+		"bgParticles": "Particles",
+		"bgWaves": "Waves",
+		"bgShapes": "Shapes",
+		"blur": "Blur Effect",
+		"debugNote": "This is a temporary settings menu. We will choose and approve the preferred option, then hide this menu."
 	},
 	"departments": {
 		"description": "Today, the school has 6 departments where 335 students study:",

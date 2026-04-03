@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Logo from "./Logo.svelte";
+	import DebugSettingsDropdown from "./DebugSettingsDropdown.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
 	import { Menu, X } from "lucide-svelte";
 	import { fly } from "svelte/transition";
@@ -23,8 +24,21 @@
 		ui.setTheme(newTheme);
 	}
 
-	function changeLanguage(lang: string) {
+	async function changeLanguage(lang: string) {
+		if (ui.enableBlurEffect) {
+			ui.isLangChanging = true;
+			// Чекаємо повної тривалості блюру (0.3s) ДО зміни мови
+			await new Promise((r) => setTimeout(r, 300));
+		}
+
 		locale.set(lang);
+
+		if (ui.enableBlurEffect) {
+			// Даємо час на розчинення блюру
+			setTimeout(() => {
+				ui.isLangChanging = false;
+			}, 300);
+		}
 	}
 
 	const navItems = $derived([
@@ -131,6 +145,7 @@
 					</div>
 				</div>
 			</div>
+			<DebugSettingsDropdown isOpen={settingsOpen} />
 		</div>
 
 		<button
@@ -378,6 +393,76 @@
 	}
 
 	.header__settings-opt.active {
+		background: var(--color-white);
+		box-shadow: var(--shadow-sm);
+		color: var(--color-golden);
+	}
+
+	/* Debug dropdown - same styles as main dropdown */
+	:global(.header__settings-dropdown-debug) {
+		position: absolute;
+		top: calc(100% + 170px);
+		right: 0;
+		width: 220px;
+		background: var(--color-white);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		padding: var(--space-md);
+		opacity: 0;
+		visibility: hidden;
+		transform: translateY(10px);
+		transition: all var(--transition-base);
+		z-index: 329;
+	}
+
+	.header__settings.open :global(.header__settings-dropdown-debug) {
+		opacity: 1;
+		visibility: visible;
+		transform: translateY(5px);
+	}
+
+	/* Inherit styles for debug dropdown content */
+	:global(.header__settings-dropdown-debug .header__settings-group) {
+		margin-bottom: var(--space-md);
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-group:last-child) {
+		margin-bottom: 0;
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-label) {
+		display: block;
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--color-muted-text);
+		text-transform: uppercase;
+		margin-bottom: var(--space-xs);
+		letter-spacing: 0.05em;
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-options) {
+		display: flex;
+		gap: var(--space-xs);
+		background: var(--color-ice-blue);
+		padding: 4px;
+		border-radius: var(--radius-md);
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-opt) {
+		flex: 1;
+		padding: 6px;
+		font-size: 0.8rem;
+		font-weight: 700;
+		border-radius: var(--radius-sm);
+		transition: all var(--transition-fast);
+		color: var(--color-deep-ocean);
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-opt:hover) {
+		background: rgba(255, 255, 255, 0.5);
+	}
+
+	:global(.header__settings-dropdown-debug .header__settings-opt.active) {
 		background: var(--color-white);
 		box-shadow: var(--shadow-sm);
 		color: var(--color-golden);

@@ -1,17 +1,39 @@
 class UIState {
 	isMenuOpen = $state(false);
 	theme = $state<'light' | 'dark'>('light');
+	backgroundType = $state<0 | 1 | 2 | 3>(0);
+	isThemeChanging = $state(false);
+	isLangChanging = $state(false);
+	// Debug toggles
+	enableDynamicBackground = $state(false);
+	enableBlurEffect = $state(true);
 
 	constructor() {
 		if (typeof window !== 'undefined') {
 			// Read theme from localStorage or OS settings
 			const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
 			if (savedTheme) {
-				this.setTheme(savedTheme);
+				this.setTheme(savedTheme, { withBlur: false });
 			} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-				this.setTheme('dark');
+				this.setTheme('dark', { withBlur: false });
 			} else {
-				this.setTheme('light');
+				this.setTheme('light', { withBlur: false });
+			}
+			
+			// Read background type from localStorage
+			const savedBg = localStorage.getItem('backgroundType') as '0' | '1' | '2' | '3' | null;
+			if (savedBg) {
+				this.backgroundType = parseInt(savedBg) as 0 | 1 | 2 | 3;
+			}
+
+			// Read debug settings from localStorage
+			const enableDynBg = localStorage.getItem('enableDynamicBackground');
+			if (enableDynBg !== null) {
+				this.enableDynamicBackground = enableDynBg === 'true';
+			}
+			const enableBlur = localStorage.getItem('enableBlurEffect');
+			if (enableBlur !== null) {
+				this.enableBlurEffect = enableBlur === 'true';
 			}
 			
 			// Listen to OS theme changes
@@ -38,7 +60,17 @@ class UIState {
 		}
 	};
 
-	setTheme = (t: 'light' | 'dark') => {
+	setTheme = async (t: 'light' | 'dark', options: { withBlur?: boolean } = {}) => {
+		if (this.theme === t) return;
+
+		const withBlur = options.withBlur ?? true;
+
+		if (withBlur && this.enableBlurEffect) {
+			this.isThemeChanging = true;
+			// Чекаємо повної тривалості блюру (0.3s) ДО зміни теми
+			await new Promise((r) => setTimeout(r, 300));
+		}
+
 		this.theme = t;
 		if (typeof document !== 'undefined') {
 			document.documentElement.setAttribute('data-theme', t);
@@ -50,6 +82,34 @@ class UIState {
 		}
 		if (typeof localStorage !== 'undefined') {
 			localStorage.setItem('theme', t);
+		}
+
+		if (withBlur && this.enableBlurEffect) {
+			// Даємо час на розчинення блюру
+			setTimeout(() => {
+				this.isThemeChanging = false;
+			}, 300);
+		}
+	};
+
+	setBackgroundType = (type: 0 | 1 | 2 | 3) => {
+		this.backgroundType = type;
+		if (typeof localStorage !== 'undefined' && type !== 0) {
+			localStorage.setItem('backgroundType', type.toString());
+		}
+	};
+
+	toggleDynamicBackground = () => {
+		this.enableDynamicBackground = !this.enableDynamicBackground;
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('enableDynamicBackground', this.enableDynamicBackground.toString());
+		}
+	};
+
+	toggleBlurEffect = () => {
+		this.enableBlurEffect = !this.enableBlurEffect;
+		if (typeof localStorage !== 'undefined') {
+			localStorage.setItem('enableBlurEffect', this.enableBlurEffect.toString());
 		}
 	};
 }

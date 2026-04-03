@@ -144,6 +144,14 @@
 		background: linear-gradient(180deg, var(--color-light-blue) 0%, var(--color-white) 100%);
 	}
 
+	:global(.with-dynamic-bg) .footer {
+		background: transparent;
+	}
+
+	:global(.with-dynamic-bg) .footer__wave-top {
+		background: linear-gradient(180deg, var(--color-light-blue) 0%, transparent 100%);
+	}
+
 	/* Seagulls */
 	:global(.footer__seagull-1) {
 		position: absolute;
