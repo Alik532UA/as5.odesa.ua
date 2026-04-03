@@ -105,7 +105,12 @@
 		"title": "Competitions",
 		"p1": "The school is the founder of creative projects that discover new talents and inspire young artists ✨:",
 		"l1": "🎤 Municipal open festival-competition of young vocalists 'Singing Youth of Odesa' — a bright celebration of voice, where future stars are born.",
-		"l2": "🎼 All-Ukrainian two-round competition of performance mastery 'Modern View' — a platform for creative self-expression and professional growth of young musicians.",
+		"l2": {
+			"prefix": "🎼 All-Ukrainian two-round competition of performance mastery",
+			"url": "https://www.modern-view.in.ua/",
+			"linkText": "'Modern View'",
+			"suffix": "— a platform for creative self-expression and professional growth of young musicians."
+		},
 		"l3": "🧠 'Brain-ring' in theoretical disciplines — an intellectual competition that develops musical thinking, erudition, and a love for music theory.",
 		"p2": "These competitions have become an integral part of cultural life, bringing together talented youth and contributing to the development of musical art 🎶.",
 		"p3": "In addition to these projects, there are internal competitions in the school: 'What the Music Told', 'What the Music Told Through the Eyes of a Musicologist', 'Singing in Quarantine', 'Playing in Quarantine', 'Singing Star', and others."
@@ -120,7 +125,7 @@
 		"l2": "if available — documents confirming benefits.",
 		"p5": "Join our creative family — we are waiting for you at the address:",
 		"address": "📍 18 Chornomorskoho Kozatstva St, Odesa",
-		"phone": "📞 Phone for inquiries: (048) 723-81-10",
+		"phone": "📞 +38 048 723 81 10",
 		"p6": "Come — and perhaps here your great creative story will begin ✨"
 	},
 	"seo": {

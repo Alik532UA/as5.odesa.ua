@@ -12,7 +12,7 @@
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { ui } from '$lib/states/ui.svelte';
 
-	let { children } = $props();
+	let { children, data } = $props();
 
 	$effect(() => {
 		if (browser) {
@@ -129,17 +129,16 @@
 	const metaDescription = $derived(
 		safeT(`seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
 	);
-	const baseOrigin = $derived(browser ? window.location.origin : SITE_FALLBACK_ORIGIN);
-	const canonicalUrl = $derived(`${baseOrigin}${page.url.pathname}`);
-	const ogImageUrl = $derived(`${baseOrigin}${base}/og/og-default-1200x630.jpg`);
+	const canonicalUrl = $derived(data.canonicalUrl || `${SITE_FALLBACK_ORIGIN}${page.url.pathname}`);
+	const ogImageUrl = $derived(`${SITE_FALLBACK_ORIGIN}${base}/og/og-default-1200x630.jpg`);
 	const seoTitle = $derived(`${metaTitle} | ${brandTitle}`);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
 	const schemaOrg = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'EducationalOrganization',
 		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
-		url: baseOrigin,
-		logo: `${baseOrigin}${base}/ods-as5-logo-full.svg`,
+		url: SITE_FALLBACK_ORIGIN,
+		logo: `${SITE_FALLBACK_ORIGIN}${base}/ods-as5-logo-full.svg`,
 		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',

@@ -2,6 +2,7 @@
 	import Hero from '$lib/components/Hero.svelte';
 	import Departments from '$lib/components/Departments.svelte';
 	import Wave from '$lib/components/Wave.svelte';
+	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
@@ -35,11 +36,15 @@
 	]);
 </script>
 
-<Hero />
+<ErrorBoundary title="Помилка Hero секції">
+	<Hero />
+</ErrorBoundary>
 
 <div bind:this={departmentsRef} class="lazy-section">
 	{#if showDepartments}
-		<Departments />
+		<ErrorBoundary title="Помилка Відділень">
+			<Departments />
+		</ErrorBoundary>
 	{:else}
 		<div class="lazy-placeholder">
 			Завантаження...
@@ -61,15 +66,15 @@
 	</div>
 </div>
 
-<section class="gallery-bento" id="gallery-bento">
+<section class="gallery-bento" id="gallery-bento" aria-labelledby="gallery-title">
 	<div class="container">
 		<div class="gallery-bento__header">
-			<h2 class="gallery-bento__title">{$t('gallery.title')}</h2>
+			<h2 class="gallery-bento__title" id="gallery-title">{$t('gallery.title')}</h2>
 			<p class="gallery-bento__subtitle">{$t('gallery.subtitle')}</p>
 		</div>
 
 		<div class="g-bento-4x3">
-			{#each galleryImages as img}
+			{#each galleryImages as img (img.src)}
 				<div class="g-bento-4x3__item">
 					<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
 					<div class="g-bento-4x3__overlay">

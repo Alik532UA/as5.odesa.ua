@@ -133,30 +133,39 @@
 			</div>
 		</div>
 
-		<div class="focus-viewport">
+		<div
+			class="focus-viewport"
+			role="region"
+			aria-label="Карусель новин"
+			aria-roledescription="carousel"
+		>
 			<div
 				class="focus-track"
 				style="
 					transform: translateX(calc(50% - 300px - {carousel.currentIndex * 620}px));
 					transition: {carousel.isTransitioning ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'};
 				"
+				aria-live="polite"
+				aria-atomic="false"
 			>
 				{#each infiniteNews as item, i}
 					{@render NewsCard(item, i)}
 				{/each}
 			</div>
 
-			<button class="nav-btn nav-btn--prev" onclick={carousel.prev} aria-label="Попередній слайд">←</button>
-			<button class="nav-btn nav-btn--next" onclick={carousel.next} aria-label="Наступний слайд">→</button>
+			<button class="nav-btn nav-btn--prev" onclick={carousel.prev} aria-label="Попередній слайд" title="Попередній (←)">←</button>
+			<button class="nav-btn nav-btn--next" onclick={carousel.next} aria-label="Наступний слайд" title="Наступний (→)">→</button>
 		</div>
 
-		<div class="focus-dots">
+		<div class="focus-dots" role="tablist" aria-label="Номер слайда">
 			{#each newsItems as _, i}
 				<button
 					class="f-dot"
+					role="tab"
 					class:active={(carousel.currentIndex - 1 + newsItems.length) % newsItems.length === i}
 					onclick={() => carousel.goTo(i)}
 					aria-label="Слайд {i + 1}"
+					aria-selected={(carousel.currentIndex - 1 + newsItems.length) % newsItems.length === i}
 				></button>
 			{/each}
 		</div>
@@ -164,7 +173,14 @@
 </section>
 
 {#snippet NewsCard(item: any, i: number)}
-	<article class="focus-card" class:is-active={carousel.currentIndex === i}>
+	<article
+		class="focus-card"
+		class:is-active={carousel.currentIndex === i}
+		role="group"
+		aria-roledescription="slide"
+		aria-label="Новина {i}: {item.title}"
+		aria-hidden={carousel.currentIndex !== i}
+	>
 		<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {item.color || '#eee'}, #fff)">
 			<PhotoIcon size={64} className="focus-card__placeholder" />
 		</div>
@@ -175,7 +191,12 @@
 			</div>
 			<h3 class="focus-card__title">{item.title}</h3>
 			<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
-			<a href={`${base}/news/${item.id}`} class="btn-more">Читати далі →</a>
+			<a
+				href={`${base}/news/${item.id}`}
+				class="btn-more"
+				tabindex={carousel.currentIndex === i ? 0 : -1}
+				aria-label="Читати далі: {item.title}"
+			>Читати далі →</a>
 		</div>
 	</article>
 {/snippet}
