@@ -68,6 +68,7 @@
 			var(--space-4xl);
 		overflow: hidden;
 		min-height: 600px;
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .hero {
@@ -108,8 +109,8 @@
 	}
 
 	:global(.hero__seagull--5) {
-		top: 30%;
-		right: 68%;
+		top: 34%;
+		right: 86%;
 		animation-delay: 1.5s;
 	}
 

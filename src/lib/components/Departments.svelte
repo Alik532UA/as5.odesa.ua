@@ -59,6 +59,7 @@
 		background: var(--color-white);
 		padding: var(--space-4xl) 0;
 		position: relative;
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .departments {

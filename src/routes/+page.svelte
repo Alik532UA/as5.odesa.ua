@@ -87,6 +87,7 @@
 		align-items: center;
 		justify-content: center;
 		background: var(--color-light-blue);
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .lazy-placeholder {
@@ -98,6 +99,7 @@
 		height: 80px;
 		z-index: 10;
 		background: linear-gradient(180deg, var(--color-white) 0%, var(--color-light-blue) 100%);
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .section-divider {
@@ -121,6 +123,7 @@
 		padding: 4rem 0 6rem;
 		overflow: hidden;
 		position: relative;
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .gallery-bento {

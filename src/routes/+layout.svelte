@@ -36,9 +36,12 @@
 		<div class="app__base-bg" aria-hidden="true"></div>
 
 		<!-- Dynamic background -->
-		{#if ui.enableDynamicBackground}
-			<DynamicBackground backgroundType={ui.backgroundType} theme={ui.theme} />
-		{/if}
+		<!-- Dynamic background - ALWAYS mounted for smooth transitions -->
+		<DynamicBackground 
+			backgroundType={ui.backgroundType} 
+			theme={ui.theme}
+			enabled={ui.enableDynamicBackground}
+		/>
 
 		<Header />
 		<main id="main-content">

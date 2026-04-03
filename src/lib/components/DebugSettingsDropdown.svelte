@@ -10,15 +10,29 @@
 	};
 
 	const selectDynamicBackground = (type: 0 | 1 | 2 | 3) => {
+		console.log("[DebugSettingsDropdown] Selecting background:", {
+			type,
+			currentType: ui.backgroundType,
+			wasEnabled: ui.enableDynamicBackground,
+			timestamp: new Date().toISOString(),
+		});
+
 		ui.setBackgroundType(type);
 
 		if (type === 0 && ui.enableDynamicBackground) {
+			console.log("[DebugSettingsDropdown] Disabling dynamic background (type=0)");
 			ui.toggleDynamicBackground();
 		}
 
 		if (type !== 0 && !ui.enableDynamicBackground) {
+			console.log("[DebugSettingsDropdown] Enabling dynamic background (type!=0)");
 			ui.toggleDynamicBackground();
 		}
+
+		console.log("[DebugSettingsDropdown] After selection:", {
+			newType: ui.backgroundType,
+			isEnabled: ui.enableDynamicBackground,
+		});
 	};
 
 	const backgrounds: BackgroundOption[] = [

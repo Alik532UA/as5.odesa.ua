@@ -131,6 +131,7 @@
 		position: relative;
 		border: none;
 		margin-top: 100px; /* Space for the wave */
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .footer {
@@ -146,6 +147,7 @@
 		line-height: 0;
 		z-index: 5;
 		background: linear-gradient(180deg, var(--color-light-blue) 0%, var(--color-white) 100%);
+		transition: background 800ms ease-in-out;
 	}
 
 	:global(.app.with-dynamic-bg) .footer__wave-top {

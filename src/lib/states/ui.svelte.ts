@@ -93,14 +93,28 @@ class UIState {
 	};
 
 	setBackgroundType = (type: 0 | 1 | 2 | 3) => {
+		const oldType = this.backgroundType;
 		this.backgroundType = type;
+		console.log("[UIState] Background type changed:", {
+			from: oldType,
+			to: type,
+			isEnabled: this.enableDynamicBackground,
+			timestamp: new Date().toISOString(),
+		});
 		if (typeof localStorage !== 'undefined' && type !== 0) {
 			localStorage.setItem('backgroundType', type.toString());
 		}
 	};
 
 	toggleDynamicBackground = () => {
+		const oldState = this.enableDynamicBackground;
 		this.enableDynamicBackground = !this.enableDynamicBackground;
+		console.log("[UIState] Dynamic background toggled:", {
+			from: oldState,
+			to: this.enableDynamicBackground,
+			currentType: this.backgroundType,
+			timestamp: new Date().toISOString(),
+		});
 		if (typeof localStorage !== 'undefined') {
 			localStorage.setItem('enableDynamicBackground', this.enableDynamicBackground.toString());
 		}
