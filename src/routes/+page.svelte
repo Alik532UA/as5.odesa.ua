@@ -54,7 +54,7 @@
 			amplitude={15}
 			frequency={5}
 			speed={0.003}
-			color="#005fae"
+			color="var(--theme-wave-stroke)"
 			strokeWidth={15}
 		/>
 	</div>
@@ -90,11 +90,7 @@
 	}
 
 	:global(.app.with-dynamic-bg) .lazy-placeholder {
-		background: rgba(234, 246, 251, 0.74);
-	}
-
-	:global(.dark-theme .app.with-dynamic-bg) .lazy-placeholder {
-		background: rgba(13, 31, 45, 0.72);
+		background: transparent;
 	}
 
 	.section-divider {
@@ -105,19 +101,7 @@
 	}
 
 	:global(.app.with-dynamic-bg) .section-divider {
-		background: linear-gradient(
-			180deg,
-			rgba(255, 255, 255, 0.78) 0%,
-			rgba(234, 246, 251, 0.66) 100%
-		);
-	}
-
-	:global(.dark-theme .app.with-dynamic-bg) .section-divider {
-		background: linear-gradient(
-			180deg,
-			rgba(18, 37, 51, 0.78) 0%,
-			rgba(13, 31, 45, 0.66) 100%
-		);
+		background: transparent;
 	}
 
 	.section-divider__wave {
@@ -140,11 +124,7 @@
 	}
 
 	:global(.app.with-dynamic-bg) .gallery-bento {
-		background: rgba(234, 246, 251, 0.72);
-	}
-
-	:global(.dark-theme .app.with-dynamic-bg) .gallery-bento {
-		background: rgba(13, 31, 45, 0.7);
+		background: transparent;
 	}
 
 	.gallery-bento__header {
@@ -196,7 +176,7 @@
 	.g-bento-4x3__overlay {
 		position: absolute;
 		inset: 0;
-		background: linear-gradient(to top, rgba(0,95,174,0.85), transparent 60%);
+		background: linear-gradient(to top, var(--theme-gallery-overlay-from), transparent 60%);
 		display: flex;
 		align-items: flex-end;
 		padding: 2.5rem;

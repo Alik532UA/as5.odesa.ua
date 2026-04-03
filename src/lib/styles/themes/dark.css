@@ -1,0 +1,60 @@
+.dark-theme {
+	/* Base palette overrides */
+	--color-deep-ocean: #3aacce;
+	--color-sea-blue: #2196ba;
+	--color-sea-blue-light: #1b5e7b;
+	--color-sky-blue: #1a3a4a;
+	--color-light-blue: #0d1f2d;
+	--color-ice-blue: #142b3b;
+	--color-page-bg: #0a1622;
+
+	/* Accent palette */
+	--color-golden: #f5a623;
+	--color-golden-hover: #e09510;
+	--color-warm-gold: #ffc107;
+
+	/* Neutrals */
+	--color-white: #122533;
+	--color-dark-text: #eaf6fb;
+	--color-body-text: #d6eef5;
+	--color-muted-text: #7a9dae;
+	--color-border: #1b5e7b;
+	--color-black: #000000;
+	--color-pure-white: #ffffff;
+
+	/* Theme surfaces and overlays */
+	--theme-dynamic-main-bg: rgba(13, 31, 45, 0.7);
+	--theme-dynamic-section-bg: rgba(13, 31, 45, 0.72);
+	--theme-dynamic-surface-bg: rgba(18, 37, 51, 0.72);
+	--theme-dynamic-card-bg: rgba(20, 43, 59, 0.82);
+	--theme-dynamic-divider-from: rgba(18, 37, 51, 0.78);
+	--theme-dynamic-divider-to: rgba(13, 31, 45, 0.66);
+	--theme-dynamic-hero-from: rgba(13, 31, 45, 0.86);
+	--theme-dynamic-hero-mid: rgba(26, 58, 74, 0.78);
+	--theme-dynamic-hero-to: rgba(18, 37, 51, 0.72);
+
+	/* Component-specific colors */
+	--theme-seagull-color: #36c7f3;
+	--theme-hero-story-bg: rgba(255, 255, 255, 0.05);
+	--theme-image-shadow: 0 20px 40px rgba(0, 0, 0, 0.28);
+	--theme-cloud-strong: rgba(58, 172, 206, 0.2);
+	--theme-cloud-soft: rgba(58, 172, 206, 0.14);
+	--theme-gallery-overlay-from: rgba(0, 95, 174, 0.7);
+	--theme-wave-stroke: #005fae;
+
+	/* Piano and footer controls */
+	--theme-footer-piano-base: #000000;
+	--theme-footer-piano-white: #ffffff;
+	--theme-footer-piano-white-border: #dddddd;
+	--theme-footer-piano-text: #000000;
+	--theme-footer-piano-text-bg: rgba(255, 255, 255, 0.78);
+	--theme-footer-order-hover-text: #ffffff;
+
+	/* Shadow tokens */
+	--shadow-sm: 0 1px 3px rgba(8, 20, 33, 0.35);
+	--shadow-md: 0 4px 12px rgba(8, 20, 33, 0.4);
+	--shadow-lg: 0 8px 30px rgba(8, 20, 33, 0.45);
+	--shadow-xl: 0 12px 40px rgba(8, 20, 33, 0.5);
+	--shadow-btn-primary: 0 4px 15px rgba(245, 166, 35, 0.3);
+	--shadow-btn-primary-hover: 0 6px 20px rgba(245, 166, 35, 0.4);
+}

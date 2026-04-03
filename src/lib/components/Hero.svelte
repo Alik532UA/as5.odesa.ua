@@ -49,7 +49,7 @@
 			amplitude={15}
 			frequency={5}
 			speed={0.003}
-			color="#005fae"
+			color="var(--theme-wave-stroke)"
 			strokeWidth={15}
 		/>
 	</div>
@@ -71,21 +71,7 @@
 	}
 
 	:global(.app.with-dynamic-bg) .hero {
-		background: linear-gradient(
-			180deg,
-			rgba(234, 246, 251, 0.86) 0%,
-			rgba(214, 238, 245, 0.78) 60%,
-			rgba(255, 255, 255, 0.72) 100%
-		);
-	}
-
-	:global(.dark-theme .app.with-dynamic-bg) .hero {
-		background: linear-gradient(
-			180deg,
-			rgba(13, 31, 45, 0.86) 0%,
-			rgba(26, 58, 74, 0.78) 60%,
-			rgba(18, 37, 51, 0.72) 100%
-		);
+		background: transparent;
 	}
 
 	/* Seagulls Layering */
@@ -93,7 +79,7 @@
 		position: absolute;
 		animation: seagullFly 4s ease-in-out infinite;
 		z-index: 5; /* Above images and buttons, below text */
-		color: #36c7f3;
+		color: var(--theme-seagull-color);
 		opacity: 0.8;
 	}
 
@@ -170,17 +156,13 @@
 		font-size: 1.1rem;
 		line-height: 1.7;
 		color: var(--color-body-text);
-		background: rgba(255, 255, 255, 0.5);
+		background: var(--theme-hero-story-bg);
 		padding: var(--space-lg);
 		border-left: 4px solid var(--color-golden);
 		border-radius: 0 var(--radius-md) var(--radius-md) 0;
 		animation: fadeInUp 0.8s ease-out 0.3s both;
 		font-style: italic;
 		text-align: left;
-	}
-
-	:global(.dark-theme) .hero__story {
-		background: rgba(255, 255, 255, 0.05);
 	}
 
 	/* Image area — Lower than seagulls */
@@ -196,7 +178,7 @@
 		min-height: 300px;
 		border-radius: 40px;
 		overflow: hidden;
-		box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+		box-shadow: var(--theme-image-shadow);
 		cursor: pointer;
 	}
 
@@ -223,7 +205,7 @@
 		height: 200px;
 		background: radial-gradient(
 			circle,
-			rgba(33, 150, 186, 0.15) 0%,
+			var(--theme-cloud-strong) 0%,
 			transparent 70%
 		);
 		top: -30px;
@@ -235,7 +217,7 @@
 		height: 150px;
 		background: radial-gradient(
 			circle,
-			rgba(33, 150, 186, 0.1) 0%,
+			var(--theme-cloud-soft) 0%,
 			transparent 70%
 		);
 		bottom: -20px;

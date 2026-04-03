@@ -20,7 +20,7 @@
 			amplitude={15}
 			frequency={5}
 			speed={0.003}
-			color="#005fae"
+			color="var(--theme-wave-stroke)"
 			strokeWidth={15}
 			showFish={true}
 		/>
@@ -133,6 +133,10 @@
 		margin-top: 100px; /* Space for the wave */
 	}
 
+	:global(.app.with-dynamic-bg) .footer {
+		background: transparent;
+	}
+
 	.footer__wave-top {
 		position: absolute;
 		top: -100px;
@@ -144,20 +148,8 @@
 		background: linear-gradient(180deg, var(--color-light-blue) 0%, var(--color-white) 100%);
 	}
 
-	:global(.with-dynamic-bg) .footer {
-		background: rgba(234, 246, 251, 0.72);
-	}
-
-	:global(.with-dynamic-bg) .footer__wave-top {
-		background: linear-gradient(180deg, rgba(234, 246, 251, 0) 0%, rgba(234, 246, 251, 0.72) 100%);
-	}
-
-	:global(.dark-theme .with-dynamic-bg) .footer {
-		background: rgba(13, 31, 45, 0.7);
-	}
-
-	:global(.dark-theme .with-dynamic-bg) .footer__wave-top {
-		background: linear-gradient(180deg, rgba(13, 31, 45, 0) 0%, rgba(13, 31, 45, 0.7) 100%);
+	:global(.app.with-dynamic-bg) .footer__wave-top {
+		background: transparent;
 	}
 
 	/* Seagulls */
@@ -192,12 +184,12 @@
 		justify-content: center;
 		width: 120px;
 		height: 36px;
-		background: #000;
-		border: 2px solid #000;
+		background: var(--theme-footer-piano-base);
+		border: 2px solid var(--theme-footer-piano-base);
 		border-radius: 4px 4px 6px 6px;
 		cursor: pointer;
 		transition: all 0.2s ease;
-		box-shadow: 0 3px 0 #000;
+		box-shadow: 0 3px 0 var(--theme-footer-piano-base);
 		overflow: hidden;
 		padding: 0;
 	}
@@ -206,13 +198,13 @@
 		position: absolute;
 		inset: 0;
 		display: flex;
-		background: #000;
+		background: var(--theme-footer-piano-base);
 	}
 
 	.footer__piano-white {
 		flex: 1;
-		background: #fff;
-		border-right: 1px solid #ddd;
+		background: var(--theme-footer-piano-white);
+		border-right: 1px solid var(--theme-footer-piano-white-border);
 		height: 100%;
 	}
 
@@ -225,7 +217,7 @@
 		top: 0;
 		width: 12%;
 		height: 60%;
-		background: #000;
+		background: var(--theme-footer-piano-base);
 		border-radius: 0 0 2px 2px;
 		transform: translateX(-50%);
 		z-index: 1;
@@ -233,12 +225,12 @@
 
 	.footer__btn-piano:hover {
 		transform: translateY(1.5px);
-		box-shadow: 0 1.5px 0 #000;
+		box-shadow: 0 1.5px 0 var(--theme-footer-piano-base);
 	}
 
 	.footer__btn-piano:active {
 		transform: translateY(3px);
-		box-shadow: 0 0 0 #000;
+		box-shadow: 0 0 0 var(--theme-footer-piano-base);
 	}
 
 	.footer__btn-piano-text {
@@ -246,9 +238,9 @@
 		font-weight: 700;
 		font-size: 0.75rem;
 		text-transform: uppercase;
-		color: #000;
+		color: var(--theme-footer-piano-text);
 		z-index: 2;
-		background: rgba(255, 255, 255, 0.7);
+		background: var(--theme-footer-piano-text-bg);
 		padding: 1px 4px;
 		border-radius: 3px;
 		pointer-events: none;
@@ -278,7 +270,7 @@
 
 	.footer__btn-order:hover {
 		background: var(--color-deep-ocean);
-		color: white;
+		color: var(--theme-footer-order-hover-text);
 		transform: translateY(-2px);
 	}
 
