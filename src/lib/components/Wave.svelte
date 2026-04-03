@@ -29,6 +29,7 @@
 	const width = 1440; // Base SVG width
 	const points = 100; // Number of points for the curve
 	const step = width / points;
+	let viewportWidth = $state(1440);
 
 	// Fish state
 	let fishX = $state(-100);
@@ -84,6 +85,17 @@
 	let clipPathData = $derived(`${pathData} L ${width} -1000 L 0 -1000 Z`);
 	const clipId = `wave-clip-${Math.random().toString(36).slice(2, 9)}`;
 
+	// Mobile coefficient scaling: keep desktop proportional, make mobile wave larger
+	// than pure proportional scaling while preserving aspect ratio.
+	const waveWidthPercent = $derived.by(() => {
+		if (viewportWidth > 768) return 100;
+		const ratio = Math.max(0.2, Math.min(1, viewportWidth / width));
+		const multiplier = 1 / Math.sqrt(ratio);
+		return Math.min(220, Math.max(100, multiplier * 100));
+	});
+
+	const waveOffsetPercent = $derived.by(() => (100 - waveWidthPercent) / 2);
+
 	// Fish Rotation calculation
 	let fishRotation = $derived.by(() => {
 		const normalizedX = fishX / width;
@@ -108,6 +120,16 @@
 	});
 
 	onMount(() => {
+		if (typeof window !== "undefined") {
+			viewportWidth = window.innerWidth;
+		}
+
+		const handleResize = () => {
+			viewportWidth = window.innerWidth;
+		};
+
+		window.addEventListener("resize", handleResize, { passive: true });
+
 		let frame: number;
 		const animate = () => {
 			phase += speed; // Changed to += for Right to Left direction
@@ -166,6 +188,7 @@
 		return () => {
 			cancelAnimationFrame(frame);
 			if (fishInterval) clearTimeout(fishInterval);
+			window.removeEventListener("resize", handleResize);
 		};
 	});
 
@@ -178,6 +201,8 @@
 		viewBox="0 0 {width} {height}"
 		xmlns="http://www.w3.org/2000/svg"
 		aria-hidden="true"
+		style:width={`${waveWidthPercent}%`}
+		style:margin-left={`${waveOffsetPercent}%`}
 	>
 		{#if showFish && isFishActive}
 			<defs>
