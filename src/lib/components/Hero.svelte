@@ -20,7 +20,7 @@
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
 				<img
-					src={`${base}/photo/photoForMainPage-02.jpg`}
+					src={`${base}/photo/photoForMainPage-08.jpg`}
 					alt=""
 					width="1200"
 					height="900"

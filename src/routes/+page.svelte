@@ -32,7 +32,7 @@
 		{ src: `${base}/photo/photoForMainPage-04.jpg`, alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
 		{ src: `${base}/photo/photoForMainPage-06.jpg`, alt: 'School Life 4', title: $t('gallery.items.evenings') },
 		{ src: `${base}/photo/photoForMainPage-07.jpg`, alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
-		{ src: `${base}/photo/photoForMainPage-08.jpg`, alt: 'School Life 6', title: $t('gallery.items.harmony') },
+		{ src: `${base}/photo/photoForMainPage-02.jpg`, alt: 'School Life 6', title: $t('gallery.items.harmony') },
 	]);
 </script>
 
