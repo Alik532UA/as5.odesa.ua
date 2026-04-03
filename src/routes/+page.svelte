@@ -4,6 +4,7 @@
 	import Wave from '$lib/components/Wave.svelte';
 	import { t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
+	import { base } from '$app/paths';
 	
 	let showDepartments = $state(false);
 	let departmentsRef: HTMLElement | null = $state(null);
@@ -25,12 +26,12 @@
 	});
 
 	const galleryImages = $derived([
-		{ src: '/photo/photoForMainPage-01.jpg', alt: 'School Life 1', title: $t('gallery.items.process') },
-		{ src: '/photo/photoForMainPage-03.jpg', alt: 'School Life 2', title: $t('gallery.items.talents') },
-		{ src: '/photo/photoForMainPage-04.jpg', alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
-		{ src: '/photo/photoForMainPage-06.jpg', alt: 'School Life 4', title: $t('gallery.items.evenings') },
-		{ src: '/photo/photoForMainPage-07.jpg', alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
-		{ src: '/photo/photoForMainPage-08.jpg', alt: 'School Life 6', title: $t('gallery.items.harmony') },
+		{ src: `${base}/photo/photoForMainPage-01.jpg`, alt: 'School Life 1', title: $t('gallery.items.process') },
+		{ src: `${base}/photo/photoForMainPage-03.jpg`, alt: 'School Life 2', title: $t('gallery.items.talents') },
+		{ src: `${base}/photo/photoForMainPage-04.jpg`, alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
+		{ src: `${base}/photo/photoForMainPage-06.jpg`, alt: 'School Life 4', title: $t('gallery.items.evenings') },
+		{ src: `${base}/photo/photoForMainPage-07.jpg`, alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
+		{ src: `${base}/photo/photoForMainPage-08.jpg`, alt: 'School Life 6', title: $t('gallery.items.harmony') },
 	]);
 </script>
 

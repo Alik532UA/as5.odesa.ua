@@ -1,13 +1,6 @@
 <script lang="ts">
-	// Removed SVG icon imports as we are now using PNG images
-	// import PianoIcon from "./icons/PianoIcon.svelte";
-	// import StringsIcon from "./icons/StringsIcon.svelte";
-	// import VocalIcon from "./icons/VocalIcon.svelte";
-	// import PopIcon from "./icons/PopIcon.svelte";
-	// import TheoryIcon from "./icons/TheoryIcon.svelte";
-	// import FolkIcon from "./icons/FolkIcon.svelte";
-	
-	import { t } from 'svelte-i18n'; // Ensure t is correctly imported
+	import { base } from '$app/paths';
+	import { t } from 'svelte-i18n';
 
 	interface Department {
 		id: string;
@@ -17,12 +10,12 @@
 	}
 
 	const departments = $derived([
-		{ id: "piano", name: $t("departments.list.piano"), iconPath: "/departments/piano.png" },
-		{ id: "strings", name: $t("departments.list.strings"), iconPath: "/departments/strings.png" },
-		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: "/departments/vocal.png" },
-		{ id: "pop", name: $t("departments.list.pop"), iconPath: "/departments/pop.png" },
-		{ id: "theory", name: $t("departments.list.theory"), iconPath: "/departments/theory.png" },
-		{ id: "folk", name: $t("departments.list.folk"), iconPath: "/departments/folk.png" },
+		{ id: "piano", name: $t("departments.list.piano"), iconPath: `${base}/departments/piano.png` },
+		{ id: "strings", name: $t("departments.list.strings"), iconPath: `${base}/departments/strings.png` },
+		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: `${base}/departments/vocal.png` },
+		{ id: "pop", name: $t("departments.list.pop"), iconPath: `${base}/departments/pop.png` },
+		{ id: "theory", name: $t("departments.list.theory"), iconPath: `${base}/departments/theory.png` },
+		{ id: "folk", name: $t("departments.list.folk"), iconPath: `${base}/departments/folk.png` },
 	]);
 </script>
 

@@ -1,15 +1,16 @@
 <script lang="ts">
 	import { t } from 'svelte-i18n';
+	import { base } from '$app/paths';
 
 	const galleryImages = $derived([
-		{ src: '/photo/photoForAboutPage-01.jpg', alt: 'School Photo 1', title: $t('about.gallery.edu') },
-		{ src: '/photo/photoForAboutPage-03.jpg', alt: 'School Photo 3', title: $t('about.gallery.musicians') },
-		{ src: '/photo/photoForAboutPage-02.jpg', alt: 'School Photo 2', title: $t('about.gallery.workshop') },
-		{ src: '/photo/photoForAboutPage-04.jpg', alt: 'School Photo 4', title: $t('about.gallery.stage') },
-		{ src: '/photo/photoForAboutPage-05.jpg', alt: 'School Photo 5', title: $t('about.gallery.lesson') },
-		{ src: '/photo/photoForAboutPage-06.jpg', alt: 'School Photo 6', title: $t('about.gallery.talents') },
-		{ src: '/photo/photoForAboutPage-07.jpg', alt: 'School Photo 7', title: $t('about.gallery.festival') },
-		{ src: '/photo/photoForAboutPage-08.jpg', alt: 'School Photo 8', title: $t('about.gallery.event') },
+		{ src: `${base}/photo/photoForAboutPage-01.jpg`, alt: 'School Photo 1', title: $t('about.gallery.edu') },
+		{ src: `${base}/photo/photoForAboutPage-03.jpg`, alt: 'School Photo 3', title: $t('about.gallery.musicians') },
+		{ src: `${base}/photo/photoForAboutPage-02.jpg`, alt: 'School Photo 2', title: $t('about.gallery.workshop') },
+		{ src: `${base}/photo/photoForAboutPage-04.jpg`, alt: 'School Photo 4', title: $t('about.gallery.stage') },
+		{ src: `${base}/photo/photoForAboutPage-05.jpg`, alt: 'School Photo 5', title: $t('about.gallery.lesson') },
+		{ src: `${base}/photo/photoForAboutPage-06.jpg`, alt: 'School Photo 6', title: $t('about.gallery.talents') },
+		{ src: `${base}/photo/photoForAboutPage-07.jpg`, alt: 'School Photo 7', title: $t('about.gallery.festival') },
+		{ src: `${base}/photo/photoForAboutPage-08.jpg`, alt: 'School Photo 8', title: $t('about.gallery.event') },
 	]);
 </script>
 

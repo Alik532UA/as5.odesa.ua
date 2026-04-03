@@ -26,7 +26,14 @@ const config = {
 		},
 		prerender: {
 			crawl: true,
-			entries: ['*'],
+			entries: [
+				'/',
+				'/about',
+				'/history',
+				'/competitions',
+				'/admission',
+				'/test'
+			],
 			handleHttpError: 'warn'
 		}
 	}

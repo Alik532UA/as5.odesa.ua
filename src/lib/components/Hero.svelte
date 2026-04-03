@@ -2,6 +2,7 @@
 	import Wave from "./Wave.svelte";
 	import Seagull from "./ui/Seagull.svelte";
 	import { t } from "svelte-i18n";
+	import { base } from "$app/paths";
 </script>
 
 <section class="hero" id="hero-section" aria-label="Головна секція">
@@ -26,7 +27,7 @@
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
 				<img
-					src="/photo/photoForMainPage-02.jpg"
+					src={`${base}/photo/photoForMainPage-02.jpg`}
 					alt=""
 					width="1200"
 					height="900"

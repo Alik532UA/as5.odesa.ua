@@ -8,6 +8,7 @@
 	import { ui } from "$lib/states/ui.svelte";
 	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
+	import { base } from "$app/paths";
 
 	let scrolled = $state(false);
 	let settingsOpen = $state(false);
@@ -42,10 +43,10 @@
 	}
 
 	const navItems = $derived([
-		{ label: $t("nav.home"), href: "/" },
-		{ label: $t("nav.about"), href: "/about" },
-		{ label: $t("nav.history"), href: "/history" },
-		{ label: $t("nav.contests"), href: "/competitions" },
+		{ label: $t("nav.home"), href: `${base}/` },
+		{ label: $t("nav.about"), href: `${base}/about` },
+		{ label: $t("nav.history"), href: `${base}/history` },
+		{ label: $t("nav.contests"), href: `${base}/competitions` },
 	]);
 
 	$effect(() => {
@@ -66,7 +67,7 @@
 <header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header">
 	<div class="header__logo-area">
 		<a
-			href="/"
+			href={`${base}/`}
 			class="header__logo-link"
 			aria-label="На головну"
 			onclick={ui.closeMenu}
@@ -94,7 +95,7 @@
 		</nav>
 
 		<a
-			href="/admission"
+			href={`${base}/admission`}
 			class="btn btn-outline header__cta"
 			id="header-cta"
 		>
@@ -190,7 +191,7 @@
 					{/each}
 					<li>
 						<a
-							href="/admission"
+							href={`${base}/admission`}
 							class="btn btn-primary header__mobile-cta"
 							onclick={ui.closeMenu}
 						>

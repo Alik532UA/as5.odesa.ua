@@ -6,6 +6,7 @@
 	import '$lib/i18n';
 	import { browser } from '$app/environment';
 	import { page } from '$app/state';
+	import { base } from '$app/paths';
 	import { waitLocale, t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { ui } from '$lib/states/ui.svelte';
@@ -147,7 +148,7 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+	<link rel="icon" type="image/svg+xml" href={`${base}/favicon.svg`} />
 	<link rel="canonical" href={canonicalUrl} />
 	
 	<title>{seoTitle}</title>

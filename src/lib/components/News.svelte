@@ -6,6 +6,7 @@
 	import { browser } from "$app/environment";
 	import { replaceState } from "$app/navigation";
 	import { onMount, untrack } from "svelte";
+	import { base } from "$app/paths";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
 	import { CarouselController } from "$lib/controllers/Carousel.svelte";
 
@@ -174,7 +175,7 @@
 			</div>
 			<h3 class="focus-card__title">{item.title}</h3>
 			<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
-			<a href="/news/{item.id}" class="btn-more">Читати далі →</a>
+			<a href={`${base}/news/${item.id}`} class="btn-more">Читати далі →</a>
 		</div>
 	</article>
 {/snippet}

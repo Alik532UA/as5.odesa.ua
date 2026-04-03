@@ -7,6 +7,7 @@
 	import { browser } from "$app/environment";
 	import { replaceState } from "$app/navigation";
 	import { onMount, untrack } from "svelte";
+	import { base } from "$app/paths";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
 
 	// Data from News.svelte
@@ -134,12 +135,12 @@
 	// --- Gallery Logic ---
 	// Placeholder for gallery data, replace with actual data if needed
 	const galleryImages = [
-		{ src: '/departments/folk.png', alt: 'Gallery Image 1', title: 'Folk Music Exhibit' },
-		{ src: '/departments/piano.png', alt: 'Gallery Image 2', title: 'Piano Recital Photo' },
-		{ src: '/departments/pop.png', alt: 'Gallery Image 3', title: 'Pop Music Performance' },
-		{ src: '/departments/strings.png', alt: 'Gallery Image 4', title: 'Strings Ensemble' },
-		{ src: '/departments/theory.png', alt: 'Gallery Image 5', title: 'Music Theory Workshop' },
-		{ src: '/departments/vocal.png', alt: 'Gallery Image 6', title: 'Vocal Performance' },
+		{ src: `${base}/departments/folk.png`, alt: 'Gallery Image 1', title: 'Folk Music Exhibit' },
+		{ src: `${base}/departments/piano.png`, alt: 'Gallery Image 2', title: 'Piano Recital Photo' },
+		{ src: `${base}/departments/pop.png`, alt: 'Gallery Image 3', title: 'Pop Music Performance' },
+		{ src: `${base}/departments/strings.png`, alt: 'Gallery Image 4', title: 'Strings Ensemble' },
+		{ src: `${base}/departments/theory.png`, alt: 'Gallery Image 5', title: 'Music Theory Workshop' },
+		{ src: `${base}/departments/vocal.png`, alt: 'Gallery Image 6', title: 'Vocal Performance' },
 	];
 </script>
 
@@ -195,7 +196,7 @@
 							</div>
 							<h3 class="focus-card__title">{item.title}</h3>
 							<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
-							<a href="/news/{item.id}" class="btn-more">Читати далі →</a>
+							<a href={`${base}/news/${item.id}`} class="btn-more">Читати далі →</a>
 						</div>
 					</article>
 				{/each}
