@@ -21,6 +21,9 @@ const config = {
 			precompress: false,
 			strict: true
 		}),
+		paths: {
+			base: '/as5.odesa.ua'
+		},
 		prerender: {
 			crawl: true,
 			entries: ['*'],
