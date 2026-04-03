@@ -145,11 +145,19 @@
 	}
 
 	:global(.with-dynamic-bg) .footer {
-		background: transparent;
+		background: rgba(255, 255, 255, 0.72);
 	}
 
 	:global(.with-dynamic-bg) .footer__wave-top {
-		background: linear-gradient(180deg, var(--color-light-blue) 0%, transparent 100%);
+		background: linear-gradient(180deg, var(--color-light-blue) 0%, rgba(255, 255, 255, 0.72) 100%);
+	}
+
+	:global(.dark-theme .with-dynamic-bg) .footer {
+		background: rgba(18, 37, 51, 0.72);
+	}
+
+	:global(.dark-theme .with-dynamic-bg) .footer__wave-top {
+		background: linear-gradient(180deg, var(--color-light-blue) 0%, rgba(18, 37, 51, 0.72) 100%);
 	}
 
 	/* Seagulls */

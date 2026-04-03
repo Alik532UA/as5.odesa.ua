@@ -69,6 +69,24 @@
 		min-height: 600px;
 	}
 
+	:global(.app.with-dynamic-bg) .hero {
+		background: linear-gradient(
+			180deg,
+			rgba(234, 246, 251, 0.86) 0%,
+			rgba(214, 238, 245, 0.78) 60%,
+			rgba(255, 255, 255, 0.72) 100%
+		);
+	}
+
+	:global(.dark-theme .app.with-dynamic-bg) .hero {
+		background: linear-gradient(
+			180deg,
+			rgba(13, 31, 45, 0.86) 0%,
+			rgba(26, 58, 74, 0.78) 60%,
+			rgba(18, 37, 51, 0.72) 100%
+		);
+	}
+
 	/* Seagulls Layering */
 	:global(.hero__seagull) {
 		position: absolute;

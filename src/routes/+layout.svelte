@@ -33,6 +33,8 @@
 	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
 
 	<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground}>
+		<div class="app__base-bg" aria-hidden="true"></div>
+
 		<!-- Dynamic background -->
 		{#if ui.enableDynamicBackground}
 			<DynamicBackground backgroundType={ui.backgroundType} theme={ui.theme} />
@@ -74,14 +76,18 @@
 		isolation: isolate;
 	}
 
-	main {
-		flex: 1;
-		background-color: var(--color-light-blue);
-		position: relative;
-		z-index: 1;
+	.app__base-bg {
+		position: fixed;
+		inset: 0;
+		background: var(--color-light-blue);
+		z-index: -2;
+		pointer-events: none;
 	}
 
-	.app.with-dynamic-bg main {
-		background-color: transparent;
+	main {
+		flex: 1;
+		background: transparent;
+		position: relative;
+		z-index: 1;
 	}
 </style>

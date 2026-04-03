@@ -61,6 +61,14 @@
 		position: relative;
 	}
 
+	:global(.app.with-dynamic-bg) .departments {
+		background: rgba(255, 255, 255, 0.76);
+	}
+
+	:global(.dark-theme .app.with-dynamic-bg) .departments {
+		background: rgba(18, 37, 51, 0.72);
+	}
+
 	.departments__description {
 		font-family: var(--font-body);
 		font-size: 1.25rem;
@@ -98,6 +106,14 @@
 		text-align: center;
 		transition: all var(--transition-base);
 		cursor: default;
+	}
+
+	:global(.app.with-dynamic-bg) .dept-card {
+		background: rgba(255, 255, 255, 0.84);
+	}
+
+	:global(.dark-theme .app.with-dynamic-bg) .dept-card {
+		background: rgba(20, 43, 59, 0.82);
 	}
 
 	.dept-card:hover {
