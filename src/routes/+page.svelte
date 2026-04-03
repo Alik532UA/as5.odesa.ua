@@ -40,7 +40,7 @@
 	{#if showDepartments}
 		<Departments />
 	{:else}
-		<div style="height: 600px; display: flex; align-items: center; justify-content: center; background: var(--color-light-blue);">
+		<div class="lazy-placeholder">
 			Завантаження...
 		</div>
 	{/if}
@@ -81,6 +81,18 @@
 </section>
 
 <style>
+	.lazy-placeholder {
+		height: 600px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: var(--color-light-blue);
+	}
+
+	:global(.app.with-dynamic-bg) .lazy-placeholder {
+		background: transparent;
+	}
+
 	.section-divider {
 		position: relative;
 		height: 80px;

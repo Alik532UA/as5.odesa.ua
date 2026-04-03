@@ -8,7 +8,7 @@ interface FloatingShape {
 	rotationSpeed: number;
 	vx: number;
 	vy: number;
-	iconPath: Path2D;
+	pathIndex: number;
 	alpha: number;
 }
 
@@ -18,7 +18,16 @@ const MUSIC_LUCIDE_PATHS = [
 	"M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zm12-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0z",
 	"M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z M19 10v2a7 7 0 0 1-14 0v-2 M12 19v4 M8 22h8",
 	"M12 18a4 4 0 1 1-8 0 4 4 0 0 1 8 0zM12 18V2l7 4"
-].map((path) => new Path2D(path));
+];
+
+const pathCache = new Map<number, Path2D>();
+
+function getPath2D(index: number): Path2D {
+	if (!pathCache.has(index)) {
+		pathCache.set(index, new Path2D(MUSIC_LUCIDE_PATHS[index]));
+	}
+	return pathCache.get(index)!;
+}
 
 export class FloatingShapesEngine extends CanvasEngine {
 	private shapes: FloatingShape[] = [];
@@ -35,7 +44,7 @@ export class FloatingShapesEngine extends CanvasEngine {
 				rotationSpeed: (Math.random() - 0.5) * 0.012,
 				vx: (Math.random() - 0.5) * 0.7,
 				vy: (Math.random() - 0.5) * 0.7,
-				iconPath: MUSIC_LUCIDE_PATHS[Math.floor(Math.random() * MUSIC_LUCIDE_PATHS.length)],
+				pathIndex: Math.floor(Math.random() * MUSIC_LUCIDE_PATHS.length),
 				alpha: 0.25 + Math.random() * 0.2,
 			});
 		}
@@ -77,8 +86,9 @@ export class FloatingShapesEngine extends CanvasEngine {
 			const scale = shape.size / 24;
 			this.ctx!.scale(scale, scale);
 			this.ctx!.translate(-12, -12);
-			this.ctx!.fill(shape.iconPath);
-			this.ctx!.stroke(shape.iconPath);
+			const path = getPath2D(shape.pathIndex);
+			this.ctx!.fill(path);
+			this.ctx!.stroke(path);
 
 			this.ctx!.restore();
 		});
