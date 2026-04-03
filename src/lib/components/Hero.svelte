@@ -10,6 +10,7 @@
 	<Seagull className="hero__seagull hero__seagull--2" size={45} />
 	<Seagull className="hero__seagull hero__seagull--3" size={35} />
 	<Seagull className="hero__seagull hero__seagull--4" size={50} />
+	<Seagull className="hero__seagull hero__seagull--5" size={42} />
 
 	<div class="hero__content container">
 		<div class="hero__text">
@@ -103,8 +104,8 @@
 	}
 
 	:global(.hero__seagull--2) {
-		top: 12%;
-		right: 20%;
+		top: 16%;
+		right: 14%;
 		animation-delay: 1s;
 	}
 
@@ -115,9 +116,15 @@
 	}
 
 	:global(.hero__seagull--4) {
-		top: 8%;
-		right: 55%;
+		top: 14%;
+		right: 62%;
 		animation-delay: 0.5s;
+	}
+
+	:global(.hero__seagull--5) {
+		top: 30%;
+		right: 68%;
+		animation-delay: 1.5s;
 	}
 
 	/* Content layout */
@@ -262,8 +269,19 @@
 			min-height: 220px;
 		}
 
+		:global(.hero__seagull--1) {
+			top: 24%;
+			right: 48%;
+		}
+
+		:global(.hero__seagull--2) {
+			top: 10%;
+			right: 8%;
+		}
+
 		:global(.hero__seagull--3),
-		:global(.hero__seagull--4) {
+		:global(.hero__seagull--4),
+		:global(.hero__seagull--5) {
 			display: none;
 		}
 	}
