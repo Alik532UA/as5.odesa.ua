@@ -124,7 +124,7 @@
 	);
 	const baseOrigin = $derived(browser ? window.location.origin : SITE_FALLBACK_ORIGIN);
 	const canonicalUrl = $derived(`${baseOrigin}${page.url.pathname}`);
-	const ogImageUrl = $derived(`${baseOrigin}${base}/ods-as5-logo-full_AlphaChannel.png`);
+	const ogImageUrl = $derived(`${baseOrigin}${base}/og/og-default-1200x630.jpg`);
 	const seoTitle = $derived(`${metaTitle} | ${brandTitle}`);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
 	const schemaOrg = $derived({
