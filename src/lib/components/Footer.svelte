@@ -343,6 +343,18 @@
 		.footer__content {
 			flex-direction: column;
 		}
+		.footer__contacts {
+			order: 1;
+		}
+		.footer__social {
+			order: 2;
+		}
+		.footer__btn-piano {
+			order: 3;
+		}
+		.footer__btn-order {
+			order: 4;
+		}
 		:global(.footer__seagull-1),
 		:global(.footer__seagull-2) {
 			display: none;
