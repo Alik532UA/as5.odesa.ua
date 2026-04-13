@@ -7,7 +7,6 @@
 	<div style="font-size: 1.2rem; line-height: 1.8; color: var(--color-body-text);">
 		<p style="margin-bottom: 1rem;">{$t('history.p1')}</p>
 		<p style="margin-bottom: 1rem;">{$t('history.p2')}</p>
-		<p style="margin-bottom: 1rem;">{$t('history.p3')}</p>
-		<p>{$t('history.p4')}</p>
+		<p>{$t('history.p3')}</p>
 	</div>
 </section>
