@@ -6,7 +6,7 @@
 	},
 	"nav": {
 		"home": "Home",
-		"about": "About School",
+		"about": "About School",
 		"history": "History",
 		"contests": "Contests",
 		"announcements": "Announcements",
@@ -78,7 +78,7 @@
 		}
 	},
 	"about": {
-		"title": "About School",
+		"title": "About School",
 		"p1": "Our students and teachers live music and generously share it with others. We constantly perform at various venues across the city — in libraries, the Odesa Zoo, the Union of Journalists of Ukraine — and each such performance becomes a small holiday for listeners.",
 		"p2": "Young musicians have opened art exhibitions with their performances more than once, adding a special mood and sound to the paintings.",
 		"p3": "And our creativity has also sounded abroad — teachers together with students have already visited Italy twice, where they worthily represented the school and presented Ukrainian music to the European public.",
@@ -139,7 +139,7 @@
 				"description": "Official website of Odesa School of Arts №5. Departments, gallery, history, competitions, and admission details."
 			},
 			"about": {
-				"title": "About School",
+				"title": "About School",
 				"description": "Learn more about Odesa School of Arts №5: creative life, performances, teachers, and students."
 			},
 			"history": {

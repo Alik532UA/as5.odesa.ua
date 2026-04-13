@@ -38,7 +38,7 @@
 						'Офіційний сайт Одеської школи мистецтв №5. Відділи, галерея, історія, конкурси та умови вступу.'
 				},
 				about: {
-					title: 'Про школу',
+					title: 'Про Школу',
 					description:
 						'Дізнайтеся більше про Одеську школу мистецтв №5: творче життя, виступи, викладачі та учні.'
 				},
@@ -70,7 +70,7 @@
 						'Official website of Odesa School of Arts №5. Departments, gallery, history, competitions, and admission details.'
 				},
 				about: {
-					title: 'About School',
+					title: 'About School',
 					description:
 						'Learn more about Odesa School of Arts №5: creative life, performances, teachers, and students.'
 				},
