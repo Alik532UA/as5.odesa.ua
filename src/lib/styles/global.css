@@ -276,7 +276,7 @@ body.page-home .hero__seagull--3 {
 @media (max-width: 768px) {
 	.hero__seagull--1 {
 		top: 24%;
-		right: 48%;
+		right: 70%;
 		width: 66px;
 		height: 30px;
 	}
