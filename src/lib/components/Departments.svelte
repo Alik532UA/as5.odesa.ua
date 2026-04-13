@@ -5,21 +5,21 @@
 	interface Department {
 		id: string;
 		name: string;
-		// Changed icon type to string for image path
-		iconPath: string; 
+		iconPath: string;
+		description?: string;
 	}
 
 	const departments = $derived([
 		{ id: "piano", name: $t("departments.list.piano"), iconPath: `${base}/departments/piano.png` },
-		{ id: "strings", name: $t("departments.list.strings"), iconPath: `${base}/departments/strings.png` },
+		{ id: "strings", name: $t("departments.list.strings"), iconPath: `${base}/departments/strings.png`, description: $t("departments.descriptions.strings") },
 		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: `${base}/departments/vocal.png` },
-		{ id: "pop", name: $t("departments.list.pop"), iconPath: `${base}/departments/pop.png` },
+		{ id: "pop", name: $t("departments.list.pop"), iconPath: `${base}/departments/pop.png`, description: $t("departments.descriptions.pop") },
 		{ id: "theory", name: $t("departments.list.theory"), iconPath: `${base}/departments/theory.png` },
-		{ id: "folk", name: $t("departments.list.folk"), iconPath: `${base}/departments/folk.png` },
+		{ id: "folk", name: $t("departments.list.folk"), iconPath: `${base}/departments/folk.png`, description: $t("departments.descriptions.folk") },
 	]);
 </script>
 
-{#snippet DeptCard({ name, iconPath, id }: Department)}
+{#snippet DeptCard({ name, iconPath, id, description }: Department)}
 	<article class="dept-card" {id}>
 		<div class="dept-card__icon-wrap">
 			<!-- Render image instead of SVG icon -->
@@ -28,6 +28,9 @@
 			<!-- <Icon className="dept-card__icon" size={80} /> -->
 		</div>
 		<h3 class="dept-card__name">{name}</h3>
+		{#if description}
+			<p class="dept-card__description">{description}</p>
+		{/if}
 	</article>
 {/snippet}
 
@@ -130,6 +133,15 @@
 		color: var(--color-deep-ocean);
 		letter-spacing: 0.02em;
 		line-height: 1.3;
+		margin-bottom: var(--space-sm);
+	}
+
+	.dept-card__description {
+		font-family: var(--font-body);
+		font-size: 0.85rem;
+		color: var(--color-body-text);
+		line-height: 1.4;
+		margin: 0;
 	}
 
 	/* Responsive */
@@ -162,6 +174,10 @@
 
 		.dept-card__name {
 			font-size: 0.8rem;
+		}
+
+		.dept-card__description {
+			font-size: 0.75rem;
 		}
 
 		.departments__description {

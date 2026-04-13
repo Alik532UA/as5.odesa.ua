@@ -46,6 +46,11 @@
 			"pop": "Pop Music Department",
 			"theory": "Theoretical Disciplines Department",
 			"folk": "Folk Instruments Department"
+		},
+		"descriptions": {
+			"strings": "violin, cello",
+			"pop": "pop singing, percussion, pop piano, bass guitar, electric guitar, flute, trombone, saxophone",
+			"folk": "guitar, bayan, accordion, bandura"
 		}
 	},
 	"piano": {
