@@ -245,9 +245,6 @@
 				{#each galleryImages as img, i}
 					<div class="g-bento__item g-bento__item--{i}">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
-						<div class="g-bento__overlay">
-							<span class="g-bento__caption">{img.title}</span>
-						</div>
 					</div>
 				{/each}
 			</div>
@@ -795,26 +792,6 @@
 	.g-bento__item--3 { grid-column: span 1; grid-row: span 1; }
 	.g-bento__item--4 { grid-column: span 2; grid-row: span 1; }
 	.g-bento__item--5 { grid-column: span 2; grid-row: span 1; }
-	.g-bento__overlay {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(to top, rgba(0,95,174,0.85), transparent 60%);
-		display: flex;
-		align-items: flex-end;
-		padding: 2.5rem;
-		opacity: 0;
-		transition: opacity 0.4s ease;
-	}
-	.g-bento__item:hover .g-bento__overlay { opacity: 1; }
-	.g-bento__caption {
-		color: white;
-		font-family: var(--font-heading);
-		font-size: 1.4rem;
-		font-weight: 800;
-		transform: translateY(20px);
-		transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-	.g-bento__item:hover .g-bento__caption { transform: translateY(0); }
 
 	/* 2. Flex Accordion */
 	.g-accordion {

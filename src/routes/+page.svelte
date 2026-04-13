@@ -77,9 +77,6 @@
 			{#each galleryImages as img (img.src)}
 				<div class="g-bento-4x3__item">
 					<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
-					<div class="g-bento-4x3__overlay">
-						<span class="g-bento-4x3__caption">{img.title}</span>
-					</div>
 				</div>
 			{/each}
 		</div>
@@ -180,35 +177,6 @@
 
 	.g-bento-4x3__item:hover img {
 		transform: scale(1.08);
-	}
-
-	.g-bento-4x3__overlay {
-		position: absolute;
-		inset: 0;
-		background: linear-gradient(to top, var(--theme-gallery-overlay-from), transparent 60%);
-		display: flex;
-		align-items: flex-end;
-		padding: 2.5rem;
-		opacity: 0;
-		transition: opacity 0.4s ease;
-	}
-
-	.g-bento-4x3__item:hover .g-bento-4x3__overlay {
-		opacity: 1;
-	}
-
-	.g-bento-4x3__caption {
-		display: block;
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: white;
-		transform: translateY(20px);
-		transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-	}
-
-	.g-bento-4x3__item:hover .g-bento-4x3__caption {
-		transform: translateY(0);
 	}
 
 	@media (max-width: 1024px) {
