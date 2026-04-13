@@ -11,8 +11,14 @@
 	import { waitLocale, t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { ui } from '$lib/states/ui.svelte';
+	import { migrateStorageKeys } from '$lib/utils/storageMigration';
+	import { onMount } from 'svelte';
 
 	let { children, data } = $props();
+
+	onMount(() => {
+		migrateStorageKeys();
+	});
 
 	$effect(() => {
 		if (browser) {

@@ -19,7 +19,8 @@
 		<meta name="color-scheme" content="light dark" />
 		<script>
 			try {
-				var t = localStorage.getItem('theme');
+				var prefix = 'as5.odesa.ua_';
+				var t = localStorage.getItem(prefix + 'theme') || localStorage.getItem('theme');
 				if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 					document.documentElement.setAttribute('data-theme', 'dark');
 					document.documentElement.classList.add('dark-theme');

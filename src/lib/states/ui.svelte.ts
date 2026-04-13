@@ -1,3 +1,5 @@
+import { STORAGE_PREFIX } from '$lib/utils/storageMigration';
+
 class UIState {
 	isMenuOpen = $state(false);
 	theme = $state<'light' | 'dark'>('light');
@@ -11,7 +13,7 @@ class UIState {
 	constructor() {
 		if (typeof window !== 'undefined') {
 			// Read theme from localStorage or OS settings
-			const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
+			const savedTheme = localStorage.getItem(STORAGE_PREFIX + 'theme') as 'light' | 'dark' | null;
 			if (savedTheme) {
 				this.setTheme(savedTheme, { withBlur: false });
 			} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -21,24 +23,24 @@ class UIState {
 			}
 			
 			// Read background type from localStorage
-			const savedBg = localStorage.getItem('backgroundType') as '0' | '1' | '2' | '3' | null;
+			const savedBg = localStorage.getItem(STORAGE_PREFIX + 'backgroundType') as '0' | '1' | '2' | '3' | null;
 			if (savedBg) {
 				this.backgroundType = parseInt(savedBg) as 0 | 1 | 2 | 3;
 			}
 
 			// Read debug settings from localStorage
-			const enableDynBg = localStorage.getItem('enableDynamicBackground');
+			const enableDynBg = localStorage.getItem(STORAGE_PREFIX + 'enableDynamicBackground');
 			if (enableDynBg !== null) {
 				this.enableDynamicBackground = enableDynBg === 'true';
 			}
-			const enableBlur = localStorage.getItem('enableBlurEffect');
+			const enableBlur = localStorage.getItem(STORAGE_PREFIX + 'enableBlurEffect');
 			if (enableBlur !== null) {
 				this.enableBlurEffect = enableBlur === 'true';
 			}
 			
 			// Listen to OS theme changes
 			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-				if (!localStorage.getItem('theme')) {
+				if (!localStorage.getItem(STORAGE_PREFIX + 'theme')) {
 					this.setTheme(e.matches ? 'dark' : 'light');
 				}
 			});
@@ -84,7 +86,7 @@ class UIState {
 			}
 		}
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('theme', t);
+			localStorage.setItem(STORAGE_PREFIX + 'theme', t);
 		}
 
 		if (withBlur && this.enableBlurEffect) {
@@ -105,7 +107,7 @@ class UIState {
 			timestamp: new Date().toISOString(),
 		});
 		if (typeof localStorage !== 'undefined' && type !== 0) {
-			localStorage.setItem('backgroundType', type.toString());
+			localStorage.setItem(STORAGE_PREFIX + 'backgroundType', type.toString());
 		}
 	};
 
@@ -119,14 +121,14 @@ class UIState {
 			timestamp: new Date().toISOString(),
 		});
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('enableDynamicBackground', this.enableDynamicBackground.toString());
+			localStorage.setItem(STORAGE_PREFIX + 'enableDynamicBackground', this.enableDynamicBackground.toString());
 		}
 	};
 
 	toggleBlurEffect = () => {
 		this.enableBlurEffect = !this.enableBlurEffect;
 		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem('enableBlurEffect', this.enableBlurEffect.toString());
+			localStorage.setItem(STORAGE_PREFIX + 'enableBlurEffect', this.enableBlurEffect.toString());
 		}
 	};
 }
