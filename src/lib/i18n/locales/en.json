@@ -33,7 +33,7 @@
 		"bgParticles": "Particles",
 		"bgWaves": "Waves",
 		"bgShapes": "Shapes",
-		"blur": "Blur Effect",
+		"blur": "Blur effect when changing language or theme",
 		"debugNote": "This is a temporary settings menu. We will choose and approve the preferred option, then hide this menu."
 	},
 	"departments": {
