@@ -8,13 +8,18 @@ import { browser, dev } from '$app/environment';
  * so hiding it would buy nothing, while a missing CI variable would switch
  * analytics off silently.
  *
- * Until the placeholder below is replaced with a real ID, every export here is
- * a no-op: no script is loaded and nothing is sent, so a half-finished setup
- * cannot report into the wrong property.
+ * Replacing the ID with the placeholder turns every export here into a no-op —
+ * no script is loaded and nothing is sent — so the file can be carried into a
+ * new project without it reporting into this property.
  */
-const GA_ID = 'G-XXXXXXXXXX';
+const GA_ID_PLACEHOLDER = 'G-XXXXXXXXXX';
+// Annotated as string so the placeholder check below stays a real comparison:
+// as literal types TypeScript narrows them and rejects it as always-true.
+const GA_ID: string = 'G-HE5RR7253Y';
 
-const isConfigured = /^G-[A-Z0-9]{6,}$/.test(GA_ID) && !GA_ID.includes('XXXX');
+// Compared against the whole placeholder rather than searching for a run of
+// X's: real measurement IDs can contain them.
+const isConfigured = /^G-[A-Z0-9]{6,}$/.test(GA_ID) && GA_ID !== GA_ID_PLACEHOLDER;
 
 // `dev` keeps local work from landing in the same property as real traffic.
 const enabled = () => browser && !dev && isConfigured;
