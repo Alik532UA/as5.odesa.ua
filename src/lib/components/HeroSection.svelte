@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Wave from "./Wave.svelte";
+	import WaveBackground from "./WaveBackground.svelte";
 	import { t } from "svelte-i18n";
 	import { base } from "$app/paths";
 </script>
@@ -37,7 +37,7 @@
 
 	<!-- Wave divider at bottom -->
 	<div class="hero__waves" aria-hidden="true">
-		<Wave
+		<WaveBackground
 			className="hero__wave-svg"
 			height={110}
 			amplitude={15}

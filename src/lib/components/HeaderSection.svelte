@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Logo from "./Logo.svelte";
+	import LogoIcon from "./LogoIcon.svelte";
 	import DebugSettingsDropdown from "./DebugSettingsDropdown.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
 	import { Menu, X } from "lucide-svelte";
@@ -86,28 +86,30 @@
 	Перейти до основного контенту
 </a>
 
-<header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header">
+<header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header" data-testid="app-header">
 	<div class="header__logo-area">
 		<a
 			href={`${base}/`}
 			class="header__logo-link"
 			aria-label="На головну"
 			onclick={ui.closeMenu}
+			data-testid="header-logo-link"
 		>
-			<Logo size="large" />
+			<LogoIcon size="large" />
 		</a>
 	</div>
 
 	<div class="header__bar">
-		<nav class="header__nav" aria-label="Головне меню" id="main-nav">
-			<ul class="header__nav-list" class:open={ui.isMenuOpen}>
+		<nav class="header__nav" aria-label="Головне меню" id="main-nav" data-testid="header-nav">
+			<ul class="header__nav-list" class:open={ui.isMenuOpen} data-testid="header-nav-list">
 				{#each navItems as item, i}
-					<li class="header__nav-item">
+					<li class="header__nav-item" data-testid="header-nav-item-{i}">
 						<a
 							href={item.href}
 							class="header__nav-link"
 							class:active={page.url.pathname === item.href}
 							id="nav-{item.href.replace('/', '') || 'home'}"
+							data-testid="nav-{item.href.replace('/', '') || 'home'}-link"
 						>
 							{item.label}
 						</a>
@@ -120,12 +122,13 @@
 			href={`${base}/admission`}
 			class="btn btn-outline header__cta"
 			id="header-cta"
+			data-testid="header-admission-btn"
 		>
 			{$t("nav.admission")}
 		</a>
 
-		<div class="header__settings" class:open={settingsOpen} bind:this={settingsRef}>
-			<button class="header__settings-btn" aria-label="Налаштування" onclick={toggleSettings} aria-expanded={settingsOpen}>
+		<div class="header__settings" class:open={settingsOpen} bind:this={settingsRef} data-testid="header-settings-container">
+			<button class="header__settings-btn" aria-label="Налаштування" onclick={toggleSettings} aria-expanded={settingsOpen} data-testid="header-settings-btn">
 				<SettingsIcon size={24} />
 			</button>
 			<div class="header__settings-dropdown">

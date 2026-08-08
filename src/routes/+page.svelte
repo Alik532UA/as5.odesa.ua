@@ -1,7 +1,7 @@
 <script lang="ts">
-	import Hero from '$lib/components/Hero.svelte';
-	import Departments from '$lib/components/Departments.svelte';
-	import Wave from '$lib/components/Wave.svelte';
+	import HeroSection from '$lib/components/HeroSection.svelte';
+	import DepartmentsSection from '$lib/components/DepartmentsSection.svelte';
+	import WaveBackground from '$lib/components/WaveBackground.svelte';
 	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
@@ -37,13 +37,13 @@
 </script>
 
 <ErrorBoundary title="Помилка Hero секції">
-	<Hero />
+	<HeroSection />
 </ErrorBoundary>
 
 <div bind:this={departmentsRef} class="lazy-section">
 	{#if showDepartments}
 		<ErrorBoundary title="Помилка Відділень">
-			<Departments />
+			<DepartmentsSection />
 		</ErrorBoundary>
 	{:else}
 		<div class="lazy-placeholder">
@@ -55,7 +55,7 @@
 <!-- Bento Grid 4:3 Section -->
 <div class="section-divider section-divider--top" aria-hidden="true">
 	<div class="section-divider__wave">
-		<Wave
+		<WaveBackground
 			height={80}
 			amplitude={15}
 			frequency={5}

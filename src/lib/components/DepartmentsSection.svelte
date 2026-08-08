@@ -20,10 +20,10 @@
 </script>
 
 {#snippet DeptCard({ name, iconPath, id, description }: Department)}
-	<article class="dept-card" {id}>
+	<article class="dept-card" {id} data-testid="department-card-{id}">
 		<div class="dept-card__icon-wrap">
 			<!-- Render image instead of SVG icon -->
-			<img src={iconPath} alt="{name} icon" class="dept-card__icon" width="160" height="160" loading="lazy" decoding="async" />
+			<img src={iconPath} alt="{name} icon" class="dept-card__icon" width="160" height="160" loading="lazy" decoding="async" data-testid="department-icon-{id}" />
 			<!-- SVG icons were the first version, kept here for reference -->
 			<!-- <Icon className="dept-card__icon" size={80} /> -->
 		</div>
@@ -34,12 +34,12 @@
 	</article>
 {/snippet}
 
-<section class="departments" id="departments" aria-label="Відділи школи">
+<section class="departments" id="departments" aria-label="Відділи школи" data-testid="departments-section">
 	<div class="container">
 		<p class="departments__description">
 			{$t('departments.description')}
 		</p>
-		<div class="departments__grid">
+		<div class="departments__grid" data-testid="departments-list">
 			{#each departments as dept (dept.id)}
 				{@render DeptCard(dept)}
 			{/each}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	// Imports from News.svelte
-	import Wave from "$lib/components/Wave.svelte"; // Assuming Wave is in lib/components
+	import WaveBackground from "$lib/components/WaveBackground.svelte"; // Assuming Wave is in lib/components
 	import BirdIcon from "$lib/components/icons/BirdIcon.svelte"; // Assuming icons are in lib/components/icons
 	import PhotoIcon from "$lib/components/icons/PhotoIcon.svelte"; // Assuming icons are in lib/components/icons
 	import { page } from "$app/state";
@@ -153,7 +153,7 @@
 <!-- News Section -->
 <div class="news-divider news-divider--top" aria-hidden="true">
 	<div class="news-divider__wave">
-		<Wave
+		<WaveBackground
 			height={80}
 			amplitude={15}
 			frequency={5}
@@ -221,7 +221,7 @@
 
 <div class="news-divider news-divider--bottom" aria-hidden="true">
 	<div class="news-divider__wave">
-		<Wave
+		<WaveBackground
 			height={100}
 			amplitude={15}
 			frequency={5}

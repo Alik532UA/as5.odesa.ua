@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Wave from "./Wave.svelte";
+	import WaveBackground from "./WaveBackground.svelte";
 	import PhotoIcon from "./icons/PhotoIcon.svelte";
 	import BirdIcon from "./icons/BirdIcon.svelte";
 	import { page } from "$app/state";
@@ -110,7 +110,7 @@
 
 <div class="news-divider news-divider--top" aria-hidden="true">
 	<div class="news-divider__wave">
-		<Wave
+		<WaveBackground
 			height={80}
 			amplitude={15}
 			frequency={5}
@@ -203,7 +203,7 @@
 
 <div class="news-divider news-divider--bottom" aria-hidden="true">
 	<div class="news-divider__wave">
-		<Wave
+		<WaveBackground
 			height={100}
 			amplitude={15}
 			frequency={5}

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import PianoModal from "./ui/PianoModal.svelte";
-	import Wave from "./Wave.svelte";
+	import WaveBackground from "./WaveBackground.svelte";
 	import Seagull from "./ui/Seagull.svelte";
 	import LocationIcon from "./icons/LocationIcon.svelte";
 	import PhoneIcon from "./icons/PhoneIcon.svelte";
@@ -15,7 +15,7 @@
 <footer class="footer" id="main-footer">
 	<!-- Top wave divider -->
 	<div class="footer__wave-top" aria-hidden="true">
-		<Wave
+		<WaveBackground
 			height={100}
 			amplitude={15}
 			frequency={5}

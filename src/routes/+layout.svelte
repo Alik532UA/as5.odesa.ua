@@ -1,6 +1,6 @@
 <script lang="ts">
-	import Header from '$lib/components/Header.svelte';
-	import Footer from '$lib/components/Footer.svelte';
+	import HeaderSection from '$lib/components/HeaderSection.svelte';
+	import FooterSection from '$lib/components/FooterSection.svelte';
 	import DynamicBackground from '$lib/components/DynamicBackground.svelte';
 	import Seagull from '$lib/components/ui/Seagull.svelte';
 	import '$lib/styles/global.css';
@@ -226,13 +226,13 @@
 		enabled={ui.enableDynamicBackground}
 	/>
 
-	<Header />
+	<HeaderSection />
 	<main id="main-content">
 		<ErrorBoundary>
 			{@render children()}
 		</ErrorBoundary>
 	</main>
-	<Footer />
+	<FooterSection />
 </div>
 
 <style>
