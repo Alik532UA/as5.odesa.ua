@@ -13,8 +13,15 @@
 	import { ui } from '$lib/states/ui.svelte';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
 	import { onMount } from 'svelte';
+	import { trackPageView } from '$lib/services/analytics';
+	import { afterNavigate } from '$app/navigation';
 
 	let { children, data } = $props();
+
+	// Fires on the initial load too, so this covers the first view and every
+	// client-side move between pages. trackPageView initialises analytics
+	// itself, so there is no ordering to get wrong against onMount.
+	afterNavigate(() => trackPageView());
 
 	onMount(() => {
 		migrateStorageKeys();
