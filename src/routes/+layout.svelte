@@ -115,8 +115,13 @@
 		}
 	}
 
-	function routeToSeoKey(pathname: string): SeoPageKey {
-		switch (pathname) {
+	// Keyed off route.id rather than url.pathname: pathname carries the
+	// configured base ("/as5.odesa.ua/about"), so none of the cases below ever
+	// matched and every page fell through to the default, inheriting the home
+	// page's title and description. route.id is free of both the base and any
+	// trailing slash.
+	function routeToSeoKey(routeId: string | null): SeoPageKey {
+		switch (routeId) {
 			case '/':
 				return 'home';
 			case '/about':
@@ -132,7 +137,7 @@
 		}
 	}
 
-	const seoKey = $derived(routeToSeoKey(page.url.pathname));
+	const seoKey = $derived(routeToSeoKey(page.route.id));
 	const currentLocale = $derived(($locale as string) || 'uk');
 	const activeLang = $derived<SeoLangKey>(currentLocale === 'en' ? 'en' : FALLBACK_LANG);
 	const brandTitle = $derived(safeT('seo.brandTitle', SEO_FALLBACK[activeLang].brandTitle));
@@ -143,15 +148,16 @@
 		safeT(`seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
 	);
 	const canonicalUrl = $derived(data.canonicalUrl || `${SITE_FALLBACK_ORIGIN}${page.url.pathname}`);
-	const ogImageUrl = $derived(`${SITE_FALLBACK_ORIGIN}${base}/og/og-default-1200x630.jpg`);
-	const seoTitle = $derived(`${metaTitle} | ${brandTitle}`);
+	const ogImageUrl = $derived(`${SITE_FALLBACK_ORIGIN}/og/og-default-1200x630.jpg`);
+	// The home page title is already the brand; appending it doubled the name.
+	const seoTitle = $derived(metaTitle === brandTitle ? brandTitle : `${metaTitle} | ${brandTitle}`);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
 	const schemaOrg = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'EducationalOrganization',
 		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
 		url: SITE_FALLBACK_ORIGIN,
-		logo: `${SITE_FALLBACK_ORIGIN}${base}/ods-as5-logo-full.svg`,
+		logo: `${SITE_FALLBACK_ORIGIN}/ods-as5-logo-full.svg`,
 		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',
@@ -189,44 +195,45 @@
 	<meta name="twitter:description" content={metaDescription} />
 	<meta name="twitter:image" content={ogImageUrl} />
 
-	<script type="application/ld+json">{JSON.stringify(schemaOrg)}</script>
+	<!-- Svelte does not evaluate expressions inside a <script> element, so the
+	     previous form shipped the literal text as the structured data. -->
+	<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+	{@html `<script type="application/ld+json">${JSON.stringify(schemaOrg)}</` + `script>`}
 </svelte:head>
 
-{#await waitLocale()}
-	<div style="height: 100vh; display: flex; align-items: center; justify-content: center;">
-		<!-- Simple placeholder or nothing during transition -->
-	</div>
-{:then}
-	<!-- Blur overlay for theme/language changes -->
-	<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
+<!-- Rendered unconditionally: the locale is awaited in +layout.ts now. As an
+     {#await} block this rendered its pending branch during prerendering, so
+     every page shipped an empty placeholder instead of its content. -->
 
-	<!-- Global decorative seagulls — outside .app for guaranteed viewport-fixed positioning -->
-	<Seagull className="hero__seagull hero__seagull--1" size={60} />
-	<Seagull className="hero__seagull hero__seagull--2" size={45} />
-	<Seagull className="hero__seagull hero__seagull--3" size={35} />
-	<Seagull className="hero__seagull hero__seagull--4" size={50} />
-	<Seagull className="hero__seagull hero__seagull--5" size={42} />
+<!-- Blur overlay for theme/language changes -->
+<div class="theme-transition-overlay" class:active={ui.isThemeChanging || ui.isLangChanging}></div>
 
-	<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground} class:page-home={page.route.id === '/'}>
-		<div class="app__base-bg" aria-hidden="true"></div>
+<!-- Global decorative seagulls — outside .app for guaranteed viewport-fixed positioning -->
+<Seagull className="hero__seagull hero__seagull--1" size={60} />
+<Seagull className="hero__seagull hero__seagull--2" size={45} />
+<Seagull className="hero__seagull hero__seagull--3" size={35} />
+<Seagull className="hero__seagull hero__seagull--4" size={50} />
+<Seagull className="hero__seagull hero__seagull--5" size={42} />
 
-		<!-- Dynamic background -->
-		<!-- Dynamic background - ALWAYS mounted for smooth transitions -->
-		<DynamicBackground 
-			backgroundType={ui.backgroundType} 
-			theme={ui.theme}
-			enabled={ui.enableDynamicBackground}
-		/>
+<div class="app" class:with-dynamic-bg={ui.enableDynamicBackground} class:page-home={page.route.id === '/'}>
+	<div class="app__base-bg" aria-hidden="true"></div>
 
-		<Header />
-		<main id="main-content">
-			<ErrorBoundary>
-				{@render children()}
-			</ErrorBoundary>
-		</main>
-		<Footer />
-	</div>
-{/await}
+	<!-- Dynamic background -->
+	<!-- Dynamic background - ALWAYS mounted for smooth transitions -->
+	<DynamicBackground 
+		backgroundType={ui.backgroundType} 
+		theme={ui.theme}
+		enabled={ui.enableDynamicBackground}
+	/>
+
+	<Header />
+	<main id="main-content">
+		<ErrorBoundary>
+			{@render children()}
+		</ErrorBoundary>
+	</main>
+	<Footer />
+</div>
 
 <style>
 	.theme-transition-overlay {

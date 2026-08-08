@@ -1,5 +1,9 @@
-# allow crawling everything by default
 User-agent: *
-Disallow:
+Allow: /
+
+# Scratch route for manual checks — it prerenders, so it would otherwise be
+# indexed as a real page.
+Disallow: /test
+
 Host: https://as5.odesa.ua
 Sitemap: https://as5.odesa.ua/sitemap.xml
