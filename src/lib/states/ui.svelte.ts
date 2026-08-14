@@ -1,4 +1,4 @@
-import { STORAGE_PREFIX } from '$lib/utils/storageMigration';
+import { storage } from '$lib/services/storage';
 
 class UIState {
 	isMenuOpen = $state(false);
@@ -12,8 +12,8 @@ class UIState {
 
 	constructor() {
 		if (typeof window !== 'undefined') {
-			// Read theme from localStorage or OS settings
-			const savedTheme = localStorage.getItem(STORAGE_PREFIX + 'theme') as 'light' | 'dark' | null;
+			// Тема: збережений вибір, інакше налаштування системи
+			const savedTheme = storage.get('theme') as 'light' | 'dark' | null;
 			if (savedTheme) {
 				this.setTheme(savedTheme, { withBlur: false });
 			} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
@@ -22,25 +22,25 @@ class UIState {
 				this.setTheme('light', { withBlur: false });
 			}
 			
-			// Read background type from localStorage
-			const savedBg = localStorage.getItem(STORAGE_PREFIX + 'backgroundType') as '0' | '1' | '2' | '3' | null;
+			// Тип тла зі сховища
+			const savedBg = storage.get('backgroundType') as '0' | '1' | '2' | '3' | null;
 			if (savedBg) {
 				this.backgroundType = parseInt(savedBg) as 0 | 1 | 2 | 3;
 			}
 
-			// Read debug settings from localStorage
-			const enableDynBg = localStorage.getItem(STORAGE_PREFIX + 'enableDynamicBackground');
+			// Діагностичні перемикачі зі сховища
+			const enableDynBg = storage.get('enableDynamicBackground');
 			if (enableDynBg !== null) {
 				this.enableDynamicBackground = enableDynBg === 'true';
 			}
-			const enableBlur = localStorage.getItem(STORAGE_PREFIX + 'enableBlurEffect');
+			const enableBlur = storage.get('enableBlurEffect');
 			if (enableBlur !== null) {
 				this.enableBlurEffect = enableBlur === 'true';
 			}
 			
 			// Listen to OS theme changes
 			window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-				if (!localStorage.getItem(STORAGE_PREFIX + 'theme')) {
+				if (!storage.get('theme')) {
 					this.setTheme(e.matches ? 'dark' : 'light');
 				}
 			});
@@ -85,9 +85,7 @@ class UIState {
 				document.documentElement.classList.remove('dark-theme');
 			}
 		}
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(STORAGE_PREFIX + 'theme', t);
-		}
+		storage.set('theme', t);
 
 		if (withBlur && this.enableBlurEffect) {
 			// Даємо час на розчинення блюру
@@ -106,8 +104,8 @@ class UIState {
 			isEnabled: this.enableDynamicBackground,
 			timestamp: new Date().toISOString(),
 		});
-		if (typeof localStorage !== 'undefined' && type !== 0) {
-			localStorage.setItem(STORAGE_PREFIX + 'backgroundType', type.toString());
+		if (type !== 0) {
+			storage.set('backgroundType', type.toString());
 		}
 	};
 
@@ -120,16 +118,12 @@ class UIState {
 			currentType: this.backgroundType,
 			timestamp: new Date().toISOString(),
 		});
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(STORAGE_PREFIX + 'enableDynamicBackground', this.enableDynamicBackground.toString());
-		}
+		storage.set('enableDynamicBackground', this.enableDynamicBackground.toString());
 	};
 
 	toggleBlurEffect = () => {
 		this.enableBlurEffect = !this.enableBlurEffect;
-		if (typeof localStorage !== 'undefined') {
-			localStorage.setItem(STORAGE_PREFIX + 'enableBlurEffect', this.enableBlurEffect.toString());
-		}
+		storage.set('enableBlurEffect', this.enableBlurEffect.toString());
 	};
 }
 
