@@ -25,7 +25,19 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
+
+      # --- Гейти якості (CODE-QUALITY-v8 § 6.5, CI-CD-AND-TOOLS-v8 § 1.4) ---
+      # До цього пайплайн був install -> build -> deploy: 52 тести існували в
+      # репозиторії і не виконувалися жодного разу.
+      - name: Types and Svelte check
+        run: npm run check
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Unit tests
+        run: npm test
 
       - name: Build
         run: npm run build
