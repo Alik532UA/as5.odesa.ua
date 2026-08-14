@@ -1,0 +1,17 @@
+# Що AI-асистенту читати незащо: згенероване, велике й не наше.
+# Конфіги (package.json, svelte.config.js, tsconfig.json, eslint.config.js)
+# тут СВІДОМО не перелічені — саме з них асистент розуміє профіль проєкту.
+node_modules/
+.svelte-kit/
+build/
+dist/
+coverage/
+package-lock.json
+.git/
+.env
+.env.local
+# Растрові каталоги: 6 МБ, з яких асистенту нічого не видно.
+static/photo/
+static/png/
+static/departments/
+static/og/
