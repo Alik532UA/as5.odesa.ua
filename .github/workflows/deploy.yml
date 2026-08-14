@@ -39,6 +39,14 @@ jobs:
       - name: Unit tests
         run: npm test
 
+      # Поріг high, а не moderate: решта — два moderate у транзитивних
+      # залежностях svelte-i18n, для яких npm пропонує «фікс» у вигляді
+      # відкату на кілька мажорів назад. Такий гейт довелося б одразу
+      # вимкнути, а вимкнений гейт гірший за відсутній: він створює враження,
+      # що перевірка є (SECURITY-v8 § — HIGH, DEPENDENCIES-v8 § 3.1).
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
       - name: Build
         run: npm run build
 
