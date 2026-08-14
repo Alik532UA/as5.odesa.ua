@@ -66,7 +66,12 @@ const config = {
 				'/history',
 				'/competitions',
 				'/admission',
-				'/test'
+				'/test',
+				// Не знаходиться краулером: на sitemap посилається лише
+				// robots.txt, а це статичний файл, який краулер не читає.
+				// Без цього рядка ендпоїнт не потрапляв у build/ зовсім, і
+				// пошуковик за адресою з robots.txt отримував 404.html.
+				'/sitemap.xml'
 			],
 			handleHttpError: 'warn'
 		}

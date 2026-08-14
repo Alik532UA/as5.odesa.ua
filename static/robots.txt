@@ -5,5 +5,8 @@ Allow: /
 # indexed as a real page.
 Disallow: /test
 
-Host: https://as5.odesa.ua
-Sitemap: https://as5.odesa.ua/sitemap.xml
+# Адреси абсолютні й мусять збігатися з SITE_ROOT у src/lib/config/site.ts.
+# Сайт розгорнутий як GitHub Pages project page, тому шлях містить базу.
+# Переїзд на власний домен змінює ці два рядки разом із site.ts і paths.base.
+Host: https://alik532ua.github.io
+Sitemap: https://alik532ua.github.io/as5.odesa.ua/sitemap.xml
