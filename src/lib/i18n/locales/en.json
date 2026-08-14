@@ -160,5 +160,15 @@
 				"description": "Admission information for Odesa School of Arts №5: documents, contacts, and study conditions."
 			}
 		}
+	},
+	"error": {
+		"notFound": {
+			"title": "Page not found",
+			"message": "This page does not exist. The link may be outdated or the page was moved."
+		},
+		"generic": {
+			"title": "Something went wrong",
+			"message": "An error occurred while loading the page. Try reloading it or go back to the home page."
+		}
 	}
 }
