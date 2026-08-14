@@ -50,6 +50,13 @@ jobs:
       - name: Build
         run: npm run build
 
+      # Читає build/, а не src/: canonical на неіснуючу адресу і зниклий
+      # sitemap.xml у джерелах виглядали правильно (SEO-v8 § 6.1,
+      # AI-AGENT-PITFALLS-v8 § 2). Стоїть ПЕРЕД деплоєм, щоб зламана збірка
+      # не доїхала до Pages.
+      - name: Check build output
+        run: npm run check:build
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
