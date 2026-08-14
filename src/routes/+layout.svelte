@@ -11,6 +11,7 @@
 	import { waitLocale, t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { ui } from '$lib/states/ui.svelte';
+	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
 	import { onMount } from 'svelte';
 	import { trackPageView } from '$lib/services/analytics';
@@ -33,7 +34,6 @@
 		}
 	});
 
-	const SITE_FALLBACK_ORIGIN = 'https://as5.odesa.ua';
 	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission';
 	type SeoLangKey = 'uk' | 'en';
 	const FALLBACK_LANG: SeoLangKey = 'uk';
@@ -147,8 +147,10 @@
 	const metaDescription = $derived(
 		safeT(`seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
 	);
-	const canonicalUrl = $derived(data.canonicalUrl || `${SITE_FALLBACK_ORIGIN}${page.url.pathname}`);
-	const ogImageUrl = $derived(`${SITE_FALLBACK_ORIGIN}/og/og-default-1200x630.jpg`);
+	const canonicalUrl = $derived(data.canonicalUrl || canonicalFor(page.url.pathname));
+	// assetUrl, а не origin + шлях: файл лежить під базою, і без неї адреса
+	// вказувала на неіснуючий /og/... у корені домену (lib/config/site.ts).
+	const ogImageUrl = $derived(assetUrl('/og/og-default-1200x630.jpg'));
 	// The home page title is already the brand; appending it doubled the name.
 	const seoTitle = $derived(metaTitle === brandTitle ? brandTitle : `${metaTitle} | ${brandTitle}`);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
@@ -156,8 +158,8 @@
 		'@context': 'https://schema.org',
 		'@type': 'EducationalOrganization',
 		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
-		url: SITE_FALLBACK_ORIGIN,
-		logo: `${SITE_FALLBACK_ORIGIN}/ods-as5-logo-full.svg`,
+		url: SITE_ROOT,
+		logo: assetUrl('/ods-as5-logo-full.svg'),
 		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',

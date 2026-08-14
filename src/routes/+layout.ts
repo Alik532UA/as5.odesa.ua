@@ -1,5 +1,6 @@
 import { waitLocale } from 'svelte-i18n';
 import '$lib/i18n';
+import { canonicalUrl } from '$lib/config/site';
 
 export const prerender = true;
 export const ssr = true;
@@ -13,11 +14,10 @@ export async function load({ url }: { url: URL }) {
 	// Awaiting here means the dictionary is ready before anything renders.
 	await waitLocale();
 
-	// Generate canonical URL on server side to prevent hydration mismatch
-	const SITE_FALLBACK_ORIGIN = 'https://as5.odesa.ua';
-	const canonicalUrl = `${SITE_FALLBACK_ORIGIN}${url.pathname}`;
-
+	// Generate canonical URL on server side to prevent hydration mismatch.
+	// The origin lives in one place now — see lib/config/site.ts for why
+	// concatenating it with pathname by hand produced /as5.odesa.ua/as5.odesa.ua/.
 	return {
-		canonicalUrl
+		canonicalUrl: canonicalUrl(url.pathname)
 	};
 }
