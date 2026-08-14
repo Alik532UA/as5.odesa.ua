@@ -24,6 +24,40 @@ const config = {
 		paths: {
 			base: '/as5.odesa.ua'
 		},
+		// Політика взята з DigitalWorkshop: той самий adapter-static, той самий
+		// runtime-інжект gtag.js. `hash` — бо всі сторінки prerendered, тобто
+		// nonce генерувати нема кому (SECURITY-v8 § 4).
+		csp: {
+			mode: 'hash',
+			directives: {
+				'default-src': ['self'],
+				// gtag.js додається в `<head>` уже в браузері (analytics.ts).
+				// Без цього хоста браузер його блокує, а сервіс виглядає робочим.
+				'script-src': ['self', 'https://www.googletagmanager.com'],
+				// Svelte-переходи ставлять інлайнові `style`-атрибути.
+				'style-src': ['self', 'unsafe-inline'],
+				'img-src': ['self', 'data:', 'https:'],
+				'font-src': ['self'],
+				// ...а без цього скрипт завантажиться і не зможе нічого
+				// відправити: маяки GA4 йдуть окремими запитами.
+				'connect-src': [
+					'self',
+					'https://www.googletagmanager.com',
+					'https://*.google-analytics.com',
+					'https://*.analytics.google.com'
+				],
+				'object-src': ['none'],
+				'base-uri': ['self'],
+				'form-action': ['self']
+				// `frame-ancestors` тут свідомо НЕМА. Політика доїжджає до
+				// браузера в `<meta http-equiv>` (GitHub Pages не дає ставити
+				// заголовки), а в meta-варіанті специфікація велить браузеру
+				// цю директиву ігнорувати. SvelteKit її просто викидає зі
+				// зібраного HTML — перевірено в `build/index.html`. Тримати її
+				// в конфізі означало б вважати захист від clickjacking
+				// наявним, коли його немає.
+			}
+		},
 		prerender: {
 			crawl: true,
 			entries: [
