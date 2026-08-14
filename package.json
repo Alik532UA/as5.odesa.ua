@@ -1,7 +1,7 @@
 {
 	"name": "as5.odesa.ua",
 	"private": true,
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -14,7 +14,8 @@
 		"lint:fix": "eslint . --fix",
 		"test": "vitest run",
 		"test:watch": "vitest",
-		"test:coverage": "vitest run --coverage"
+		"test:coverage": "vitest run --coverage",
+		"bump": "node scripts/bump-version.js"
 	},
 	"devDependencies": {
 		"@eslint/js": "^10.0.1",

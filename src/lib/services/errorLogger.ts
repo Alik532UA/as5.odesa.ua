@@ -12,6 +12,8 @@ export interface ErrorEvent {
 		page?: string;
 		timestamp: string;
 		userAgent: string;
+		/** Версія збірки: без неї звіт неможливо прив'язати до релізу. */
+		version: string;
 	};
 	severity: 'low' | 'medium' | 'high' | 'critical';
 }
@@ -34,6 +36,9 @@ class ErrorLogger {
 			stack: error.stack,
 			context: {
 				timestamp: new Date().toISOString(),
+				// Не хардкод: значення підставляє Vite зі package.json
+				// (VERSIONING-v8 § 2 — версія у копійованих логах).
+				version: typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'unknown',
 				userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
 				...context,
 				page: context.page ?? (typeof window !== 'undefined' ? window.location.pathname : 'unknown'),

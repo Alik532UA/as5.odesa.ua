@@ -62,4 +62,13 @@ describe('ErrorLogger', () => {
 		expect(event.context.component).toBe('TestComp');
 		expect(event.context.page).toBe('/test');
 	});
+
+	// Версія — не косметика: без неї звіт від відвідувача неможливо прив'язати
+	// до релізу, а «unknown» означає, що `define` у конфізі відвалився
+	// (VERSIONING-v8 § 2).
+	it('кожен запис несе версію збірки, а не unknown', () => {
+		errorLogger.logError(new Error('boom'));
+		const event = errorLogger.getCache()[0];
+		expect(event.context.version).toMatch(/^\d+\.\d+\.\d+/);
+	});
 });
