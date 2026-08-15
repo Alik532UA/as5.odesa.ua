@@ -25,6 +25,11 @@ const BASELINE = [
 	'no-new-func',
 	'no-script-url',
 	'no-restricted-syntax',
+	// Поза таблицею канону, доданий за фактом: у продакшн-коді лежало десять
+	// `console.log`, половина з них у гарячих місцях (кожна зміна тла, кожен
+	// ресайз). Правило має нуль порушень і стоїть в `error` — саме щоб нуль
+	// лишався перевіреним (CODE-QUALITY-v8 § 6.4.1, останній пункт).
+	'no-console',
 	'@typescript-eslint/no-explicit-any',
 	'@typescript-eslint/no-unused-vars',
 	'@typescript-eslint/ban-ts-comment',

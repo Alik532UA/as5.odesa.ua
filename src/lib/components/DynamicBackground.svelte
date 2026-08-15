@@ -12,38 +12,14 @@
 
 	let fixedHeight = $state("100vh");
 	let lastWidth = 0;
-	let prevState: { enabled: boolean; backgroundType: 0 | 1 | 2 | 3 } | null = null;
 	let isVisible = $derived(enabled && backgroundType !== 0);
 
-	// Debug logs - expanded logging for transitions
-	$effect(() => {
-		const from = prevState;
-		const to = { enabled, backgroundType };
-
-		console.log("[DynamicBackground] State changed:", {
-			from,
-			to,
-			isVisible,
-			timestamp: new Date().toISOString(),
-		});
-
-		prevState = to;
-	});
-
 	onMount(() => {
-		console.log("[DynamicBackground] Component mounted");
-
 		const updateHeight = () => {
 			const isMobile = window.innerWidth <= 1024;
 			const buffer = isMobile ? 300 : 0;
 			fixedHeight = window.innerHeight + buffer + "px";
 			lastWidth = window.innerWidth;
-			console.log("[DynamicBackground] Height recalculated:", {
-				fixedHeight,
-				isMobile,
-				width: window.innerWidth,
-				height: window.innerHeight,
-			});
 		};
 
 		updateHeight();
@@ -56,7 +32,6 @@
 		window.addEventListener("resize", handleResize);
 
 		return () => {
-			console.log("[DynamicBackground] Component unmounting");
 			if (typeof window !== "undefined") {
 				window.removeEventListener("resize", handleResize);
 			}

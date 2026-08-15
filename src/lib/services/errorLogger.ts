@@ -51,7 +51,14 @@ class ErrorLogger {
 			this.cache.shift();
 		}
 
-		console.error(`[ErrorLogger] ${event.severity.toUpperCase()}:`, error.message, event);
+		// Рівень консолі йде за severity, а не завжди `error`
+		// (CODE-QUALITY-v8 § 3.6, ERROR-HANDLING-v8 § 1.4). `medium` — це
+		// `network`/`fetch`/`404`, тобто зниклий wi-fi і скасована навігація:
+		// очікувані стани, а не порушений інваріант. Лічильник помилок у
+		// DevTools — індикатор, і засмічувати його нормальними станами означає
+		// зробити його марним рівно тоді, коли за ним прийдуть.
+		const write = event.severity === 'high' || event.severity === 'critical' ? console.error : console.warn;
+		write(`[ErrorLogger] ${event.severity.toUpperCase()}:`, error.message, event);
 		return id;
 	}
 

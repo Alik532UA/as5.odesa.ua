@@ -96,28 +96,17 @@ class UIState {
 	};
 
 	setBackgroundType = (type: 0 | 1 | 2 | 3) => {
-		const oldType = this.backgroundType;
 		this.backgroundType = type;
-		console.log("[UIState] Background type changed:", {
-			from: oldType,
-			to: type,
-			isEnabled: this.enableDynamicBackground,
-			timestamp: new Date().toISOString(),
-		});
+		// Нуль не зберігається навмисно: «немає тла» виражає прапорець
+		// `enableDynamicBackground`, і збережений нуль перекрив би тип, до
+		// якого користувач повернеться, увімкнувши тло знову.
 		if (type !== 0) {
 			storage.set('backgroundType', type.toString());
 		}
 	};
 
 	toggleDynamicBackground = () => {
-		const oldState = this.enableDynamicBackground;
 		this.enableDynamicBackground = !this.enableDynamicBackground;
-		console.log("[UIState] Dynamic background toggled:", {
-			from: oldState,
-			to: this.enableDynamicBackground,
-			currentType: this.backgroundType,
-			timestamp: new Date().toISOString(),
-		});
 		storage.set('enableDynamicBackground', this.enableDynamicBackground.toString());
 	};
 
