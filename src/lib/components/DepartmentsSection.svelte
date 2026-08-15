@@ -86,7 +86,7 @@
 
 	.departments__grid {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: var(--space-2xl);
 	}
 
@@ -158,7 +158,7 @@
 
 	@media (max-width: 480px) {
 		.departments__grid {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: var(--space-md);
 		}
 

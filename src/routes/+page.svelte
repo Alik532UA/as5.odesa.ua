@@ -155,7 +155,7 @@
 
 	.g-bento-4x3 {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 24px;
 	}
 
@@ -181,7 +181,7 @@
 
 	@media (max-width: 1024px) {
 		.g-bento-4x3 {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 		}
 	}
 
@@ -190,7 +190,7 @@
 			font-size: 2.2rem;
 		}
 		.g-bento-4x3 {
-			grid-template-columns: repeat(2, 1fr);
+			grid-template-columns: repeat(2, minmax(0, 1fr));
 			gap: 16px;
 		}
 		.g-bento-4x3__item {

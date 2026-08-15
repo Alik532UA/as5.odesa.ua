@@ -35,7 +35,7 @@
 <style>
 	.g-bento {
 		display: grid;
-		grid-template-columns: repeat(4, 1fr);
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 		grid-auto-rows: 240px;
 		gap: 24px;
 	}
@@ -73,7 +73,7 @@
 	.g-bento__item--7 { grid-column: span 2; grid-row: span 1; }
 
 	@media (max-width: 1024px) {
-		.g-bento { grid-template-columns: repeat(2, 1fr); }
+		.g-bento { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 		/* Reset spans for tablet */
 		.g-bento__item { grid-column: span 1 !important; grid-row: span 1 !important; }
 		.g-bento__item--0 { grid-column: span 2 !important; grid-row: span 2 !important; }
