@@ -133,6 +133,26 @@
 		}
 	}
 
+	/**
+	 * Маршрути, які не мають бути в індексі (SEO-v8 § 4.3).
+	 *
+	 * `/test` — чернетка для ручних перевірок: десяток варіантів галерей і
+	 * посилання на неіснуючі `/news/*`. Вона prerender-иться, тобто це справжня
+	 * сторінка з власним HTML, і доти вона оголошувала `index, follow` разом з
+	 * рештою.
+	 *
+	 * `Disallow` у `robots.txt` цього не закривав, а СХОВАВ: заборона обходу
+	 * означає, що краулер сторінку не завантажує — і `noindex` у ній не читає
+	 * ніколи. Адреса, на яку хтось послався ззовні, потрапляє в індекс без
+	 * вмісту саме за такої комбінації. Тому тут `noindex`, а `Disallow` із
+	 * `robots.txt` прибрано: щоб директива подіяла, сторінку треба дати
+	 * прочитати.
+	 */
+	const NOINDEX_ROUTES = new Set(['/test']);
+	const robotsContent = $derived(
+		NOINDEX_ROUTES.has(page.route.id ?? '') ? 'noindex, nofollow' : 'index, follow'
+	);
+
 	const seoKey = $derived(routeToSeoKey(page.route.id));
 	const currentLocale = $derived(($locale as string) || 'uk');
 	const activeLang = $derived<SeoLangKey>(currentLocale === 'en' ? 'en' : FALLBACK_LANG);
@@ -178,7 +198,7 @@
 
 	<title>{seoTitle}</title>
 	<meta name="description" content={metaDescription} />
-	<meta name="robots" content="index, follow" />
+	<meta name="robots" content={robotsContent} />
 
 	<meta property="og:title" content={seoTitle} />
 	<meta property="og:description" content={metaDescription} />

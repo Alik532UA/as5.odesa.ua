@@ -144,9 +144,9 @@
 	];
 </script>
 
-<svelte:head>
-	<meta name="robots" content="noindex, nofollow" />
-</svelte:head>
+<!-- `<meta name="robots">` ставить layout за списком NOINDEX_ROUTES. Доти цей
+     тег стояв ще й тут, а layout поруч оголошував `index, follow` — дві
+     суперечливі директиви в одному `<head>`. -->
 
 <svelte:window onkeydown={handleKeydown} />
 

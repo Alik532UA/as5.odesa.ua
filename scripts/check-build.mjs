@@ -55,6 +55,12 @@ const REQUIRED_PAGES = ['index.html', 'about.html', 'history.html', 'competition
 /** Мінімум видимого тексту. Порожнє тіло в індексі — AI-AGENT-PITFALLS § 2. */
 const MIN_BODY_TEXT = 200;
 
+/**
+ * Технічні сторінки: prerender-яться, але в індексі їм не місце (SEO-v8 § 4.3).
+ * Ключ — файл у `build/`, значення потрібне лише для повідомлення.
+ */
+const NOINDEX_PAGES = { 'test.html': 'чернетка для ручних перевірок' };
+
 const problems = [];
 const fail = (msg) => problems.push(msg);
 
@@ -177,6 +183,43 @@ for (const file of files) {
 	}
 
 	if (!isShell) {
+		// § 4.1 — заголовок формується сторінкою. Порожній чи однослівний
+		// `<title>` означає, що дані до нього не доїхали: у джерелах вираз
+		// виглядає правильно, а під час prerender словник міг бути ще не
+		// готовим (саме такий дефект тут уже був).
+		const title = html.match(/<title>([^<]*)<\/title>/)?.[1]?.trim() ?? '';
+		if (title.length < 5) fail(`${file}: title відсутній або надто короткий — «${title}»`);
+		// `$t` віддає сам ключ, коли перекладу немає: у HTML це виглядає як
+		// звичайний текст, і жоден інший гейт цього не побачить.
+		if (/^[a-z][\w.]*\.[\w.]+$/.test(title)) {
+			fail(`${file}: у title потрапив КЛЮЧ перекладу, а не переклад — «${title}»`);
+		}
+
+		// § 3.2 — Svelte не обчислює вирази всередині <script>, тож JSON-LD,
+		// написаний без {@html}, їде в HTML літералом «{JSON.stringify(…)}».
+		if (/ld\+json"[^>]*>\s*\{\s*JSON/.test(html)) {
+			fail(`${file}: JSON-LD не обчислено — потрібен {@html} (SEO-v8 § 3.2)`);
+		}
+
+		// § 4.3 — технічні сторінки не в індексі. Перевіряються обидві сторони:
+		// у чернетки має бути noindex, у решти — не має.
+		const robotsTags = html.match(/<meta[^>]+name="robots"[^>]*>/g) ?? [];
+		if (robotsTags.length !== 1) {
+			// Дві директиви в одному `<head>` — це не подвоєння, а суперечність:
+			// саме так тут і було, layout казав `index, follow`, а сторінка
+			// поруч — `noindex`.
+			fail(`${file}: <meta name="robots"> знайдено ${robotsTags.length} разів, очікується 1`);
+		}
+		const robots = html.match(/<meta[^>]+name="robots"[^>]+content="([^"]+)"/)?.[1] ?? '';
+		const name = file.slice(BUILD.length + 1);
+		const shouldHide = name in NOINDEX_PAGES;
+		if (shouldHide && !robots.includes('noindex')) {
+			fail(`${file}: ${NOINDEX_PAGES[name]} без noindex — сторінка піде в індекс`);
+		}
+		if (!shouldHide && robots.includes('noindex')) {
+			fail(`${file}: справжня сторінка сайту оголошена noindex`);
+		}
+
 		const canonicals = html.match(/<link[^>]+rel="canonical"[^>]*>/g) ?? [];
 		if (canonicals.length !== 1) {
 			fail(`${file}: canonical знайдено ${canonicals.length} разів, очікується 1`);
@@ -225,6 +268,14 @@ if (!existsSync(robotsPath)) {
 			if (locs.length === 0) fail('sitemap порожній — жодного <loc>');
 			for (const loc of locs) {
 				if (!loc.startsWith(`${SITE_ROOT}/`)) fail(`sitemap: адреса не з цього сайту — ${loc}`);
+				// § 4.3 — друга половина того самого правила: сторінка з noindex
+				// не має бути в sitemap. Кожен зі списків окремо виглядає
+				// правильно; суперечність між ними видно лише при звірці.
+				const path = loc.slice(SITE_ROOT.length).replace(/^\//, '').replace(/\/$/, '');
+				const asFile = path === '' ? 'index.html' : `${path}.html`;
+				if (asFile in NOINDEX_PAGES) {
+					fail(`sitemap оголошує ${loc}, а сторінка позначена noindex — списки суперечать`);
+				}
 			}
 		}
 	}
