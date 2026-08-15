@@ -100,18 +100,16 @@
 |---|---|---|
 | **Мова живе лише у сховищі** | I18N-v8 § 3.1, SEO-v8 § 2.2–2.3 (обидва HIGH) | `/en/` як адрес не існує: `en.json` перемикається в браузері, `hreflang` немає, у sitemap лише `uk`-адреси. Тобто англійської версії для пошуковика не існує взагалі. Лікується хуком `reroute` і подвоєним prerender (SKD-REROUTE) — це окремий прохід із перевіркою `build/`, а не правка на ходу |
 | **`@media` замість `@container` у 12 місцях компонентів** | FLUID-SIZING-v8 § 7A (FS-CONTAINER, HIGH) | `@container` у проєкті нуль звернень. Компоненти міряють вікно, а не наявне місце: у розкладці з двох колонок картка поводиться як на всю ширину |
-| **`repeat(N, 1fr)` у 14 сітках без `minmax(0, 1fr)`** | FLUID-SIZING-v8, CRITICAL | довгий рядок без пробілів розпирає колонку: `1fr` означає «не менше вмісту», а не «рівна частка» |
-| **Дві `svelte-ignore` без обґрунтування** | ACCESSIBILITY-v8, HIGH | `components/ui/PianoModal.svelte` — клік по тлу модалки |
 | **Хардкод українських рядків поза словником** | I18N-v8, HIGH | `/test` (чернетка) і `DebugSettingsDropdown` («Вимк»/«Вкл») |
-| **Немає Dependabot** | DEPENDENCIES-v8 (DEP-DEPENDABOT, HIGH) | `.github/dependabot.yml` відсутній; оновлення відстежуються вручну |
+| **Звуки піаніно з чужого демо-сайту** | — | `.wav` лежать на `carolinegabriel.com`; через це `media-src` у CSP тримає сторонній хост. Перенести файли в `static/audio/` — тоді директива згорнеться до `'self'` |
+| **`{#each}` без ключа — 20 місць** | SVELTE-UI-v8 § 1.5, HIGH | борг у `warn`; здебільшого чернетка `/test` |
 
 Команди, якими це виміряно:
 
 ```
-grep -rn "@media" src/lib/components --include="*.svelte" | wc -l     # 12
-grep -rn "repeat([0-9], *1fr)" src --include="*.svelte" | wc -l       # 14
-grep -rn "svelte-ignore" src/ | wc -l                                 # 2
+grep -rn "@media" src/lib/components --include="*.svelte" | wc -l         # 12
 grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
+npm run lint 2>&1 | grep -c "require-each-key"                            # 20
 ```
 
 ## Перевірки, які тут є
@@ -119,16 +117,16 @@ grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
 | Гейт | Де | Що ловить |
 |---|---|---|
 | `npm run lint` | CI | eslint, базовий набір за CODE-QUALITY-v8 § 6.4.1 |
-| `npm run check` | CI | `svelte-check`, 0 помилок на 4151 файлі |
-| `npm test` | CI | **11 файлів, 79 перевірок** (`npx vitest run \| grep "Tests "`) |
+| `npm run check` | CI | `svelte-check`, 0 помилок на 4153 файлах |
+| `npm test` | CI | **12 файлів, 83 перевірки** (`npx vitest run \| grep "Tests "`) |
 | `npm audit --omit=dev --audit-level=high` | CI | вразливості **прод**-залежностей |
 | `git diff --exit-code` | CI, після `build` | збірка не бруднить робоче дерево |
 | `npm run check:build` | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap, подвоєна база, позиція й хеш інлайн-скриптів |
 
 Файли інваріантів: `ci`, `css-variables`, `error-logger-reachable`,
-`eslint-baseline`, `structure`, `test-runners`, `testid-conventions` у `src/`,
-плюс `i18n/translations`, `schemas/news`, `services/errorLogger`,
-`services/storage`.
+`eslint-baseline`, `fluid-sizing`, `structure`, `test-runners`,
+`testid-conventions` у `src/`, плюс `i18n/translations`, `schemas/news`,
+`services/errorLogger`, `services/storage`.
 
 ## Борг із числами
 
@@ -137,12 +135,12 @@ grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
 
 | Правило ESLint | Місць | Стан на |
 |---|---|---|
-| `svelte/require-each-key` | 22 | 2026-08-16 |
-| `@typescript-eslint/no-unused-vars` | 12 | 2026-08-16 |
+| `svelte/require-each-key` | 20 | 2026-08-16 |
+| `@typescript-eslint/no-unused-vars` | 11 | 2026-08-16 |
 | `svelte/no-navigation-without-resolve` | 11 | 2026-08-16 |
 | `@typescript-eslint/no-explicit-any` | 2 | 2026-08-16 |
 
-Разом 47 попереджень, 0 помилок (`npm run lint 2>&1 | grep "^✖"`).
+Разом 44 попередження, 0 помилок (`npm run lint 2>&1 | grep "^✖"`).
 Більшість припадає на `/test` — чернетку для ручних перевірок.
 
 Перевищення межі розміру (PROJECT-STRUCTURE-v8 § 7) записані числами в
@@ -154,7 +152,7 @@ grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
 | `src/routes/test/+page.svelte` | 1436 | 400 |
 | `src/lib/components/HeaderSection.svelte` | 665 | 300 |
 | `src/lib/components/FooterSection.svelte` | 401 | 300 |
-| `src/lib/components/ui/PianoModal.svelte` | 339 | 300 |
+| `src/lib/components/ui/PianoModal.svelte` | 327 | 300 |
 
 Два `eslint-disable` у проєкті, обидва з причиною поруч
 (`grep -rn "eslint-disable" src/`): `prefer-rest-params` у `analytics.ts`
@@ -179,3 +177,5 @@ grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
 | `deploy.yml` без `concurrency`, `npm audit` з devDependencies, немає `git diff --exit-code` | 2026-08-16 | 1 |
 | 10 `console.log` у продакшн-коді, зокрема `$effect`, що існував лише заради логу | 2026-08-16 | 1 |
 | `/test` оголошував одночасно `index, follow` і `noindex`, а `Disallow` не давав краулеру це прочитати | 2026-08-16 | 1 |
+| Піаніно: CSP різала всі 17 звуків (немає `media-src`), а підсвітка клавіші не вмикалася ніколи (`$state(new Set())`) | 2026-08-16 | 1 |
+| 12 сіток із голим `1fr` — довге слово розпирало розкладку за межі екрана | 2026-08-16 | 1 |
