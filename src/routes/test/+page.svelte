@@ -847,7 +847,9 @@
 	/* 3. Soft Cards Grid (News Style) */
 	.g-cards {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+		/* min(), бо гола довжина в minmax — це підлога, а не поріг: колонка
+		   лишається 320px і в контейнері 280px, і картка розпирає сторінку. */
+		grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
 		gap: 30px;
 	}
 	.g-card {
@@ -1243,7 +1245,7 @@
 
 	.gallery-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
 		gap: 1.5rem;
 		margin-bottom: 4rem; /* Space between templates */
 	}
@@ -1254,7 +1256,7 @@
 	/* Gallery Template 2: Dynamic Grid Layout */
 	.gallery-dynamic-grid {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 		grid-auto-flow: dense; /* Allows items to fill gaps */
 		gap: 1.5rem;
 		margin-bottom: 4rem;
@@ -1280,7 +1282,7 @@
 	/* Gallery Template 3: Masonry Layout */
 	.gallery-masonry {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 		grid-auto-rows: masonry; /* Enable masonry layout */
 		gap: 1.5rem;
 		margin-bottom: 4rem;
@@ -1347,7 +1349,7 @@
 	/* Gallery Template 6: Overlay Caption */
 	.gallery-overlay-caption {
 		display: grid;
-		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr));
 		gap: 1.5rem;
 		margin-bottom: 4rem;
 	}
@@ -1390,7 +1392,7 @@
 		.gallery-section__subtitle { font-size: 1rem; }
 		.gallery-template-1 h3, .gallery-template-2 h3, .gallery-template-3 h3, .gallery-template-4 h3, .gallery-template-5 h3, .gallery-template-6 h3 { font-size: 1.5rem; }
 
-		.gallery-grid, .gallery-masonry, .gallery-dynamic-grid { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+		.gallery-grid, .gallery-masonry, .gallery-dynamic-grid { grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); }
 		.gallery-item img, .gallery-item-masonry img { height: 180px; }
 
 		.gallery-hero {
@@ -1399,10 +1401,13 @@
 		}
 		.gallery-hero-main { grid-column: 1 / 2; grid-row: 1 / 2; }
 		.gallery-hero-main img { height: 300px; } /* Adjust height for stacked view */
+		/* Тут minmax лишається з голою довжиною свідомо: це РЯДКИ, вертикальна вісь.
+		   Правило про min(…, 100%) стосується колонок — воно проти горизонтального
+		   переповнення, а 100% у рядках рахується від висоти контейнера, якої тут немає. */
 		.gallery-hero-thumbnails { grid-column: 1 / 2; grid-row: 2 / 3; grid-template-rows: repeat(auto-fit, minmax(80px, 1fr)); /* Make thumbnails stack */ }
 		.gallery-thumb img { height: 80px; }
 
-		.gallery-overlay-caption { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+		.gallery-overlay-caption { grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr)); }
 		.gallery-item-overlay { aspect-ratio: 1/1; } /* Square aspect ratio for overlay */
 
 		.news { padding: 2rem 0; }
