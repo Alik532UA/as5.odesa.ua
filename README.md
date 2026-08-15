@@ -1,42 +1,58 @@
-# sv
+# as5.odesa.ua
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Офіційний вебсайт **Мистецької школи №5 м. Одеси**.
 
-## Creating a project
+🌐 [as5.odesa.ua](https://as5.odesa.ua/)
 
-If you're seeing this, you've probably already done this step. Congrats!
+Дві мови (`uk` типова, `en`), шість маршрутів, повністю prerendered — серверного рантайму немає.
 
-```sh
-# create a new project
-npx sv create my-app
+## Швидкий старт
+
+```bash
+npm ci
 ```
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.13.1 create --template minimal --types ts --install npm ./
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
+Порт dev-сервера — **5193** (конфігурація `as5-dev` у `.claude/launch.json` кореневої теки `GitHub`). Порт свій у кожного проєкту навмисно: на типовому `5173` сидить будь-який інший сусід, і тести почали б перевіряти чужий сайт.
 
-To create a production version of your app:
+## Команди
 
-```sh
-npm run build
-```
+| Команда | Що робить |
+|---|---|
+| `npm run dev` | dev-сервер |
+| `npm run check` | `svelte-check` — має бути 0 помилок |
+| `npm run lint` | ESLint — має бути 0 помилок |
+| `npm test` | юніт-інваріанти (Vitest) |
+| `npm run build` | збірка в `build/` |
+| `npm run check:build` | гейт над `build/`: canonical, `og:image`, подвоєна база, sitemap |
+| `npm run preview` | перегляд зібраного сайту |
+| `npm run bump` | підняття версії |
 
-You can preview the production build with `npm run preview`.
+**Playwright тут не стоїть.** Не створюй файлів під нього — вони не запустяться й ніхто про це не повідомить.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Як усе влаштоване
+
+- **Стек:** SvelteKit 2 + Svelte 5 (виключно руни), `@sveltejs/adapter-static`.
+- **Стан:** класи-контролери в `.svelte.ts`. Панівна форма — module-level синглтон; `$effect` у його конструкторі кидає `effect_orphan`.
+- **Сховище:** фасад `src/lib/services/storage.ts`, префікс `as5.odesa.ua_`. Прямий доступ до `localStorage` заборонений скрізь, окрім інлайн-скрипта першого кадру в `app.html`.
+- **i18n:** `svelte-i18n`, словники — JSON у `src/lib/i18n/locales/`. Паритет ключів тримає інваріант `translations.test.ts`, бо тип їх не звіряє.
+- **Публічна адреса:** єдине джерело — `src/lib/config/site.ts`. Ніде більше origin не збирається вручну.
+
+## Перевірки
+
+Частину дефектів цього проєкту видно **лише** у зібраному виводі — саме тому `check:build` існує окремо від `check`. Канонічне посилання, `og:image` і подвоєна база не виявляються ні типами, ні лінтером.
+
+Результат треба **побачити**, а не припустити: твердження «правило виконано» робиться після прогону, а не замість нього.
+
+## Деплой
+
+GitHub Pages з гілки `main` через `.github/workflows/deploy.yml`. Власний домен `as5.odesa.ua` налаштований у налаштуваннях Pages репозиторію.
+
+## Стандарти
+
+Загальні правила — у пакеті [`sveltekit-canon/selection_criteria/v8`](../sveltekit-canon/selection_criteria/v8/README.md).
+Специфіка цього проєкту — в [PROJECT-CONTEXT.md](PROJECT-CONTEXT.md).
+Інструкції для AI-асистентів — в [AGENTS.md](AGENTS.md).
