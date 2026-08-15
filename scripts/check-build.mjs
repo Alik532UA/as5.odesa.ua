@@ -14,6 +14,7 @@
  * Запускається після `npm run build` (`npm run check:build`). Вихід ≠ 0 —
  * помилка збірки.
  */
+import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 
@@ -80,8 +81,57 @@ if (files.length < 6) {
 	process.exit(1);
 }
 
+/**
+ * Кожен інлайн-скрипт зібраної сторінки покритий політикою (SECURITY-v8 § 6.3).
+ *
+ * Дві незалежні умови, і забути можна кожну:
+ *
+ *  1. **Позиція.** SvelteKit ставить `<meta http-equiv="Content-Security-Policy">`
+ *     на місце `%sveltekit.head%`, а мета-політика діє лише на те, що йде ПІСЛЯ
+ *     неї. Скрипт вище неї не покритий узагалі — і хеш для нього декоративний.
+ *     Саме так тут і було: анти-FOUC стояв першим у `<head>`.
+ *  2. **Хеш.** `mode: 'hash'` хешує лише те, що згенерував сам SvelteKit.
+ *     Власний скрипт треба додати в `script-src` руками, і зробити це з файлу
+ *     під час збірки — вписаний рядком хеш розходиться при першій правці.
+ *
+ * Перевірка живе тут, а не в юніт-тесті, бо обидва дефекти видно лише в
+ * зібраному HTML: у джерелах `app.html` виглядає правильно в обох випадках, а в
+ * dev CSP узагалі приходить заголовком із nonce й проблеми не існує (§ 6.4).
+ */
+function checkInlineScripts(file, html) {
+	const cspTag = html.match(/<meta[^>]+http-equiv="content-security-policy"[^>]*>/i);
+	if (!cspTag) {
+		fail(`${file}: у зібраному HTML немає мета-політики CSP`);
+		return;
+	}
+	const policy = cspTag[0].match(/content="([^"]+)"/i)?.[1] ?? '';
+	const cspAt = cspTag.index;
+
+	// Без `src`, і не JSON-LD: структуровані дані — це дані, а не код, і CSP
+	// їх не стосується.
+	const INLINE = /<script(?![^>]*\ssrc=)(?![^>]*type="application\/ld\+json")[^>]*>([\s\S]*?)<\/script>/g;
+	let found = 0;
+	for (const match of html.matchAll(INLINE)) {
+		found++;
+		if (match.index < cspAt) {
+			fail(`${file}: інлайн-скрипт стоїть ВИЩЕ мета-політики — вона його не покриває`);
+			continue;
+		}
+		const hash = `sha256-${createHash('sha256').update(match[1]).digest('base64')}`;
+		if (!policy.includes(hash)) {
+			fail(`${file}: інлайн-скрипт без хеша в script-src — браузер його заблокує (${hash})`);
+		}
+	}
+
+	// Захист самої перевірки: нуль інлайн-скриптів означав би, що регулярка
+	// перестала їх бачити, а не що їх немає — SvelteKit завжди кладе свій.
+	if (found === 0) fail(`${file}: жодного інлайн-скрипта не знайдено — перевірка CSP мертва`);
+}
+
 for (const file of files) {
 	const html = readFileSync(file, 'utf8');
+
+	checkInlineScripts(file, html);
 
 	// 404.html — оболонка SPA для GitHub Pages: свідомо порожня, без canonical.
 	const isShell = file.endsWith('/404.html');

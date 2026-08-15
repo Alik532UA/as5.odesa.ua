@@ -2,8 +2,24 @@
 <html lang="uk">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />		<meta name="theme-color" content="#1B5E7B" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#1B5E7B" />
 		<meta name="color-scheme" content="light dark" />
+		%sveltekit.head%
+		<!--
+			Анти-FOUC стоїть ПІСЛЯ %sveltekit.head% навмисно (SECURITY-v8 § 6.3).
+
+			SvelteKit вставляє <meta http-equiv="Content-Security-Policy"> саме на
+			місце %sveltekit.head%, а мета-політика діє лише на те, що йде ПІСЛЯ
+			неї. Доти скрипт стояв вище — тобто політика його не покривала зовсім,
+			і будь-який хеш для нього був би декоративним. Затримка від переїзду
+			нульова: до цього місця в <head> кілька мета-тегів.
+
+			Хеш цього блоку обчислюється зі вмісту ЦЬОГО файлу під час збірки
+			(svelte.config.js), а не вписаний рядком: вписаний розійшовся б зі
+			скриптом при першій же правці й зламав би сайт лише у збірці, не в dev.
+			Тому будь-яка зміна нижче безпечна — хеш переїде разом із нею.
+		-->
 		<script>
 			try {
 				var prefix = 'as5.odesa.ua_';
@@ -17,15 +33,8 @@
 					document.documentElement.classList.remove('dark-theme');
 					document.querySelector('meta[name="color-scheme"]').content = 'light dark';
 				}
-				// Mark home page before JS hydration to avoid flash
-				var p = window.location.pathname;
-				var base = '/as5.odesa.ua';
-				if (p === base + '/' || p === base || p === '/') {
-					document.body.classList.add('page-home');
-				}
 			} catch (e) {}
 		</script>
-		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>

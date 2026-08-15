@@ -1,5 +1,34 @@
 import adapter from '@sveltejs/adapter-static';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { relative, sep } from 'node:path';
+
+/**
+ * Хеш власного інлайн-скрипта з `app.html` (SECURITY-v8 § 6.3, § 16).
+ *
+ * `mode: 'hash'` хешує лише ті інлайн-скрипти, які генерує САМ SvelteKit.
+ * Анти-FOUC у `app.html` до них не належить, тож без цього рядка політика його
+ * не дозволяє — а в `app.html` він до того ж стояв ВИЩЕ `%sveltekit.head%`,
+ * тобто вище самої мети, і не покривався політикою в принципі.
+ *
+ * Хеш береться з файлу під час збірки, а не вписується рядком у конфіг:
+ * вписаний розходиться зі скриптом при першій же правці, і сайт ламається лише
+ * у збірці — у dev CSP приходить заголовком із nonce, і там усе працює (§ 6.4).
+ *
+ * Кількість перевіряється навмисно: якщо в `app.html` з'явиться другий скрипт,
+ * збірка впаде з поясненням замість того, щоб мовчки лишити його без хеша.
+ */
+function inlineScriptHash() {
+	const html = readFileSync('src/app.html', 'utf8');
+	const scripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)];
+	if (scripts.length !== 1) {
+		throw new Error(
+			`app.html: очікується рівно один інлайн <script>, знайдено ${scripts.length}. ` +
+				'Хеш у CSP покриває лише один — інакше решта мовчки заблокується.'
+		);
+	}
+	return `sha256-${createHash('sha256').update(scripts[0][1]).digest('base64')}`;
+}
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -47,7 +76,10 @@ const config = {
 				'default-src': ['self'],
 				// gtag.js додається в `<head>` уже в браузері (analytics.ts).
 				// Без цього хоста браузер його блокує, а сервіс виглядає робочим.
-				'script-src': ['self', 'https://www.googletagmanager.com'],
+				// Третій елемент — хеш анти-FOUC зі `app.html`: він тепер стоїть
+				// ПІСЛЯ мети, тобто політика на нього справді діє, і без хеша
+				// тема блимала б при кожному завантаженні (SECURITY-v8 § 6.3).
+				'script-src': ['self', 'https://www.googletagmanager.com', inlineScriptHash()],
 				// Svelte-переходи ставлять інлайнові `style`-атрибути.
 				'style-src': ['self', 'unsafe-inline'],
 				'img-src': ['self', 'data:', 'https:'],
