@@ -47,9 +47,18 @@ npm run dev
 
 Результат треба **побачити**, а не припустити: твердження «правило виконано» робиться після прогону, а не замість нього.
 
-## Деплой
+## Деплой і адреси
 
-GitHub Pages з гілки `main` через `.github/workflows/deploy.yml`. Власний домен `as5.odesa.ua` налаштований у налаштуваннях Pages репозиторію.
+GitHub Pages з гілки `main` через `.github/workflows/deploy.yml` (офіційний конвеєр `configure-pages` → `upload-pages-artifact` → `deploy-pages`).
+
+| Адреса | Роль |
+|---|---|
+| **`https://as5.odesa.ua/`** | **основна** — куплений домен, налаштований у Pages репозиторію |
+| `https://alik532ua.github.io/as5.odesa.ua/` | запасна, лишається робочою |
+
+Canonical, `og:url`, `sitemap.xml` і `robots.txt` ведуть на основну; запасна в індексі не згадується, щоб пошуковик не тримав два дублі.
+
+Через власний домен `paths.base` тут **порожня**, а не `/as5.odesa.ua`. Файл `static/CNAME` не потрібен: `actions/deploy-pages` зберігає прив'язку домену з налаштувань Pages.
 
 ## Стандарти
 

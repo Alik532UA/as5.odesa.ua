@@ -5,10 +5,23 @@
 @import './themes/light.css';
 @import './themes/dark.css';
 
-/* --- Fonts --- */
+/* --- Fonts ---
+
+   Шляхи ВІДНОСНІ (`../../fonts/…`), а не від кореня. Причина конкретна: CSS не
+   бачить `paths.base` SvelteKit, тож абсолютний шлях доводиться писати руками —
+   і він мовчки прив'язує стилі до однієї конкретної адреси сайту.
+
+   Саме так тут і сталося. Доти стояло `/as5.odesa.ua/fonts/…` — правильно для
+   запасної адреси `alik532ua.github.io/as5.odesa.ua/`, і 404 для основної
+   `as5.odesa.ua/`, де це розгорталося в `as5.odesa.ua/as5.odesa.ua/fonts/…`.
+   Сайт за основним доменом показувався системними шрифтами. Ні збірка, ні
+   типи, ні лінтер про це не кажуть: для них це просто рядок.
+
+   Відносний шлях Vite розв'язує під час збірки й переписує на реальний хеш
+   ресурсу, тож він лишається правильним за будь-якої бази. */
 @font-face {
 	font-family: 'e-Ukraine';
-	src: url('/as5.odesa.ua/fonts/e-Ukraine-Regular.woff2') format('woff2');
+	src: url('../../../static/fonts/e-Ukraine-Regular.woff2') format('woff2');
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
@@ -16,7 +29,7 @@
 
 @font-face {
 	font-family: 'e-Ukraine';
-	src: url('/as5.odesa.ua/fonts/e-Ukraine-Bold.woff2') format('woff2');
+	src: url('../../../static/fonts/e-Ukraine-Bold.woff2') format('woff2');
 	font-weight: 700;
 	font-style: normal;
 	font-display: swap;

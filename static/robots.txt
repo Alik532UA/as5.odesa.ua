@@ -5,8 +5,13 @@ Allow: /
 # indexed as a real page.
 Disallow: /test
 
-# Адреси абсолютні й мусять збігатися з SITE_ROOT у src/lib/config/site.ts.
-# Сайт розгорнутий як GitHub Pages project page, тому шлях містить базу.
-# Переїзд на власний домен змінює ці два рядки разом із site.ts і paths.base.
-Host: https://alik532ua.github.io
-Sitemap: https://alik532ua.github.io/as5.odesa.ua/sitemap.xml
+# Адреси абсолютні й мусять збігатися з SITE_ORIGIN у src/lib/config/site.ts.
+# Основна адреса сайту — власний домен; alik532ua.github.io/as5.odesa.ua/
+# лишається робочою запасною, але в robots і canonical не згадується, щоб
+# пошуковик не тримав в індексі два дублі.
+#
+# Ці два рядки — частина того самого переїзду, що й SITE_ORIGIN і paths.base.
+# 2026-08-15 вони відстали: код уже віддавав власний домен, а тут лишався
+# github.io, і `npm run check:build` спіймав саме це.
+Host: https://as5.odesa.ua
+Sitemap: https://as5.odesa.ua/sitemap.xml

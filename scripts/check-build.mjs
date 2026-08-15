@@ -19,10 +19,33 @@ import { join } from 'node:path';
 
 const BUILD = 'build';
 
-/** Мусить збігатися з `SITE_ORIGIN` у `src/lib/config/site.ts`. */
-const SITE_ORIGIN = 'https://alik532ua.github.io';
-/** Мусить збігатися з `paths.base` у `svelte.config.js`. */
-const BASE = '/as5.odesa.ua';
+/**
+ * Origin і база ЧИТАЮТЬСЯ з джерел істини, а не дублюються тут.
+ *
+ * Доти обидва були вписані константами з приміткою «мусить збігатися з…». При
+ * переїзді на власний домен 2026-08-15 вони не збіглися: код уже віддавав
+ * `https://as5.odesa.ua/…`, а гейт іще чекав `alik532ua.github.io` — і оголосив
+ * кожну адресу сайту чужою. Тобто перевірка, написана проти розходження, сама
+ * стала його жертвою.
+ *
+ * Регулярка навмисно строга: якщо значення не знайдено, скрипт падає з
+ * поясненням, а не мовчки бере порожній рядок і пропускає геть усе.
+ */
+function readConst(file, re, what) {
+	const m = re.exec(readFileSync(file, 'utf8'));
+	if (!m) {
+		console.error(`check-build: не знайдено ${what} у ${file}. Гейт зупинено — без цього він перевіряв би не те.`);
+		process.exit(1);
+	}
+	return m[1];
+}
+
+const SITE_ORIGIN = readConst(
+	'src/lib/config/site.ts',
+	/export const SITE_ORIGIN\s*=\s*['"]([^'"]+)['"]/,
+	'SITE_ORIGIN'
+);
+const BASE = readConst('svelte.config.js', /base:\s*['"]([^'"]*)['"]/, 'paths.base');
 const SITE_ROOT = `${SITE_ORIGIN}${BASE}`;
 
 /** Сторінки, які зобов'язані бути в збірці. Порожній список = мертва перевірка. */
@@ -87,12 +110,19 @@ for (const file of files) {
 
 	// База, підставлена двічі — той самий дефект, через який файл написаний.
 	// Шукається в усіх абсолютних адресах сторінки, не лише в canonical.
-	for (const m of html.matchAll(/https?:\/\/[^"'\s]+/g)) {
-		const url = m[0];
-		if (!url.startsWith(SITE_ORIGIN)) continue;
-		const tail = url.slice(SITE_ORIGIN.length);
-		if (tail.startsWith(`${BASE}${BASE}`)) {
-			fail(`${file}: база підставлена двічі — ${url.slice(0, 90)}`);
+	//
+	// Пропускається при порожній базі, і це не послаблення: `startsWith('')`
+	// істинне ЗАВЖДИ, тож без цього виходу перевірка після переїзду на власний
+	// домен оголосила б подвоєнням кожну адресу сайту. Подвоїти порожній рядок
+	// неможливо — перевіряти нема чого.
+	if (BASE) {
+		for (const m of html.matchAll(/https?:\/\/[^"'\s]+/g)) {
+			const url = m[0];
+			if (!url.startsWith(SITE_ORIGIN)) continue;
+			const tail = url.slice(SITE_ORIGIN.length);
+			if (tail.startsWith(`${BASE}${BASE}`)) {
+				fail(`${file}: база підставлена двічі — ${url.slice(0, 90)}`);
+			}
 		}
 	}
 
