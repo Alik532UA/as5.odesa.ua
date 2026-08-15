@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount } from "svelte";
-	import { fade, scale } from "svelte/transition";
+	import { fade } from "svelte/transition";
+	import { SvelteSet } from "svelte/reactivity";
 	import { t } from "svelte-i18n";
+	import { PIANO_KEYS, pianoSoundUrl } from "$lib/config/piano";
 
 	interface Props {
 		isOpen: boolean;
@@ -11,39 +13,15 @@
 	let { isOpen, onClose }: Props = $props();
 
 	let nowPlaying = $state("");
-	let activeKeys = $state<Set<number>>(new Set());
-
-	const keysData = [
-		{ keyCode: 65, note: "C", hint: "A", sharp: false },
-		{ keyCode: 87, note: "C#", hint: "W", sharp: true },
-		{ keyCode: 83, note: "D", hint: "S", sharp: false },
-		{ keyCode: 69, note: "D#", hint: "E", sharp: true },
-		{ keyCode: 68, note: "E", hint: "D", sharp: false },
-		{ keyCode: 70, note: "F", hint: "F", sharp: false },
-		{ keyCode: 84, note: "F#", hint: "T", sharp: true },
-		{ keyCode: 71, note: "G", hint: "G", sharp: false },
-		{ keyCode: 89, note: "G#", hint: "Y", sharp: true },
-		{ keyCode: 72, note: "A", hint: "H", sharp: false },
-		{ keyCode: 85, note: "A#", hint: "U", sharp: true },
-		{ keyCode: 74, note: "B", hint: "J", sharp: false },
-		{ keyCode: 75, note: "C", hint: "K", sharp: false },
-		{ keyCode: 79, note: "C#", hint: "O", sharp: true },
-		{ keyCode: 76, note: "D", hint: "L", sharp: false },
-		{ keyCode: 80, note: "D#", hint: "P", sharp: true },
-		{ keyCode: 186, note: "E", hint: ";", sharp: false },
-	];
-
-	function getAudioSrc(keyCode: number) {
-		const mapping: Record<number, string> = {
-			65: "040", 87: "041", 83: "042", 69: "043", 68: "044", 70: "045",
-			84: "046", 71: "047", 89: "048", 72: "049", 85: "050", 74: "051",
-			75: "052", 79: "053", 76: "054", 80: "055", 186: "056"
-		};
-		return `https://carolinegabriel.com/demo/js-keyboard/sounds/${mapping[keyCode]}.wav`;
-	}
+	// SvelteSet, а не `$state(new Set())`: `$state` проксює лише звичайні
+	// обʼєкти й масиви, Set повертається як був (перевірено — `$state(new Set())`
+	// строго дорівнює вихідному, `$state({})` ні). Тобто `add`/`delete` нижче
+	// не сповіщали нікого, і клас `playing` не зʼявлявся ЖОДНОГО разу: ноти
+	// грали, підсвітка — ні (SVELTE-CORE-v8 § 1.5).
+	const activeKeys = new SvelteSet<number>();
 
 	function playNote(keyCode: number) {
-		const keyInfo = keysData.find(k => k.keyCode === keyCode);
+		const keyInfo = PIANO_KEYS.find((k) => k.keyCode === keyCode);
 		if (!keyInfo) return;
 
 		const audio = document.querySelector(`audio[data-key="${keyCode}"]`) as HTMLAudioElement;
@@ -62,6 +40,12 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (!isOpen) return;
+		// Escape: без нього виходом лишався лише клік по тлу, тобто з
+		// клавіатури модалку не закрити взагалі (ACCESSIBILITY-v8).
+		if (e.key === "Escape") {
+			onClose();
+			return;
+		}
 		playNote(e.keyCode);
 	}
 
@@ -72,10 +56,14 @@
 </script>
 
 {#if isOpen}
+	<!-- Ігнорування з причиною (ACCESSIBILITY-v8): це тло модалки, і клік по
+	     ньому лише ДУБЛЮЄ закриття. З клавіатури є Escape і кнопка нижче;
+	     робити тло фокусованим означало б додати в таб-порядок елемент, який
+	     нічого не озвучує. -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="piano-modal" transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()}>
-		<button class="close-btn" onclick={onClose}>&times;</button>
+	<div class="piano-modal" role="dialog" aria-modal="true" tabindex="-1" aria-label={$t("piano.title")} transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()}>
+		<button class="close-btn" type="button" aria-label={$t("piano.close")} onclick={onClose}>&times;</button>
 		
 		<section id="wrap">
 			<header>
@@ -90,7 +78,7 @@
 					{/if}
 				</div>
 				<div class="keys">
-					{#each keysData as key}
+					{#each PIANO_KEYS as key (key.keyCode)}
 						<div 
 							class="key" 
 							class:sharp={key.sharp} 
@@ -104,8 +92,8 @@
 					{/each}
 				</div>
 
-				{#each keysData as key}
-					<audio data-key={key.keyCode} src={getAudioSrc(key.keyCode)}></audio>
+				{#each PIANO_KEYS as key (key.keyCode)}
+					<audio data-key={key.keyCode} src={pianoSoundUrl(key.keyCode)}></audio>
 				{/each}
 			</section>
 		</section>

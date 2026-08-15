@@ -54,6 +54,8 @@
 		}
 	},
 	"piano": {
+		"title": "Virtual piano",
+		"close": "Close",
 		"hint": "Play using your mouse or keyboard. Hover over the piano to see which computer keys correspond to the notes.",
 		"notes": {
 			"C": "do",
