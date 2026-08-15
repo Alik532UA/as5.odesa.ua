@@ -169,6 +169,10 @@
 		"generic": {
 			"title": "Something went wrong",
 			"message": "An error occurred while loading the page. Try reloading it or go back to the home page."
+		},
+		"boundary": {
+			"message": "Something went wrong while loading this part of the page.",
+			"retry": "Try again"
 		}
 	}
 }

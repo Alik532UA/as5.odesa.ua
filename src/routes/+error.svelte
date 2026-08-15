@@ -2,6 +2,7 @@
 	import { page } from '$app/state';
 	import { base } from '$app/paths';
 	import { t } from 'svelte-i18n';
+	import { safeT } from '$lib/i18n/translate';
 
 	/**
 	 * ERROR-HANDLING-v8: `+error.svelte` — мінімум, який має бути завжди.
@@ -20,28 +21,20 @@
 	 * Словники svelte-i18n вантажаться асинхронно, і на 404 сторінці локаль може
 	 * бути ще не готова — тоді `$t` повертає сам ключ. Показувати відвідувачу
 	 * `error.notFound.title` не можна, тому кожен рядок має запасний текст.
+	 * Сама функція — спільна, `$lib/i18n/translate`.
 	 */
-	function safeT(key: string, fallback: string): string {
-		try {
-			const result = $t(key);
-			return result && result !== key ? result : fallback;
-		} catch {
-			return fallback;
-		}
-	}
-
 	const isNotFound = $derived(page.status === 404);
 
 	const title = $derived(
 		isNotFound
-			? safeT('error.notFound.title', 'Сторінку не знайдено')
-			: safeT('error.generic.title', 'Щось пішло не так')
+			? safeT($t, 'error.notFound.title', 'Сторінку не знайдено')
+			: safeT($t, 'error.generic.title', 'Щось пішло не так')
 	);
 
 	const message = $derived(
 		isNotFound
-			? safeT('error.notFound.message', 'Такої сторінки немає. Можливо, посилання застаріло.')
-			: safeT('error.generic.message', 'Сталася помилка під час завантаження сторінки.')
+			? safeT($t, 'error.notFound.message', 'Такої сторінки немає. Можливо, посилання застаріло.')
+			: safeT($t, 'error.generic.message', 'Сталася помилка під час завантаження сторінки.')
 	);
 
 	/**
@@ -67,7 +60,7 @@
 		{/if}
 
 		<a class="error-home" href="{base}/">
-			{safeT('nav.home', 'Головна')}
+			{safeT($t, 'nav.home', 'Головна')}
 		</a>
 	</div>
 </main>

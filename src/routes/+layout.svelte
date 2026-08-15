@@ -13,6 +13,7 @@
 	import { ui } from '$lib/states/ui.svelte';
 	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
+	import { safeT } from '$lib/i18n/translate';
 	import { onMount } from 'svelte';
 	import { trackPageView } from '$lib/services/analytics';
 	import { afterNavigate } from '$app/navigation';
@@ -105,21 +106,16 @@
 		}
 	} as const;
 
-	function safeT(key: string, fallback: string): string {
-		try {
-			const result = $t(key);
-			// $t returns the key itself if translation not found (locale not loaded yet)
-			return (result && result !== key) ? result : fallback;
-		} catch {
-			return fallback;
-		}
-	}
+	// safeT — спільна функція з `$lib/i18n/translate`: `$t` віддає сам ключ,
+	// доки словник не приїхав, і в мета-теги під час prerender потрапляв би
+	// `seo.pages.about.title` замість заголовка.
 
-	// Keyed off route.id rather than url.pathname: pathname carries the
-	// configured base ("/as5.odesa.ua/about"), so none of the cases below ever
-	// matched and every page fell through to the default, inheriting the home
-	// page's title and description. route.id is free of both the base and any
-	// trailing slash.
+	// Keyed off route.id rather than url.pathname. When the base was still
+	// "/as5.odesa.ua", pathname carried it ("/as5.odesa.ua/about"), so none of
+	// the cases below ever matched and every page fell through to the default,
+	// inheriting the home page's title and description. The base is empty since
+	// the move to the custom domain, but route.id stays the right key: it is
+	// free of the base whatever it is set to, and of any trailing slash.
 	function routeToSeoKey(routeId: string | null): SeoPageKey {
 		switch (routeId) {
 			case '/':
@@ -140,12 +136,12 @@
 	const seoKey = $derived(routeToSeoKey(page.route.id));
 	const currentLocale = $derived(($locale as string) || 'uk');
 	const activeLang = $derived<SeoLangKey>(currentLocale === 'en' ? 'en' : FALLBACK_LANG);
-	const brandTitle = $derived(safeT('seo.brandTitle', SEO_FALLBACK[activeLang].brandTitle));
+	const brandTitle = $derived(safeT($t, 'seo.brandTitle', SEO_FALLBACK[activeLang].brandTitle));
 	const metaTitle = $derived(
-		safeT(`seo.pages.${seoKey}.title`, SEO_FALLBACK[activeLang].pages[seoKey].title)
+		safeT($t, `seo.pages.${seoKey}.title`, SEO_FALLBACK[activeLang].pages[seoKey].title)
 	);
 	const metaDescription = $derived(
-		safeT(`seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
+		safeT($t, `seo.pages.${seoKey}.description`, SEO_FALLBACK[activeLang].pages[seoKey].description)
 	);
 	const canonicalUrl = $derived(data.canonicalUrl || canonicalFor(page.url.pathname));
 	// assetUrl, а не origin + шлях: файл лежить під базою, і без неї адреса
@@ -157,15 +153,15 @@
 	const schemaOrg = $derived({
 		'@context': 'https://schema.org',
 		'@type': 'EducationalOrganization',
-		name: safeT('seo.org.name', SEO_FALLBACK[activeLang].orgName),
+		name: safeT($t, 'seo.org.name', SEO_FALLBACK[activeLang].orgName),
 		url: SITE_ROOT,
 		logo: assetUrl('/ods-as5-logo-full.svg'),
-		description: safeT('seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
+		description: safeT($t, 'seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',
 		address: {
 			'@type': 'PostalAddress',
-			streetAddress: safeT('footer.address', 'вулиця Чорноморського Козацтва, 18, Одеса'),
+			streetAddress: safeT($t, 'footer.address', 'вулиця Чорноморського Козацтва, 18, Одеса'),
 			addressLocality: 'Odesa',
 			addressCountry: 'UA'
 		},

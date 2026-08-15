@@ -53,10 +53,13 @@ export interface ButtonProps {
 	type?: 'button' | 'submit' | 'reset';
 }
 
-export interface ErrorBoundaryProps {
-	title?: string;
-	retryable?: boolean;
-}
+/**
+ * Пропси межі помилок оголошені в самому компоненті
+ * (`components/ui/ErrorBoundary.svelte`): цей інтерфейс не імпортував ніхто, а
+ * поля `title`/`retryable` не існували в жодній із двох реалізацій.
+ * Тип, який ніде не використовується, читається як контракт — і саме тому
+ * розходиться з компонентом непомітно (PROJECT-STRUCTURE-v8 § 4.3).
+ */
 
 // ─── SEO / Site ───────────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@
 	import HeroSection from '$lib/components/HeroSection.svelte';
 	import DepartmentsSection from '$lib/components/DepartmentsSection.svelte';
 	import WaveBackground from '$lib/components/WaveBackground.svelte';
-	import ErrorBoundary from '$lib/components/ErrorBoundary.svelte';
+	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
 	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
@@ -36,13 +36,13 @@
 	]);
 </script>
 
-<ErrorBoundary title="Помилка Hero секції">
+<ErrorBoundary name="hero">
 	<HeroSection />
 </ErrorBoundary>
 
 <div bind:this={departmentsRef} class="lazy-section">
 	{#if showDepartments}
-		<ErrorBoundary title="Помилка Відділень">
+		<ErrorBoundary name="departments">
 			<DepartmentsSection />
 		</ErrorBoundary>
 	{:else}
