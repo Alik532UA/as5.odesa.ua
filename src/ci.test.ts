@@ -68,4 +68,54 @@ describe('CI', () => {
 			`workflow кличе скрипт, якого немає — крок упаде на push: ${missing.join(', ')}`
 		).toEqual([]);
 	});
+
+	/**
+	 * Група паралельності з `cancel-in-progress: false` (§ 1.3).
+	 *
+	 * Без групи пуш пачкою комітів дає стільки прогонів, скільки комітів; із
+	 * групою й `true` усі проміжні скасовуються. У сусідніх проєктах саме це
+	 * сховало на кілька днів гейт, червоний від народження: прогін, який
+	 * УПЕРШЕ виконав би новий крок, скасували раніше, ніж він до нього дійшов
+	 * (AI-AGENT-PITFALLS-v8 § 1.4).
+	 */
+	it('прогони шикуються в чергу, а не скасовують один одного (§ 1.3)', () => {
+		expect(/^concurrency:/m.test(all), 'у workflow немає блоку concurrency').toBe(true);
+		expect(
+			/cancel-in-progress:\s*true/.test(all),
+			'cancel-in-progress: true — проміжний прогін може не виконатися жодного разу'
+		).toBe(false);
+		expect(
+			/cancel-in-progress:\s*false/.test(all),
+			'значення не задано явно — дефолт залежить від версії runner'
+		).toBe(true);
+	});
+
+	/**
+	 * Аудит рахує лише прод-граф (SECURITY-v8 § 9).
+	 *
+	 * Окремо ловиться `--production`: із npm 9 прапорець застарілий і мовчки
+	 * ігнорується, тобто крок виглядає тим самим, а перевіряє інше — рівно той
+	 * клас, проти якого цей файл і написаний.
+	 */
+	it('npm audit обмежений прод-залежностями (§ 9)', () => {
+		const audits = [...all.matchAll(/run:\s*(npm audit[^\n]*)/g)].map((m) => m[1]);
+		expect(audits.length, 'кроку з npm audit у workflow немає').toBeGreaterThan(0);
+		const wrong = audits.filter((cmd) => !cmd.includes('--omit=dev'));
+		expect(wrong, `аудит рахує й devDependencies: ${wrong.join(', ')}`).toEqual([]);
+		const deprecated = audits.filter((cmd) => cmd.includes('--production'));
+		expect(deprecated, `--production застарів із npm 9 і мовчки ігнорується: ${deprecated.join(', ')}`).toEqual(
+			[]
+		);
+	});
+
+	/**
+	 * Збірка не бруднить робоче дерево (§ 1.5) — єдина машинна перевірка
+	 * правила «артефакт збірки не комітиться» (VERSIONING-v8 § 1.4).
+	 */
+	it('після збірки перевіряється чистота дерева (§ 1.5)', () => {
+		expect(
+			/run:\s*git diff --exit-code/.test(all),
+			'немає кроку git diff --exit-code — згенерований артефакт потрапив би в коміт непоміченим'
+		).toBe(true);
+	});
 });
