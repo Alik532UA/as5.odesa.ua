@@ -4,27 +4,7 @@
 	import WaveBackground from '$lib/components/WaveBackground.svelte';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
-	import { onMount } from 'svelte';
 	import { base } from '$app/paths';
-	
-	let showDepartments = $state(false);
-	let departmentsRef: HTMLElement | null = $state(null);
-
-	onMount(() => {
-		if (typeof window !== 'undefined' && 'IntersectionObserver' in window && departmentsRef) {
-			const observer = new IntersectionObserver((entries) => {
-				if (entries[0].isIntersecting) {
-					showDepartments = true;
-					observer.disconnect();
-				}
-			}, { rootMargin: '200px' });
-			observer.observe(departmentsRef);
-			return () => observer.disconnect();
-		} else {
-			// Fallback if no IntersectionObserver or SSR
-			showDepartments = true;
-		}
-	});
 
 	const galleryImages = $derived([
 		{ src: `${base}/photo/photoForMainPage-01.jpg`, alt: 'School Life 1', title: $t('gallery.items.process') },
@@ -40,17 +20,25 @@
 	<HeroSection />
 </ErrorBoundary>
 
-<div bind:this={departmentsRef} class="lazy-section">
-	{#if showDepartments}
-		<ErrorBoundary name="departments">
-			<DepartmentsSection />
-		</ErrorBoundary>
-	{:else}
-		<div class="lazy-placeholder">
-			Завантаження...
-		</div>
-	{/if}
-</div>
+<!--
+	Секція відділів рендериться одразу, а не за IntersectionObserver.
+
+	Доти вона стояла під `{#if showDepartments}`, який вмикався лише після
+	`onMount` + перетину вʼюпорта. Під час prerender ані того, ані іншого не
+	буває, тож у `build/index.html` замість шести відділів школи лежав рядок
+	«Завантаження...», і головна сторінка сайту оголошувала пошуковикам, що
+	відділів у неї немає (SEO-v8 § 1.1: вміст, якого немає в prerendered HTML,
+	для індексу не існує).
+
+	Виграшу в швидкості це не давало НІЯКОГО: `DepartmentsSection`
+	імпортується статично, тобто його код усе одно лежить у тому самому чанку
+	сторінки й завантажується разом із нею. Відкладався лише рендер шести
+	карток, картинки в яких і без того `loading="lazy"`. Тобто ціною була
+	видимість вмісту, а купувалося за неї нічого.
+-->
+<ErrorBoundary name="departments">
+	<DepartmentsSection />
+</ErrorBoundary>
 
 <!-- Bento Grid 4:3 Section -->
 <div class="section-divider section-divider--top" aria-hidden="true">
@@ -84,19 +72,6 @@
 </section>
 
 <style>
-	.lazy-placeholder {
-		height: 600px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--color-light-blue);
-		transition: background 800ms ease-in-out;
-	}
-
-	:global(.app.with-dynamic-bg) .lazy-placeholder {
-		background: transparent;
-	}
-
 	.section-divider {
 		position: relative;
 		height: 80px;

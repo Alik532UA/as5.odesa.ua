@@ -56,6 +56,28 @@ const REQUIRED_PAGES = ['index.html', 'about.html', 'history.html', 'competition
 const MIN_BODY_TEXT = 200;
 
 /**
+ * Блоки вмісту, які зобовʼязані бути в PRERENDERED HTML (SEO-v8 § 1.1).
+ *
+ * `MIN_BODY_TEXT` вище ловить порожню сторінку, і не ловить сторінку, у якої
+ * зник ОДИН блок: тексту лишається вдосталь, і гейт мовчить. Саме так і
+ * сталося: секція відділів стояла під `{#if showDepartments}`, який вмикався
+ * лише після `onMount` + IntersectionObserver. Ні того, ні іншого під час
+ * prerender не буває, тож у `build/index.html` замість шести відділів школи
+ * лежав рядок «Завантаження...» — а решта сторінки була на місці, і всі
+ * перевірки лишалися зеленими.
+ *
+ * Клас дефекту загальний: вміст, схований за клієнтським прапорцем, для
+ * індексу не існує. Тому перевіряється якір, який ставить сама секція, а не
+ * її текст — текст міняється, `data-testid` живе за конвенцією
+ * (TESTID-AND-NAMING-v8).
+ */
+const REQUIRED_CONTENT = {
+	// Лише те, що справді перевірено в `build/`. Список із вигаданих якорів
+	// зробив би гейт червоним від народження — і його вимкнули б цілком.
+	'index.html': ['departments-section', 'department-card-piano', 'gallery-bento']
+};
+
+/**
  * Технічні сторінки: prerender-яться, але в індексі їм не місце (SEO-v8 § 4.3).
  * Ключ — файл у `build/`, значення потрібне лише для повідомлення.
  */
@@ -244,6 +266,17 @@ for (const file of files) {
 
 for (const page of REQUIRED_PAGES) {
 	if (!existsSync(join(BUILD, page))) fail(`немає build/${page} — сторінка не згенерована`);
+}
+
+for (const [page, markers] of Object.entries(REQUIRED_CONTENT)) {
+	const path = join(BUILD, page);
+	if (!existsSync(path)) continue; // про відсутність сторінки скаже перевірка вище
+	const html = readFileSync(path, 'utf8');
+	for (const marker of markers) {
+		if (!html.includes(marker)) {
+			fail(`build/${page}: у prerendered HTML немає «${marker}» — блок сховано за клієнтським станом`);
+		}
+	}
 }
 
 // Головне, заради чого писався другий коміт: robots.txt обіцяє sitemap, і той
