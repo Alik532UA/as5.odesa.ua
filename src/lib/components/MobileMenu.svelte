@@ -73,7 +73,7 @@
 			{#each items as item (item.key)}
 				<li>
 					<a
-						href={item.href}
+						href={resolve(item.routeId)}
 						class="mobile-menu__link"
 						class:active={isActive(item.routeId)}
 						aria-current={isActive(item.routeId) ? "page" : undefined}

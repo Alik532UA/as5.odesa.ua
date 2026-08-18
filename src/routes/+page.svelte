@@ -4,15 +4,15 @@
 	import WaveBackground from '$lib/components/WaveBackground.svelte';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
-	import { base } from '$app/paths';
+	import { asset } from '$app/paths';
 
 	const galleryImages = $derived([
-		{ src: `${base}/photo/photoForMainPage-01.jpg`, alt: 'School Life 1', title: $t('gallery.items.process') },
-		{ src: `${base}/photo/photoForMainPage-03.jpg`, alt: 'School Life 2', title: $t('gallery.items.talents') },
-		{ src: `${base}/photo/photoForMainPage-04.jpg`, alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
-		{ src: `${base}/photo/photoForMainPage-06.jpg`, alt: 'School Life 4', title: $t('gallery.items.evenings') },
-		{ src: `${base}/photo/photoForMainPage-07.jpg`, alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
-		{ src: `${base}/photo/photoForMainPage-02.jpg`, alt: 'School Life 6', title: $t('gallery.items.harmony') },
+		{ src: asset('/photo/photoForMainPage-01.jpg'), alt: 'School Life 1', title: $t('gallery.items.process') },
+		{ src: asset('/photo/photoForMainPage-03.jpg'), alt: 'School Life 2', title: $t('gallery.items.talents') },
+		{ src: asset('/photo/photoForMainPage-04.jpg'), alt: 'School Life 3', title: $t('gallery.items.atmosphere') },
+		{ src: asset('/photo/photoForMainPage-06.jpg'), alt: 'School Life 4', title: $t('gallery.items.evenings') },
+		{ src: asset('/photo/photoForMainPage-07.jpg'), alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
+		{ src: asset('/photo/photoForMainPage-02.jpg'), alt: 'School Life 6', title: $t('gallery.items.harmony') },
 	]);
 </script>
 

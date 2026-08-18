@@ -1,7 +1,7 @@
 <script lang="ts">
 	import WaveBackground from "./WaveBackground.svelte";
 	import { t } from "svelte-i18n";
-	import { base } from "$app/paths";
+	import { asset } from "$app/paths";
 </script>
 
 <section class="hero" id="hero-section" aria-label={$t("a11y.heroSection")}>
@@ -20,7 +20,7 @@
 		<div class="hero__image-wrap">
 			<div class="hero__image" id="hero-image">
 				<img
-					src={`${base}/photo/photoForMainPage-08.jpg`}
+					src={asset('/photo/photoForMainPage-08.jpg')}
 					alt=""
 					width="1200"
 					height="900"

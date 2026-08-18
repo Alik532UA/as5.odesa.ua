@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { t } from 'svelte-i18n';
 	import { safeT } from '$lib/i18n/translate';
 
@@ -70,7 +70,7 @@
 			<p class="error-detail">{detail}</p>
 		{/if}
 
-		<a class="error-home" href="{base}/">
+		<a class="error-home" href={resolve("/")}>
 			{safeT($t, 'nav.home', 'Головна')}
 		</a>
 	</div>

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { errorLogger, type ErrorEvent } from './errorLogger';
+import { errorLogger } from './errorLogger';
 
 describe('ErrorLogger', () => {
 	beforeEach(() => {

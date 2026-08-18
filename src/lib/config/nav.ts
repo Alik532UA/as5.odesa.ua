@@ -1,5 +1,3 @@
-import { resolve } from '$app/paths';
-
 /**
  * Пункти головного меню: дані, а не розмітка (PROJECT-STRUCTURE-v8 § 4.1).
  *
@@ -38,18 +36,20 @@ export interface NavItem {
 	routeId: '/' | '/about' | '/history' | '/competitions';
 	/** Ключ у словнику; переклад бере компонент. */
 	labelKey: string;
-	/** Готова адреса. `resolve()` типізований проти реальних маршрутів. */
-	href: string;
 }
 
+/**
+ * Адреси тут НЕМАЄ навмисно. Розмітка бере її як `resolve(item.routeId)` —
+ * `resolve` типізований проти реальних маршрутів, тобто `routeId` служить і
+ * ключем активності, і джерелом посилання. Готове поле `href` поруч із
+ * `routeId` довелося б тримати узгодженим руками, а лінтер
+ * (`svelte/no-navigation-without-resolve`) усе одно не бачить, що значення вже
+ * розвʼязане, і попереджав на кожному такому `<a>`.
+ */
+
 export const NAV_ITEMS: readonly NavItem[] = [
-	{ key: 'home', routeId: '/', labelKey: 'nav.home', href: resolve('/') },
-	{ key: 'about', routeId: '/about', labelKey: 'nav.about', href: resolve('/about') },
-	{ key: 'history', routeId: '/history', labelKey: 'nav.history', href: resolve('/history') },
-	{
-		key: 'competitions',
-		routeId: '/competitions',
-		labelKey: 'nav.contests',
-		href: resolve('/competitions')
-	}
+	{ key: 'home', routeId: '/', labelKey: 'nav.home' },
+	{ key: 'about', routeId: '/about', labelKey: 'nav.about' },
+	{ key: 'history', routeId: '/history', labelKey: 'nav.history' },
+	{ key: 'competitions', routeId: '/competitions', labelKey: 'nav.contests' }
 ];

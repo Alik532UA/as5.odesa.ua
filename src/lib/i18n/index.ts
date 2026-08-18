@@ -1,6 +1,5 @@
 import { register, init, getLocaleFromNavigator, locale as i18nLocale } from 'svelte-i18n';
 import { browser } from '$app/environment';
-import { ui } from '$lib/states/ui.svelte';
 import { storage } from '$lib/services/storage';
 
 register('uk', () => import('./locales/uk.json'));

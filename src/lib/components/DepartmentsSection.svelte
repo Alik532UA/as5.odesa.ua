@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { asset } from '$app/paths';
 	import { t } from 'svelte-i18n';
 
 	interface Department {
@@ -10,12 +10,12 @@
 	}
 
 	const departments = $derived([
-		{ id: "piano", name: $t("departments.list.piano"), iconPath: `${base}/departments/piano.png` },
-		{ id: "strings", name: $t("departments.list.strings"), iconPath: `${base}/departments/strings.png`, description: $t("departments.descriptions.strings") },
-		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: `${base}/departments/vocal.png` },
-		{ id: "pop", name: $t("departments.list.pop"), iconPath: `${base}/departments/pop.png`, description: $t("departments.descriptions.pop") },
-		{ id: "theory", name: $t("departments.list.theory"), iconPath: `${base}/departments/theory.png` },
-		{ id: "folk", name: $t("departments.list.folk"), iconPath: `${base}/departments/folk.png`, description: $t("departments.descriptions.folk") },
+		{ id: "piano", name: $t("departments.list.piano"), iconPath: asset('/departments/piano.png') },
+		{ id: "strings", name: $t("departments.list.strings"), iconPath: asset('/departments/strings.png'), description: $t("departments.descriptions.strings") },
+		{ id: "vocal", name: $t("departments.list.vocal"), iconPath: asset('/departments/vocal.png') },
+		{ id: "pop", name: $t("departments.list.pop"), iconPath: asset('/departments/pop.png'), description: $t("departments.descriptions.pop") },
+		{ id: "theory", name: $t("departments.list.theory"), iconPath: asset('/departments/theory.png') },
+		{ id: "folk", name: $t("departments.list.folk"), iconPath: asset('/departments/folk.png'), description: $t("departments.descriptions.folk") },
 	]);
 </script>
 

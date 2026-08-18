@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ui } from "$lib/states/ui.svelte";
-	import { base } from "$app/paths";
+	import { asset } from "$app/paths";
 
 	let { size = 'large' }: { size?: 'large' | 'small' } = $props();
 
@@ -10,7 +10,7 @@
 	};
 
 	const d = $derived(dimensions[size]);
-	const logoSrc = $derived(ui.theme === 'dark' ? `${base}/ods-as5-logo-full-inverted.svg` : `${base}/ods-as5-logo-full.svg`);
+	const logoSrc = $derived(ui.theme === 'dark' ? asset('/ods-as5-logo-full-inverted.svg') : asset('/ods-as5-logo-full.svg'));
 </script>
 
 <img

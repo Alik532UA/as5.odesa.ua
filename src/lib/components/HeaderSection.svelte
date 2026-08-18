@@ -87,7 +87,7 @@
 				{#each navItems as item (item.key)}
 					<li class="header__nav-item" data-testid="header-nav-item-{item.key}">
 						<a
-							href={item.href}
+							href={resolve(item.routeId)}
 							class="header__nav-link"
 							class:active={isActive(item.routeId)}
 							aria-current={isActive(item.routeId) ? "page" : undefined}

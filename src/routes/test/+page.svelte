@@ -7,7 +7,7 @@
 	import { browser } from "$app/environment";
 	import { replaceState } from "$app/navigation";
 	import { onMount, untrack } from "svelte";
-	import { base } from "$app/paths";
+	import { asset, base } from "$app/paths";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
 
 	// Data from News.svelte
@@ -135,12 +135,12 @@
 	// --- Gallery Logic ---
 	// Placeholder for gallery data, replace with actual data if needed
 	const galleryImages = [
-		{ src: `${base}/departments/folk.png`, alt: 'Gallery Image 1', title: 'Folk Music Exhibit' },
-		{ src: `${base}/departments/piano.png`, alt: 'Gallery Image 2', title: 'Piano Recital Photo' },
-		{ src: `${base}/departments/pop.png`, alt: 'Gallery Image 3', title: 'Pop Music Performance' },
-		{ src: `${base}/departments/strings.png`, alt: 'Gallery Image 4', title: 'Strings Ensemble' },
-		{ src: `${base}/departments/theory.png`, alt: 'Gallery Image 5', title: 'Music Theory Workshop' },
-		{ src: `${base}/departments/vocal.png`, alt: 'Gallery Image 6', title: 'Vocal Performance' },
+		{ src: asset('/departments/folk.png'), alt: 'Gallery Image 1', title: 'Folk Music Exhibit' },
+		{ src: asset('/departments/piano.png'), alt: 'Gallery Image 2', title: 'Piano Recital Photo' },
+		{ src: asset('/departments/pop.png'), alt: 'Gallery Image 3', title: 'Pop Music Performance' },
+		{ src: asset('/departments/strings.png'), alt: 'Gallery Image 4', title: 'Strings Ensemble' },
+		{ src: asset('/departments/theory.png'), alt: 'Gallery Image 5', title: 'Music Theory Workshop' },
+		{ src: asset('/departments/vocal.png'), alt: 'Gallery Image 6', title: 'Vocal Performance' },
 	];
 </script>
 
@@ -184,9 +184,9 @@
 					transition: {isTransitioning ? 'transform 0.7s cubic-bezier(0.16, 1, 0.3, 1)' : 'none'};
 				"
 			>
-				{#each infiniteNews as item, i}
+				{#each infiniteNews as item, i (i)}
 					<article class="focus-card" class:is-active={currentIndex === i}>
-						<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {(item as any).color || '#eee'}, #fff)">
+						<div class="focus-card__img-wrap" style="background: linear-gradient(45deg, {item.color || '#eee'}, #fff)">
 							<PhotoIcon size={64} className="focus-card__placeholder" />
 						</div>
 						<div class="focus-card__content">
@@ -196,6 +196,7 @@
 							</div>
 							<h3 class="focus-card__title">{item.title}</h3>
 							<p class="focus-card__excerpt">Дізнайтеся більше про останні події, успіхи наших учнів та цікаві заходи у мистецькій школі.</p>
+							<!-- `/news/[id]` не маршрут і не файл — чернетка, під яку й стоїть `handleHttpError: 'warn'`; ні `resolve()`, ні `asset()` тут не застосовні. -->
 							<a href={`${base}/news/${item.id}`} class="btn-more">Читати далі →</a>
 						</div>
 					</article>
@@ -207,7 +208,7 @@
 		</div>
 
 		<div class="focus-dots">
-			{#each newsItems as _, i}
+			{#each newsItems as _, i (i)}
 				<button
 					class="f-dot"
 					class:active={(currentIndex - 1 + newsItems.length) % newsItems.length === i}
@@ -242,7 +243,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">1. Bento Grid (Адаптивна сітка)</h3>
 			<div class="g-bento">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img, i (img.src)}
 					<div class="g-bento__item g-bento__item--{i}">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 					</div>
@@ -254,7 +255,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">2. Flex-Акордеон (Інтерактивний)</h3>
 			<div class="g-accordion">
-				{#each galleryImages.slice(0, 5) as img}
+				{#each galleryImages.slice(0, 5) as img (img.src)}
 					<div class="g-accordion__item">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-accordion__content">
@@ -269,7 +270,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">3. Soft Cards (У стилі секції Новин)</h3>
 			<div class="g-cards">
-				{#each galleryImages as img}
+				{#each galleryImages as img (img.src)}
 					<div class="g-card">
 						<div class="g-card__img-wrap">
 							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
@@ -287,7 +288,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">4. Асиметричний Фокус</h3>
 			<div class="g-asym">
-				{#each galleryImages.slice(0, 3) as img, i}
+				{#each galleryImages.slice(0, 3) as img, i (img.src)}
 					<div class="g-asym__item g-asym__item--{i}">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-asym__label">{img.title}</div>
@@ -300,7 +301,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">5. Свайп-карусель (Snap Scroll)</h3>
 			<div class="g-scroll">
-				{#each [...galleryImages, ...galleryImages] as img}
+				{#each [...galleryImages, ...galleryImages] as img, i (i)}
 					<div class="g-scroll__item">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-scroll__overlay">
@@ -323,7 +324,7 @@
 					</div>
 				</div>
 				<div class="g-feat__side">
-					{#each galleryImages.slice(1, 4) as img}
+					{#each galleryImages.slice(1, 4) as img (img.src)}
 						<div class="g-feat__side-item">
 							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						</div>
@@ -336,7 +337,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">7. Bento Grid (Пропорції 3:4)</h3>
 			<div class="g-bento-3x4">
-				{#each galleryImages as img}
+				{#each galleryImages as img (img.src)}
 					<div class="g-bento-3x4__item">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-bento-3x4__overlay">
@@ -351,7 +352,7 @@
 		<div class="g-block">
 			<h3 class="g-block__title">8. Bento Grid (Пропорції 4:3)</h3>
 			<div class="g-bento-4x3">
-				{#each galleryImages as img}
+				{#each galleryImages as img (img.src)}
 					<div class="g-bento-4x3__item">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="g-bento-4x3__overlay">
@@ -375,7 +376,7 @@
 		<div class="gallery-template-1">
 			<h3>Шаблон 1: Стандартна Сітка</h3>
 			<div class="gallery-grid">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img (img.src)}
 					<div class="gallery-item">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
@@ -388,7 +389,7 @@
 		<div class="gallery-template-2">
 			<h3>Шаблон 2: Динамічна Сітка</h3>
 			<div class="gallery-dynamic-grid">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img (img.src)}
 					<div class="gallery-item-dynamic">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
@@ -401,7 +402,7 @@
 		<div class="gallery-template-3">
 			<h3>Шаблон 3: Колонки (Masonry Layout)</h3>
 			<div class="gallery-masonry">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img (img.src)}
 					<div class="gallery-item-masonry">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
@@ -414,7 +415,7 @@
 		<div class="gallery-template-4">
 			<h3>Шаблон 4: Мінімалістичний Список</h3>
 			<div class="gallery-minimal-list">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img (img.src)}
 					<div class="gallery-item-minimal">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption">{img.title}</div>
@@ -432,7 +433,7 @@
 					<div class="gallery-caption">{galleryImages[0].title}</div>
 				</div>
 				<div class="gallery-hero-thumbnails">
-					{#each galleryImages.slice(1, 4) as img, i}
+					{#each galleryImages.slice(1, 4) as img (img.src)}
 						<div class="gallery-thumb">
 							<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						</div>
@@ -445,7 +446,7 @@
 		<div class="gallery-template-6">
 			<h3>Шаблон 6: Підписи при Наведенні</h3>
 			<div class="gallery-overlay-caption">
-				{#each galleryImages as img, i}
+				{#each galleryImages as img (img.src)}
 					<div class="gallery-item-overlay">
 						<img src={img.src} alt={img.alt} loading="lazy" decoding="async" />
 						<div class="gallery-caption-overlay">{img.title}</div>
@@ -1156,7 +1157,6 @@
 
 		.g-bento-3x4, .g-bento-4x3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 	}
-
 
 	@media (max-width: 768px) {
 		.g-showcase__title { font-size: 2.5rem; }
