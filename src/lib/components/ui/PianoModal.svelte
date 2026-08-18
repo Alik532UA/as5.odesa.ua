@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
-	import { SvelteSet } from "svelte/reactivity";
+	import { X } from "lucide-svelte";
 	import { t } from "svelte-i18n";
+	import { focusTrap } from "$lib/actions/focusTrap";
+	import { PianoState } from "$lib/states/piano.svelte";
 	import { PIANO_KEYS, pianoSoundUrl } from "$lib/config/piano";
 
 	interface Props {
@@ -12,31 +14,9 @@
 
 	let { isOpen, onClose }: Props = $props();
 
-	let nowPlaying = $state("");
-	// SvelteSet, а не `$state(new Set())`: `$state` проксює лише звичайні
-	// обʼєкти й масиви, Set повертається як був (перевірено — `$state(new Set())`
-	// строго дорівнює вихідному, `$state({})` ні). Тобто `add`/`delete` нижче
-	// не сповіщали нікого, і клас `playing` не зʼявлявся ЖОДНОГО разу: ноти
-	// грали, підсвітка — ні (SVELTE-CORE-v8 § 1.5).
-	const activeKeys = new SvelteSet<number>();
-
-	function playNote(keyCode: number) {
-		const keyInfo = PIANO_KEYS.find((k) => k.keyCode === keyCode);
-		if (!keyInfo) return;
-
-		const audio = document.querySelector(`audio[data-key="${keyCode}"]`) as HTMLAudioElement;
-		if (!audio) return;
-
-		nowPlaying = keyInfo.note;
-		activeKeys.add(keyCode);
-		
-		audio.currentTime = 0;
-		audio.play();
-
-		setTimeout(() => {
-			activeKeys.delete(keyCode);
-		}, 100);
-	}
+	// Свій екземпляр на модалку — стан піаніно живе рівно доти, доки воно
+	// відкрите (`$lib/states/piano.svelte.ts`).
+	const piano = new PianoState();
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (!isOpen) return;
@@ -46,7 +26,10 @@
 			onClose();
 			return;
 		}
-		playNote(e.keyCode);
+		// Пробіл і Enter лишаємо кнопкам: клавіші тепер справжні `<button>`,
+		// і перехоплення тут дало б подвійну ноту на сфокусованій клавіші.
+		if (e.key === " " || e.key === "Enter") return;
+		piano.press(e.keyCode);
 	}
 
 	onMount(() => {
@@ -57,13 +40,19 @@
 
 {#if isOpen}
 	<!-- Ігнорування з причиною (ACCESSIBILITY-v8): це тло модалки, і клік по
-	     ньому лише ДУБЛЮЄ закриття. З клавіатури є Escape і кнопка нижче;
-	     робити тло фокусованим означало б додати в таб-порядок елемент, який
-	     нічого не озвучує. -->
+	     ньому лише ДУБЛЮЄ закриття. З клавіатури є Escape і кнопка нижче.
+
+	     ВАЖЛИВО: `svelte-ignore` глушить попередження і в усьому ПІДДЕРЕВІ
+	     наступного елемента. Доти цим накривалися сімнадцять клавіш нижче —
+	     `<div onclick>` без ролі й таб-порядку, тобто піаніно лише для миші, а
+	     компілятор мовчав через ці два рядки, написані про тло. Тепер клавіші
+	     — справжні `<button>`, і під глушником лишилося рівно те, заради чого
+	     його писали. Другий глушник — `a11y_no_static_element_interactions` —
+	     довелося прибрати: він стосувався саме клавіш, і `eslint` одразу
+	     оголосив його зайвим (`svelte/no-unused-svelte-ignore`, error). -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div class="piano-modal" role="dialog" aria-modal="true" tabindex="-1" aria-label={$t("piano.title")} transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()}>
-		<button class="close-btn" type="button" aria-label={$t("piano.close")} onclick={onClose}>&times;</button>
+	<div class="piano-modal" role="dialog" aria-modal="true" tabindex="-1" aria-label={$t("piano.title")} transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()} use:focusTrap>
+		<button class="close-btn" type="button" aria-label={$t("piano.close")} onclick={onClose} data-testid="piano-close-btn"><X size={32} aria-hidden="true" /></button>
 		
 		<section id="wrap">
 			<header>
@@ -71,24 +60,27 @@
 			</header>
 			<section id="main">
 				<div class="nowplaying">
-					{#if nowPlaying}
-						<span class="note-name">{$t(`piano.notes.${nowPlaying}`)}</span>
+					{#if piano.nowPlaying}
+						<span class="note-name">{$t(`piano.notes.${piano.nowPlaying}`)}</span>
 						<span class="note-divider">|</span>
-						<span class="note-symbol">{nowPlaying}</span>
+						<span class="note-symbol">{piano.nowPlaying}</span>
 					{/if}
 				</div>
 				<div class="keys">
 					{#each PIANO_KEYS as key (key.keyCode)}
-						<div 
-							class="key" 
-							class:sharp={key.sharp} 
-							class:playing={activeKeys.has(key.keyCode)}
-							data-key={key.keyCode} 
+						<button
+							type="button"
+							class="key"
+							class:sharp={key.sharp}
+							class:playing={piano.activeKeys.has(key.keyCode)}
+							data-key={key.keyCode}
 							data-note={key.note}
-							onclick={() => playNote(key.keyCode)}
+							aria-label={$t(`piano.notes.${key.note}`)}
+							onclick={() => piano.press(key.keyCode)}
+							data-testid="piano-key-{key.keyCode}-btn"
 						>
 							<span class="hints">{key.hint}</span>
-						</div>
+						</button>
 					{/each}
 				</div>
 
@@ -215,6 +207,18 @@
 		box-sizing: border-box;
 		z-index: 2;
 		cursor: pointer;
+		/* Клавіші стали `<button>` — знімаємо типове оформлення кнопки, щоб
+		   вигляд лишився той самий, що й у `<div>` до цього. */
+		padding: 0;
+		font: inherit;
+		appearance: none;
+	}
+
+	/* Видимий індикатор фокусу: клавіші тепер у таб-порядку, і без нього не
+	   видно, на якій із сімнадцяти ти стоїш (ACCESSIBILITY-v8 § 5). */
+	.key:focus-visible {
+		outline: 3px solid #ffd166;
+		outline-offset: 3px;
 	}
 
 	.key:not(.sharp) {

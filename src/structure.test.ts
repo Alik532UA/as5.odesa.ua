@@ -70,7 +70,7 @@ const SIZE_DEBT: Record<string, number> = {
 	// відповідальності в одному компоненті.
 	'src/lib/components/HeaderSection.svelte': 591,
 	'src/lib/components/FooterSection.svelte': 401,
-	'src/lib/components/ui/PianoModal.svelte': 327
+	'src/lib/components/ui/PianoModal.svelte': 331
 };
 
 /** Межі § 7. Перший збіг виграє, тому маршрутний шаблон стоїть вище. */
