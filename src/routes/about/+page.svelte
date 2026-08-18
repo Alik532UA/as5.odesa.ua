@@ -80,7 +80,7 @@
 	}
 
 	@media (max-width: 640px) {
-		.g-bento { grid-template-columns: 1fr; grid-auto-rows: 200px; }
+		.g-bento { grid-template-columns: minmax(0, 1fr); grid-auto-rows: 200px; }
 		.g-bento__item { grid-column: span 1 !important; grid-row: span 1 !important; border-radius: 32px; }
 	}
 </style>

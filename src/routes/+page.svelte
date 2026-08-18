@@ -175,7 +175,7 @@
 
 	@media (max-width: 480px) {
 		.g-bento-4x3 {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 		}
 	}
 </style>

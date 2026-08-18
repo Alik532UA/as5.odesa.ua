@@ -72,7 +72,7 @@
 	/* Content layout */
 	.hero__content {
 		display: grid;
-		grid-template-columns: 1fr 1fr;
+		grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 		gap: var(--space-3xl);
 		align-items: center;
 		position: relative;
@@ -197,7 +197,7 @@
 		}
 
 		.hero__content {
-			grid-template-columns: 1fr;
+			grid-template-columns: minmax(0, 1fr);
 			gap: var(--space-xl);
 			text-align: center;
 		}

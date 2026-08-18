@@ -36,8 +36,32 @@ function walk(dir: string, out: string[] = []): string[] {
 
 const files = walk('src');
 
-/** `repeat(N, 1fr)` без `minmax`. `repeat(3, minmax(0, 1fr))` під шаблон не підпадає. */
-const BARE_FR = /grid-template-columns:[^;}]*repeat\(\s*\d+\s*,\s*1fr\s*\)/g;
+/**
+ * Значення `grid-template-columns` цілком — далі з нього вирізаються всі
+ * `minmax(...)`, і якщо десь лишається доріжка `Nfr`, вона гола.
+ *
+ * Перша редакція шукала рівно `repeat(N, 1fr)` — і мала сліпу зону завбільшки
+ * з половину випадків. Крізь неї в проєкті спокійно жили `1fr 1fr` (сітка
+ * відділів на мобільному та герой), `2fr 1fr` і одинарне `1fr`: усе це той
+ * самий `minmax(auto, 1fr)`, тобто доріжка з підлогою в min-content, і довге
+ * слово розпирає сторінку так само. Девʼять місць, жодного з яких перевірка не
+ * бачила, хоч саме проти цього й написана.
+ *
+ * Одинарне `1fr` рахується теж: одна доріжка, ширша за контейнер, дає
+ * горизонтальний скрол сторінки нічим не гірше за три.
+ */
+const COLUMNS = /grid-template-columns:\s*([^;}\n]+)/g;
+/** Вкладеність рівно на один рівень: `minmax(min(320px, 100%), 1fr)`. */
+const MINMAX = /minmax\([^()]*(?:\([^()]*\)[^()]*)*\)/g;
+/**
+ * Доріжка `Nfr`. Закриваюча дужка ПІСЛЯ неї допустима — саме так виглядає
+ * `repeat(3, 1fr)`, перший випадок, заради якого файл і писався. Перша спроба
+ * нової регулярки виключала `)` у lookahead, щоб не влучати всередину
+ * `minmax(...)`, і мовчки перестала бачити `repeat(3, 1fr)`: сам `minmax` до
+ * цього моменту вже вирізаний, тож ця обережність лише зашкодила. Знайдено
+ * зворотним експериментом, а не читанням.
+ */
+const TRACK_FR = /(?<![\w-])\d*\.?\d*fr(?![\w-])/;
 
 /**
  * `minmax(320px, 1fr)` в `auto-fit`: піксельний мінімум більший за вузький
@@ -60,8 +84,11 @@ describe('гнучкі розміри', () => {
 	it('колонки сітки не мають голого 1fr (CRITICAL)', () => {
 		const bad: string[] = [];
 		for (const f of files) {
-			for (const m of readFileSync(join(ROOT, f), 'utf8').matchAll(BARE_FR)) {
-				bad.push(`${f}: ${m[0].trim()} — потрібно minmax(0, 1fr)`);
+			for (const m of readFileSync(join(ROOT, f), 'utf8').matchAll(COLUMNS)) {
+				const value = m[1].trim();
+				if (TRACK_FR.test(value.replace(MINMAX, ''))) {
+					bad.push(`${f}: grid-template-columns: ${value} — доріжку треба в minmax(0, Nfr)`);
+				}
 			}
 		}
 		expect(bad, `колонка не може стиснутися менше за вміст:\n${bad.join('\n')}`).toEqual([]);
