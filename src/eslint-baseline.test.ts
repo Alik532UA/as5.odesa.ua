@@ -37,7 +37,12 @@ const BASELINE = [
 	'svelte/require-each-key',
 	'svelte/valid-compile',
 	'svelte/prefer-svelte-reactivity',
-	'svelte/no-navigation-without-resolve'
+	'svelte/no-navigation-without-resolve',
+	// Додано 2026-08-19 за фактом, як свого часу no-console: правило спіймало
+	// глушник, що накривав сімнадцять недоступних клавіш піаніно замість
+	// одного елемента, про який його писали. Ціна вимкнення — рівно та сама
+	// тиша, від якої воно й захищає.
+	'svelte/no-unused-svelte-ignore'
 ] as const;
 
 /**
