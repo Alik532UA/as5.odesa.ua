@@ -50,7 +50,18 @@
 	<meta name="robots" content="noindex" />
 </svelte:head>
 
-<main class="error-page">
+<!--
+	`div`, а не `main`. Цю сторінку рендерить `+layout.svelte` як `children`,
+	тобто ВСЕРЕДИНІ власного `<main id="main-content">`. Другий `main` тут давав
+	вкладені орієнтири: у режимі навігації по landmark-ах читалка пропонувала
+	два «основних вмісти», а `skip-link` у шапці вів у зовнішній — тобто повз
+	власне повідомлення про помилку (ACCESSIBILITY-v8 § 3).
+
+	Побачити це в `build/` не можна: `404.html` — порожня SPA-оболонка без
+	розмітки layout, і вкладення виникає лише в браузері, коли маршрут не
+	збігся. Саме тому воно й прожило стільки часу.
+-->
+<div class="error-page">
 	<div class="error-card">
 		<p class="error-status">{page.status}</p>
 		<h1 class="error-title">{title}</h1>
@@ -63,7 +74,7 @@
 			{safeT($t, 'nav.home', 'Головна')}
 		</a>
 	</div>
-</main>
+</div>
 
 <style>
 	.error-page {
