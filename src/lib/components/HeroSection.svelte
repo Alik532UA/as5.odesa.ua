@@ -4,7 +4,7 @@
 	import { base } from "$app/paths";
 </script>
 
-<section class="hero" id="hero-section" aria-label="Головна секція">
+<section class="hero" id="hero-section" aria-label={$t("a11y.heroSection")}>
 
 	<div class="hero__content container">
 		<div class="hero__text">

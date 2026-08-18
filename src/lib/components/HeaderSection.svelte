@@ -1,10 +1,9 @@
 <script lang="ts">
 	import LogoIcon from "./LogoIcon.svelte";
 	import DebugSettingsDropdown from "./DebugSettingsDropdown.svelte";
+	import MobileMenu from "./MobileMenu.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
-	import { Menu, X } from "lucide-svelte";
-	import { fly } from "svelte/transition";
-	import { cubicInOut } from "svelte/easing";
+	import { Menu } from "lucide-svelte";
 	import { ui } from "$lib/states/ui.svelte";
 	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
@@ -65,8 +64,8 @@
 	});
 </script>
 
-<a href="#main-content" class="skip-link">
-	Перейти до основного контенту
+<a href="#main-content" class="skip-link" data-testid="skip-to-content-link">
+	{$t("a11y.skipToContent")}
 </a>
 
 <header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header" data-testid="app-header">
@@ -74,7 +73,7 @@
 		<a
 			href={resolve("/")}
 			class="header__logo-link"
-			aria-label="На головну"
+			aria-label={$t("a11y.toHome")}
 			onclick={ui.closeMenu}
 			data-testid="header-logo-link"
 		>
@@ -83,7 +82,7 @@
 	</div>
 
 	<div class="header__bar">
-		<nav class="header__nav" aria-label="Головне меню" id="main-nav" data-testid="header-nav">
+		<nav class="header__nav" aria-label={$t("a11y.mainMenu")} id="main-nav" data-testid="header-nav">
 			<ul class="header__nav-list" class:open={ui.isMenuOpen} data-testid="header-nav-list">
 				{#each navItems as item (item.key)}
 					<li class="header__nav-item" data-testid="header-nav-item-{item.key}">
@@ -112,7 +111,7 @@
 		</a>
 
 		<div class="header__settings" class:open={settingsOpen} bind:this={settingsRef} data-testid="header-settings-container">
-			<button class="header__settings-btn" aria-label="Налаштування" onclick={toggleSettings} aria-expanded={settingsOpen} data-testid="header-settings-btn">
+			<button class="header__settings-btn" aria-label={$t("a11y.settings")} onclick={toggleSettings} aria-expanded={settingsOpen} data-testid="header-settings-btn">
 				<SettingsIcon size={24} />
 			</button>
 			<div class="header__settings-dropdown">
@@ -161,7 +160,7 @@
 		<button
 			class="header__burger"
 			onclick={() => { settingsOpen = false; ui.toggleMenu(); }}
-			aria-label="Відкрити меню"
+			aria-label={$t("a11y.openMenu")}
 			aria-expanded={ui.isMenuOpen}
 			id="burger-menu"
 		>
@@ -169,50 +168,8 @@
 		</button>
 	</div>
 
-	<!-- Mobile overlay menu -->
 	{#if ui.isMenuOpen}
-		<div
-			class="header__mobile-overlay"
-			role="dialog"
-			aria-modal="true"
-			in:fly={{ y: -24, duration: 260, opacity: 0.2, easing: cubicInOut }}
-			out:fly={{ y: -24, duration: 220, opacity: 0.2, easing: cubicInOut }}
-		>
-			<button
-				class="header__mobile-close"
-				onclick={ui.closeMenu}
-				aria-label="Закрити меню"
-			>
-				<X size={24} />
-			</button>
-			<nav aria-label="Мобільне меню">
-				<ul class="header__mobile-list">
-					{#each navItems as item (item.key)}
-						<li>
-							<a
-								href={item.href}
-								class="header__mobile-link"
-								class:active={isActive(item.routeId)}
-								aria-current={isActive(item.routeId) ? "page" : undefined}
-								onclick={ui.closeMenu}
-								data-testid="mobile-nav-{item.key}-link"
-							>
-								{item.label}
-							</a>
-						</li>
-					{/each}
-					<li>
-						<a
-							href={resolve("/admission")}
-							class="btn btn-primary header__mobile-cta"
-							onclick={ui.closeMenu}
-						>
-							{$t("nav.admission")}
-						</a>
-					</li>
-				</ul>
-			</nav>
-		</div>
+		<MobileMenu items={navItems} {isActive} {scrolled} onClose={ui.closeMenu} />
 	{/if}
 </header>
 
@@ -454,83 +411,9 @@
 		background: var(--color-sky-blue);
 	}
 
-	/* Mobile overlay */
-	.header__mobile-overlay {
-		position: fixed;
-		inset: 0;
-		background: color-mix(in srgb, var(--color-white), transparent 2%);
-		backdrop-filter: blur(20px);
-		z-index: 250;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		will-change: transform, opacity;
-	}
-
 	.header.menu-open .header__settings,
 	.header.menu-open .header__burger {
 		z-index: 180;
-	}
-
-	.header__mobile-close {
-		position: fixed;
-		top: var(--space-lg);
-		right: var(--space-xl);
-		width: 40px;
-		height: 40px;
-		border-radius: 50%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--color-deep-ocean);
-		background: var(--color-ice-blue);
-		transition: all var(--transition-base);
-		z-index: 110;
-		border: none;
-		cursor: pointer;
-	}
-
-	.header.scrolled .header__mobile-close {
-		top: var(--space-md);
-	}
-
-	.header__mobile-close:hover {
-		background: var(--color-sky-blue);
-		transform: rotate(90deg);
-	}
-
-	.header__mobile-list {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: var(--space-xl);
-	}
-
-	.header__mobile-link {
-		font-family: var(--font-heading);
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: var(--color-deep-ocean);
-		transition: color var(--transition-fast);
-	}
-
-	.header__mobile-link:hover {
-		color: var(--color-golden);
-	}
-
-	/* Поточна сторінка в мобільному меню. Позначки не було зовсім: у
-	   десктопному меню `.active` малює підкреслення, а мобільне лишалося
-	   рівним списком, у якому не видно, де ти. */
-	.header__mobile-link.active {
-		color: var(--color-sea-blue);
-		text-decoration: underline;
-		text-underline-offset: 6px;
-	}
-
-	.header__mobile-cta {
-		margin-top: var(--space-lg);
-		font-size: 1rem;
-		padding: 1rem 2.5rem;
 	}
 
 	@keyframes fadeIn {

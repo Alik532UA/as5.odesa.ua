@@ -34,7 +34,7 @@
 	</article>
 {/snippet}
 
-<section class="departments" id="departments" aria-label="Відділи школи" data-testid="departments-section">
+<section class="departments" id="departments" aria-label={$t("a11y.departmentsSection")} data-testid="departments-section">
 	<div class="container">
 		<p class="departments__description">
 			{$t('departments.description')}

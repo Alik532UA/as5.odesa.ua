@@ -178,5 +178,16 @@
       "message": "Something went wrong while loading this part of the page.",
       "retry": "Try again"
     }
+  },
+  "a11y": {
+    "skipToContent": "Skip to main content",
+    "toHome": "To the home page",
+    "mainMenu": "Main menu",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mobileMenu": "Mobile menu",
+    "settings": "Settings",
+    "heroSection": "Hero section",
+    "departmentsSection": "School departments"
   }
 }

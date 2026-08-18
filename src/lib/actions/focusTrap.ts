@@ -34,12 +34,22 @@ const FOCUSABLE = [
 	'[tabindex]:not([tabindex="-1"])'
 ].join(',');
 
+/**
+ * Фільтра видимості тут навмисно НЕМАЄ.
+ *
+ * Перша редакція відсіювала приховане через `offsetParent === null`. У
+ * браузері це працює, у jsdom `offsetParent` дорівнює `null` ЗАВЖДИ (розкладки
+ * там немає зовсім) — тобто фільтр повертав рівно один елемент, перший і
+ * останній збігалися, і кожен Tab перехоплювався. Перевірка, написана на
+ * такому фільтрі, зелена з неправильної причини, а сам фільтр непроверябельний.
+ *
+ * Обидва діалоги проєкту (піаніно, мобільне меню) прихованих фокусованих
+ * елементів усередині не мають, тож фільтр нічого не давав. Якщо колись
+ * зʼявиться діалог зі згорнутою секцією — тоді й `checkVisibility()`, і
+ * перевірка до нього.
+ */
 function focusableWithin(node: HTMLElement): HTMLElement[] {
-	return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
-		// `offsetParent === null` відсіює `display: none`; у діалозі, який щойно
-		// змонтували, решта вже видима.
-		(el) => el.offsetParent !== null || el === document.activeElement
-	);
+	return Array.from(node.querySelectorAll<HTMLElement>(FOCUSABLE));
 }
 
 /**
