@@ -68,7 +68,7 @@ const SIZE_DEBT: Record<string, number> = {
 	'src/routes/test/+page.svelte': 1436,
 	// Шапка, меню, перемикачі мови й теми, випадайка налаштувань — чотири
 	// відповідальності в одному компоненті.
-	'src/lib/components/HeaderSection.svelte': 595,
+	'src/lib/components/HeaderSection.svelte': 591,
 	'src/lib/components/FooterSection.svelte': 401,
 	'src/lib/components/ui/PianoModal.svelte': 327
 };

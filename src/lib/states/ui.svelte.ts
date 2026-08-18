@@ -1,3 +1,4 @@
+import { locale } from 'svelte-i18n';
 import { storage } from '$lib/services/storage';
 
 class UIState {
@@ -88,6 +89,49 @@ class UIState {
 	};
 
 	/**
+	 * Тривалість блюру, яким прикривається перемикання теми чи мови.
+	 * Одне джерело для `setTimeout` і для CSS-переходу в `+layout.svelte`
+	 * (`.theme-transition-overlay`, 0.3s) — розійшовшись, вони дали б або
+	 * миготіння, або зайву паузу.
+	 */
+	private static readonly BLUR_MS = 300;
+
+	/**
+	 * Проводить зміну під блюром: показати завісу, дочекатися, застосувати,
+	 * прибрати. `set` каже, який саме прапорець піднімати, бо тема й мова
+	 * малюють ту саму завісу з різних причин.
+	 */
+	private async underBlur(set: (on: boolean) => void, apply: () => void) {
+		const withBlur = this.enableBlurEffect;
+		if (withBlur) {
+			set(true);
+			await new Promise((r) => setTimeout(r, UIState.BLUR_MS));
+		}
+
+		apply();
+
+		if (withBlur) {
+			setTimeout(() => set(false), UIState.BLUR_MS);
+		}
+	}
+
+	/**
+	 * Зміна мови (I18N-v8 § 5.1: мова — стан контролера, не компонента).
+	 *
+	 * Доти ця функція жила в `HeaderSection.svelte` і звідти писала в
+	 * `ui.isLangChanging` напряму. Тобто поле стану мало рівно одного
+	 * записувача, і той був у розмітці: перемкнути мову звідкись іще означало б
+	 * скопіювати таймінги блюру разом із ним, а розійшовшись, копії дали б
+	 * завісу, яка не зникає.
+	 */
+	setLanguage = async (lang: string) => {
+		await this.underBlur(
+			(on) => (this.isLangChanging = on),
+			() => locale.set(lang)
+		);
+	};
+
+	/**
 	 * Синхронізує DOM із темою. Нічого не зберігає й не читає стану — саме тому
 	 * її можна викликати і з конструктора, і зі зміни теми.
 	 */
@@ -112,25 +156,21 @@ class UIState {
 	) => {
 		if (this.theme === t) return;
 
-		const withBlur = options.withBlur ?? true;
 		const persist = options.persist ?? true;
+		const apply = () => {
+			this.theme = t;
+			this.applyThemeToDocument(t);
+			if (persist) storage.set('theme', t);
+		};
 
-		if (withBlur && this.enableBlurEffect) {
-			this.isThemeChanging = true;
-			// Чекаємо повної тривалості блюру (0.3s) ДО зміни теми
-			await new Promise((r) => setTimeout(r, 300));
+		// `withBlur: false` — старт і системна зміна: там завіса недоречна,
+		// бо показувати перехід нема від чого.
+		if (options.withBlur === false) {
+			apply();
+			return;
 		}
 
-		this.theme = t;
-		this.applyThemeToDocument(t);
-		if (persist) storage.set('theme', t);
-
-		if (withBlur && this.enableBlurEffect) {
-			// Даємо час на розчинення блюру
-			setTimeout(() => {
-				this.isThemeChanging = false;
-			}, 300);
-		}
+		await this.underBlur((on) => (this.isThemeChanging = on), apply);
 	};
 
 	setBackgroundType = (type: 0 | 1 | 2 | 3) => {

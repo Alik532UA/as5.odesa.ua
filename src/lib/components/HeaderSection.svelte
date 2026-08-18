@@ -8,7 +8,8 @@
 	import { ui } from "$lib/states/ui.svelte";
 	import { t, locale } from "svelte-i18n";
 	import { page } from "$app/state";
-	import { base } from "$app/paths";
+	import { resolve } from "$app/paths";
+	import { NAV_ITEMS } from "$lib/config/nav";
 
 	let scrolled = $state(false);
 	let settingsOpen = $state(false);
@@ -30,29 +31,11 @@
 		ui.setTheme(newTheme);
 	}
 
-	async function changeLanguage(lang: string) {
-		if (ui.enableBlurEffect) {
-			ui.isLangChanging = true;
-			// Чекаємо повної тривалості блюру (0.3s) ДО зміни мови
-			await new Promise((r) => setTimeout(r, 300));
-		}
+	// Самі пункти — у `$lib/config/nav`. Тут лишається лише переклад підпису:
+	// він мовний і мусить перемальовуватися при зміні мови.
+	const navItems = $derived(NAV_ITEMS.map((item) => ({ ...item, label: $t(item.labelKey) })));
 
-		locale.set(lang);
-
-		if (ui.enableBlurEffect) {
-			// Даємо час на розчинення блюру
-			setTimeout(() => {
-				ui.isLangChanging = false;
-			}, 300);
-		}
-	}
-
-	const navItems = $derived([
-		{ label: $t("nav.home"), href: `${base}/` },
-		{ label: $t("nav.about"), href: `${base}/about` },
-		{ label: $t("nav.history"), href: `${base}/history` },
-		{ label: $t("nav.contests"), href: `${base}/competitions` },
-	]);
+	const isActive = (routeId: string) => page.route.id === routeId;
 
 	$effect(() => {
 		const handleScroll = () => {
@@ -89,7 +72,7 @@
 <header class="header" class:scrolled class:menu-open={ui.isMenuOpen} id="main-header" data-testid="app-header">
 	<div class="header__logo-area">
 		<a
-			href={`${base}/`}
+			href={resolve("/")}
 			class="header__logo-link"
 			aria-label="На головну"
 			onclick={ui.closeMenu}
@@ -102,14 +85,15 @@
 	<div class="header__bar">
 		<nav class="header__nav" aria-label="Головне меню" id="main-nav" data-testid="header-nav">
 			<ul class="header__nav-list" class:open={ui.isMenuOpen} data-testid="header-nav-list">
-				{#each navItems as item, i}
-					<li class="header__nav-item" data-testid="header-nav-item-{i}">
+				{#each navItems as item (item.key)}
+					<li class="header__nav-item" data-testid="header-nav-item-{item.key}">
 						<a
 							href={item.href}
 							class="header__nav-link"
-							class:active={page.url.pathname === item.href}
-							id="nav-{item.href.replace('/', '') || 'home'}"
-							data-testid="nav-{item.href.replace('/', '') || 'home'}-link"
+							class:active={isActive(item.routeId)}
+							aria-current={isActive(item.routeId) ? "page" : undefined}
+							id="nav-{item.key}"
+							data-testid="nav-{item.key}-link"
 						>
 							{item.label}
 						</a>
@@ -119,7 +103,7 @@
 		</nav>
 
 		<a
-			href={`${base}/admission`}
+			href={resolve("/admission")}
 			class="btn btn-outline header__cta"
 			id="header-cta"
 			data-testid="header-admission-btn"
@@ -140,12 +124,12 @@
 						<button
 							class="header__settings-opt"
 							class:active={$locale === "uk"}
-							onclick={() => changeLanguage("uk")}>UA</button
+							onclick={() => ui.setLanguage("uk")}>UA</button
 						>
 						<button
 							class="header__settings-opt"
 							class:active={$locale === "en"}
-							onclick={() => changeLanguage("en")}>EN</button
+							onclick={() => ui.setLanguage("en")}>EN</button
 						>
 					</div>
 				</div>
@@ -203,12 +187,15 @@
 			</button>
 			<nav aria-label="Мобільне меню">
 				<ul class="header__mobile-list">
-					{#each navItems as item}
+					{#each navItems as item (item.key)}
 						<li>
 							<a
 								href={item.href}
 								class="header__mobile-link"
+								class:active={isActive(item.routeId)}
+								aria-current={isActive(item.routeId) ? "page" : undefined}
 								onclick={ui.closeMenu}
+								data-testid="mobile-nav-{item.key}-link"
 							>
 								{item.label}
 							</a>
@@ -216,7 +203,7 @@
 					{/each}
 					<li>
 						<a
-							href={`${base}/admission`}
+							href={resolve("/admission")}
 							class="btn btn-primary header__mobile-cta"
 							onclick={ui.closeMenu}
 						>
@@ -529,6 +516,15 @@
 
 	.header__mobile-link:hover {
 		color: var(--color-golden);
+	}
+
+	/* Поточна сторінка в мобільному меню. Позначки не було зовсім: у
+	   десктопному меню `.active` малює підкреслення, а мобільне лишалося
+	   рівним списком, у якому не видно, де ти. */
+	.header__mobile-link.active {
+		color: var(--color-sea-blue);
+		text-decoration: underline;
+		text-underline-offset: 6px;
 	}
 
 	.header__mobile-cta {
