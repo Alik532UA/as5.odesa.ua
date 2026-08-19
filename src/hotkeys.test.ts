@@ -101,3 +101,126 @@ describe('WCAG SC 2.1.4: одиночну літеру можна вимкнут
 		expect(handler).toMatch(/code\s*!==\s*'Escape'\s*&&\s*!ui\.hotkeysEnabled/);
 	});
 });
+
+/**
+ * Файли, чий слухач на вікні НЕ мусить мати захисту полів вводу.
+ *
+ * Кожен named і з причиною — і сам виняток перевіряється: файл зі списку
+ * зобовʼязаний не мати жодного літерного скорочення. Інакше цей список став би
+ * тим, чим такі списки стають, — місцем, куди дописують те, що не проходить.
+ */
+const NO_TEXT_GUARD_NEEDED: Record<string, string> = {
+	// Ловить рівно `Escape`, а він не клавіша-символ: у полі вводу він або
+	// нічого не робить, або скасовує ввід — жодного тексту він не з’їдає.
+	'src/lib/components/MobileMenu.svelte': 'обробляє лише Escape'
+};
+
+/** Слухачі саме на ВІКНІ чи документі: вони працюють, куди б не дивився фокус. */
+function windowKeydownSources(): string[] {
+	return sources.filter((f) => {
+		const text = code(f);
+		return (
+			/<svelte:window[^>]*onkeydown=/.test(text) ||
+			/(?:window|document)\.addEventListener\(\s*['"]keydown/.test(text)
+		);
+	});
+}
+
+describe('захист набору тексту (§ 2.2, HK-TEXT-ENTRY-GUARD)', () => {
+	const listeners = windowKeydownSources();
+
+	it('перевірка жива: слухачі на вікні знайдено', () => {
+		// Без цього рядка порожній перелік дав би зелене «порушень немає».
+		expect(listeners.length, 'жодного слухача — сканер шукає не там').toBeGreaterThan(2);
+	});
+
+	it('кожен слухач на вікні виходить, коли людина друкує', () => {
+		/*
+		 * Рядки імпорту відрізаються, інакше перевірка зеленіє від самої НАЗВИ
+		 * функції у списку імпорту — тобто переживає видалення виклику. Знайдено
+		 * зворотним експериментом: прибраний захист із піаніно лишав її зеленою.
+		 */
+		const body = (f: string) => code(f).replace(/^\s*import\s[^;]*;/gm, '');
+		const unguarded = listeners.filter(
+			(f) => !NO_TEXT_GUARD_NEEDED[f] && !/isTypingTarget|acceptsShortcut/.test(body(f))
+		);
+		expect(
+			unguarded,
+			`набір тексту виконуватиме команди:\n${unguarded.join('\n')}`
+		).toEqual([]);
+	});
+
+	it('виняток лишається винятком: у ньому немає жодної літерної клавіші', () => {
+		const bad: string[] = [];
+		for (const [file, reason] of Object.entries(NO_TEXT_GUARD_NEEDED)) {
+			if (!listeners.includes(file)) {
+				bad.push(`${file}: слухача більше немає — запис «${reason}» застарів`);
+				continue;
+			}
+			const text = code(file);
+			// `KeyT` або `.key === 'x'` у файлі без захисту означає, що літера
+			// виконує команду просто під час набору тексту.
+			const letters = [
+				...text.matchAll(/'Key([A-Z])'|\.key\s*===\s*['"]([a-zA-Z])['"]/g)
+			].map((m) => m[0]);
+			if (letters.length > 0) bad.push(`${file}: літерні клавіші ${letters.join(', ')}`);
+		}
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+});
+
+describe('решта захистів обробника (§ 2)', () => {
+	it('комбінації з модифікаторами лишаються браузеру', () => {
+		// Без цього `Ctrl+T` відкриває вкладку І виконує дію застосунку:
+		// `event.code` однаковий для одиночної клавіші й для комбінації з нею.
+		expect(code('src/lib/services/keyboard.ts')).toMatch(/ctrlKey.*\n?.*metaKey|metaKey.*\n?.*ctrlKey/s);
+		expect(code(HOTKEY_SOURCE)).toMatch(/acceptsShortcut\(/);
+	});
+
+	it('літерні скорочення читаються з code, а не з key', () => {
+		const bad: string[] = [];
+		for (const file of sources) {
+			for (const m of code(file).matchAll(/\.key\s*===\s*['"]([a-zA-Z])['"]/g)) {
+				bad.push(`${file}: .key === '${m[1]}'`);
+			}
+		}
+		// На українській розкладці `KeyT` віддає `key === 'е'` — скорочення
+		// просто зникає для того, хто не перемкнув розкладку.
+		expect(bad, `скорочення за символом, а не за клавішею:\n${bad.join('\n')}`).toEqual([]);
+	});
+});
+
+describe('канонічна карта (§ 1.1, § 4)', () => {
+	const handler = code(HOTKEY_SOURCE);
+
+	const CANON: Record<string, RegExp> = {
+		KeyT: /theme/i,
+		KeyL: /lang|locale/i,
+		KeyM: /sound|audio|mute/i,
+		KeyB: /background/i
+	};
+
+	it('літера означає те саме, що в каноні', () => {
+		const bad: string[] = [];
+		for (const [codeName, expected] of Object.entries(CANON)) {
+			const at = handler.indexOf(codeName);
+			if (at === -1) continue; // клавіша не зайнята — це нормально
+			const branch = handler.slice(at, at + 200);
+			if (!expected.test(branch)) bad.push(`${codeName} робить не те, що в § 1.1`);
+		}
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+
+	it('V і R зайняті лише службовими жестами', () => {
+		const bad: string[] = [];
+		for (const reserved of ['KeyV', 'KeyR']) {
+			const at = handler.indexOf(reserved);
+			if (at === -1) continue;
+			const branch = handler.slice(at, at + 200);
+			if (!/debug|version|reset|[Ss]equence/.test(branch)) {
+				bad.push(`${reserved} робить щось, крім службового жесту (§ 4)`);
+			}
+		}
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+});

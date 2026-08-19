@@ -1,6 +1,6 @@
 import { SvelteSet } from 'svelte/reactivity';
 import { PIANO_KEYS } from '$lib/config/piano';
-import { captureKeyboard } from '$lib/services/keyboard';
+import { captureKeyboard, isTypingTarget } from '$lib/services/keyboard';
 
 /**
  * Стан віртуального піаніно (SVELTE-CORE-v8 § 2: логіка — у класі-контролері,
@@ -74,10 +74,21 @@ export class PianoState {
 	 */
 	listen(onEscape: () => void): () => void {
 		const handle = (e: KeyboardEvent) => {
+			/*
+			 * Слухач висить на ВІКНІ, тож він працює й тоді, коли фокус у полі
+			 * вводу (HOTKEYS-v8 § 2.2, `HK-TEXT-ENTRY-GUARD`, CRITICAL). Сьогодні
+			 * поля всередині модалки немає — але саме так це правило й порушують:
+			 * поле дописують пізніше, а слухач лишається той самий, і набрати в
+			 * ньому «adf» стає неможливо, бо кожна літера бере ноту.
+			 *
+			 * `Escape` — єдиний виняток: він не клавіша-символ, і без нього
+			 * закрити піаніно з клавіатури не було б чим.
+			 */
 			if (e.key === 'Escape') {
 				onEscape();
 				return;
 			}
+			if (isTypingTarget(e.target)) return;
 			// Пробіл і Enter лишаємо кнопкам: клавіші — справжні `<button>`, і
 			// перехоплення тут дало б подвійну ноту на сфокусованій клавіші.
 			if (e.key === ' ' || e.key === 'Enter') return;

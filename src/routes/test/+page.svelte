@@ -9,6 +9,7 @@
 	import { onMount, untrack } from "svelte";
 	import { asset, base } from "$app/paths";
 	import { validateNews, type NewsItem } from "$lib/schemas/news";
+	import { isTypingTarget } from "$lib/services/keyboard";
 
 	// Data from News.svelte
 	const rawNews = [
@@ -127,13 +128,12 @@
 	});
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (typeof document !== "undefined" && ["INPUT", "TEXTAREA"].includes((document.activeElement as HTMLElement)?.tagName)) return;
+		// Спільна функція, а не порівняння `tagName`: у `contenteditable` фокус стоїть на вкладеному вузлі — `SPAN` (HOTKEYS-v8 § 2.2).
+		if (isTypingTarget(e.target)) return;
 		if (e.key === "ArrowLeft") prev();
 		else if (e.key === "ArrowRight") next();
 	}
 
-	// --- Gallery Logic ---
-	// Placeholder for gallery data, replace with actual data if needed
 	const galleryImages = [
 		{ src: asset('/departments/folk.png'), alt: 'Gallery Image 1', title: 'Folk Music Exhibit' },
 		{ src: asset('/departments/piano.png'), alt: 'Gallery Image 2', title: 'Piano Recital Photo' },
