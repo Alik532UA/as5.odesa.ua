@@ -367,6 +367,33 @@ if (!existsSync(robotsPath)) {
 					fail(`sitemap оголошує ${loc}, а сторінка позначена noindex — списки суперечать`);
 				}
 			}
+
+			/*
+			 * ЗВОРОТНИЙ напрямок, якого доти не було: сторінка є, індексується — а
+			 * в sitemap її немає (SEO-v8 § 5).
+			 *
+			 * Перелік адрес у `sitemap.xml/+server.ts` написаний РУКАМИ, тобто
+			 * розходження з реальними маршрутами — питання часу, і воно мовчазне:
+			 * зайвої адреси в sitemap не з’являється, суперечності з noindex теж,
+			 * тож жодна з наявних перевірок нової сторінки не бачить. Ціна —
+			 * сторінка, яку пошуковик знайде хіба випадково.
+			 *
+			 * `404.html` виключений: це оболонка SPA для GitHub Pages, не сторінка.
+			 */
+			const inSitemap = new Set(locs);
+			for (const file of files) {
+				const name = file.slice(BUILD.length + 1);
+				if (name === '404.html' || HIDDEN_PAGES.has(name)) continue;
+
+				const html = readFileSync(file, 'utf8');
+				if (/<meta[^>]+name="robots"[^>]+content="[^"]*noindex/i.test(html)) continue;
+
+				const expected =
+					name === 'index.html' ? `${SITE_ROOT}/` : `${SITE_ROOT}/${name.replace(/\.html$/, '')}`;
+				if (!inSitemap.has(expected)) {
+					fail(`${name}: сторінка індексується, а в sitemap її немає — очікувався ${expected}`);
+				}
+			}
 		}
 	}
 }
