@@ -38,11 +38,19 @@
 	);
 
 	/**
-	 * Технічний текст помилки показується лише коли він є і коли це не 404:
-	 * для 404 SvelteKit кладе туди слово «Not Found», яке нічого не додає до
-	 * заголовка вище.
+	 * Показується КОД помилки, а не її текст.
+	 *
+	 * Доти сюди йшов `page.error.message`, тобто рядок від рантайму або від
+	 * `hooks.client.ts`. Обидва погані з різних причин: перший показує нутрощі
+	 * («Cannot read properties of undefined»), другий був українським рядком, який
+	 * англомовний відвідувач бачив як є — а поруч уже стояв перекладений текст
+	 * (ERROR-HANDLING-v8 § 4.1, § 4.3).
+	 *
+	 * Код при цьому не показувався ніде, хоча заради нього весь ланцюжок і
+	 * будувався: за ним запис знаходиться в кеші логера, і саме його має сенс
+	 * назвати в листі. На 404 його немає — туди `handleError` не заходить.
 	 */
-	const detail = $derived(!isNotFound ? (page.error?.message ?? '') : '');
+	const errorId = $derived(page.error?.errorId ?? '');
 </script>
 
 <svelte:head>
@@ -66,8 +74,10 @@
 		<p class="error-status">{page.status}</p>
 		<h1 class="error-title">{title}</h1>
 		<p class="error-message">{message}</p>
-		{#if detail}
-			<p class="error-detail">{detail}</p>
+		{#if errorId}
+			<p class="error-detail" data-testid="error-reference-value">
+				{safeT($t, 'error.reference', 'Код помилки')}: <code>{errorId}</code>
+			</p>
 		{/if}
 
 		<a class="error-home" href={resolve("/")}>

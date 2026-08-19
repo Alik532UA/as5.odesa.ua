@@ -51,6 +51,30 @@ describe('логування помилок досяжне', () => {
 		expect(hook, 'handleError не звертається до errorLogger').toContain('errorLogger.logError');
 	});
 
+	it('сторінка помилки показує КОД, а не текст від рантайму', () => {
+		const errorPage = readFileSync('src/routes/+error.svelte', 'utf8')
+			.replace(/<!--[\s\S]*?-->/g, '')
+			.replace(/\/\*[\s\S]*?\*\//g, '');
+
+		/*
+		 * `page.error.message` — це або рядок від рантайму («Cannot read properties
+		 * of undefined»), тобто нутрощі застосунку на екрані відвідувача, або рядок
+		 * із `hooks.client.ts`, який не перекладається (ERROR-HANDLING-v8 § 4.1,
+		 * § 4.3). Перекладений текст на цій сторінці вже є — окремим рядком зі
+		 * словника.
+		 */
+		expect(
+			/page\.error\??\.message/.test(errorPage),
+			'сторінка показує текст помилки від рантайму замість власного, перекладеного'
+		).toBe(false);
+
+		// Заради цього коду весь ланцюжок і будувався: за ним запис знаходиться
+		// в кеші логера. Доти він не показувався ніде.
+		expect(errorPage, 'код помилки не показується — назвати його в листі нічим').toMatch(
+			/page\.error\??\.errorId/
+		);
+	});
+
 	it('сітка безпеки над помилками поза SvelteKit теж підключена', () => {
 		/*
 		 * `handleError` ловить лише те, що веде сам SvelteKit: рендер, навігацію,

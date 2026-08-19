@@ -178,7 +178,8 @@
     "boundary": {
       "message": "Something went wrong while loading this part of the page.",
       "retry": "Try again"
-    }
+    },
+    "reference": "Error code"
   },
   "a11y": {
     "skipToContent": "Skip to main content",
