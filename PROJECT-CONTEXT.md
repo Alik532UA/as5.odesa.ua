@@ -127,6 +127,10 @@ grep -rnoE 'aria-label="[^"{]*[А-Яа-яІіЇїЄєҐґ][^"]*"' src --include=
 grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | grep -vc 'minmax'    # 0
 ```
 
+JS gzip на сторінку на 2026-08-20 (друкує `npm run check:build`, бюджет 150 КБ):
+`index` 76, `about` 75, `admission` 75, `competitions` 75, `history` 74,
+`beta-test-checklists` 81, `test` 95, `404` 74.
+
 ## Перевірки, які тут є
 
 | Гейт | Де | Що ловить |
@@ -137,6 +141,7 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 | `npm audit --omit=dev --audit-level=high` | CI | вразливості **прод**-залежностей |
 | `git diff --exit-code` | CI, після `build` | збірка не бруднить робоче дерево |
 | `npm run check:build` | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
+| Бюджет JS | у складі `check:build` | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи |
 
 Файли інваріантів: `beta-checklist`, `ci`, `contrast`, `css-variables`, `error-logger-reachable`,
 `eslint-baseline`, `fluid-sizing`, `hotkeys`, `structure`, `test-runners`,

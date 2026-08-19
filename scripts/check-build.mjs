@@ -17,6 +17,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { gzipSync } from 'node:zlib';
 
 const BUILD = 'build';
 
@@ -398,6 +399,55 @@ if (!existsSync(robotsPath)) {
 	}
 }
 
+/**
+ * Бюджет JS на сторінку (PERFORMANCE-v8 § 1, § 10.1).
+ *
+ * **Чому не `build/_app/immutable/entry`, як у прикладі пакета.** Бо тут це
+ * 2 КБ: у SvelteKit `entry/` — два крихітні завантажувачі, а справжня вага
+ * лежить у `chunks/` і `nodes/`. Гейт на `entry/` не спрацював би ніколи, тобто
+ * був би не бюджетом, а його імітацією.
+ *
+ * Тому міряється те, що справді тягне браузер на КОНКРЕТНІЙ сторінці: усі
+ * `_app/immutable/**.js`, згадані в її HTML (`modulepreload` плюс імпорти
+ * гідратації). Число gzip, бо саме так файли й їдуть по мережі.
+ *
+ * Сторінка без жодного посилання на скрипт означає, що структура `build/`
+ * змінилася, — і тоді гейт падає, а не мовчки рахує нуль.
+ */
+const JS_BUDGET_KB = 150;
+
+const jsSizes = [];
+for (const file of files) {
+	const html = readFileSync(file, 'utf8');
+	const refs = [
+		...new Set(
+			[...html.matchAll(/["'(]\.?\/?(_app\/immutable\/[^"')]+\.js)/g)].map((m) => m[1])
+		)
+	];
+	const name = file.slice(BUILD.length + 1);
+
+	if (refs.length === 0) {
+		fail(`${name}: жодного посилання на _app/immutable/*.js — структура build/ змінилася, бюджет міряти нічим`);
+		continue;
+	}
+
+	let bytes = 0;
+	for (const ref of refs) {
+		const path = join(BUILD, ref);
+		if (!existsSync(path)) {
+			fail(`${name}: посилається на ${ref}, а файлу немає`);
+			continue;
+		}
+		bytes += gzipSync(readFileSync(path)).length;
+	}
+
+	const kb = Math.round(bytes / 1024);
+	jsSizes.push(`${name} ${kb}`);
+	if (kb > JS_BUDGET_KB) {
+		fail(`${name}: ${kb} КБ JS gzip — бюджет ${JS_BUDGET_KB} КБ (PERFORMANCE-v8 § 1)`);
+	}
+}
+
 if (problems.length > 0) {
 	console.error(`\nПеревірка збірки не пройдена — ${problems.length} проблем:\n`);
 	for (const p of problems) console.error(`  • ${p}`);
@@ -405,3 +455,6 @@ if (problems.length > 0) {
 }
 
 console.log(`Збірка перевірена: ${files.length} HTML, sitemap на місці, проблем немає.`);
+// Числа друкуються завжди: бюджет, який видно лише в момент падіння, не показує
+// повзучого зростання — а саме так воно й відбувається (PERFORMANCE-v8 § 10.1).
+console.log(`JS gzip на сторінку (бюджет ${JS_BUDGET_KB} КБ): ${jsSizes.join(', ')}`);
