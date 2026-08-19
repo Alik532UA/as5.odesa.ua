@@ -112,15 +112,15 @@
 | Відхилення | Правило | Чому поки так |
 |---|---|---|
 | **Мова живе лише у сховищі** | I18N-v8 § 3.1, SEO-v8 § 2.2–2.3 (обидва HIGH) | `/en/` як адрес не існує: `en.json` перемикається в браузері, `hreflang` немає, у sitemap лише `uk`-адреси. Тобто англійської версії для пошуковика не існує взагалі. Лікується хуком `reroute` і подвоєним prerender (SKD-REROUTE) — це окремий прохід із перевіркою `build/`, а не правка на ходу |
-| **`@media` замість `@container` у 12 місцях компонентів** | FLUID-SIZING-v8 § 7A (FS-CONTAINER, HIGH) | `@container` у проєкті нуль звернень. Компоненти міряють вікно, а не наявне місце: у розкладці з двох колонок картка поводиться як на всю ширину |
-| **Хардкод українських рядків поза словником** | I18N-v8, HIGH | лише `/test` (чернетка): три `aria-label` каруселі. У решті проєкту нуль — підписи для читалок переїхали в розділ `a11y` обох словників 2026-08-19 |
+| **`@media` замість `@container` у 13 місцях компонентів** | FLUID-SIZING-v8 § 7A (FS-CONTAINER, HIGH) | `@container` у проєкті нуль звернень. Компоненти міряють вікно, а не наявне місце: у розкладці з двох колонок картка поводиться як на всю ширину |
+| **Хардкод українських рядків поза словником** | I18N-v8, HIGH | `/test` (чернетка): три `aria-label` каруселі. Плюс два службові рядки, які словника й не мусять мати: підтвердження аварійного скидання (`resetService.ts` — його кличуть саме тоді, коли словник міг не приїхати) і підпис табла версії (`ServiceBadge.svelte`); обидва двомовні одним рядком. Команда нижче їх НЕ бачить: вона шукає `aria-label="…"`, а вони — шаблонні літерали. Сліпа зона названа тут, бо інакше «3» читалося б як «усе інше перевірено» |
 | **Звуки піаніно з чужого демо-сайту** | — | `.wav` лежать на `carolinegabriel.com`; через це `media-src` у CSP тримає сторонній хост. Перенести файли в `static/audio/` — тоді директива згорнеться до `'self'` |
 | **13 пар «текст на тлі» нижче WCAG AA** | ACCESSIBILITY-v8, HIGH | білий на золотому `#f5a623` (2.03:1, зокрема `.btn-primary` — головна кнопка сайту) і білий на `#3aacce` у темній темі (2.63:1). Кожна пара записана числом у `EXCEPTIONS` `src/contrast.test.ts`: погіршення робить перевірку червоною, виправлення — теж (запис оголошується застарілим) |
 
 Команди, якими це виміряно:
 
 ```
-grep -rn "@media" src/lib/components --include="*.svelte" | wc -l         # 12
+grep -rn "@media" src/lib/components --include="*.svelte" | wc -l         # 13
 grep -rn "@container" src --include="*.svelte" --include="*.css" | wc -l  # 0
 npm run lint 2>&1 | grep -c "require-each-key"                            # 0
 grep -rnoE 'aria-label="[^"{]*[А-Яа-яІіЇїЄєҐґ][^"]*"' src --include="*.svelte" | grep -c '/test/'   # 3
@@ -132,16 +132,17 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 | Гейт | Де | Що ловить |
 |---|---|---|
 | `npm run lint` | CI | eslint, базовий набір за CODE-QUALITY-v8 § 6.4.1 |
-| `npm run check` | CI | `svelte-check`, 0 помилок на 4161 файлі |
-| `npm test` | CI | **16 файлів, 111 перевірок** (`npx vitest run \| grep "Tests "`) |
+| `npm run check` | CI | `svelte-check`, 0 помилок на 4182 файлах |
+| `npm test` | CI | **20 файлів, 173 перевірки** (`npx vitest run \| grep "Tests "`) |
 | `npm audit --omit=dev --audit-level=high` | CI | вразливості **прод**-залежностей |
 | `git diff --exit-code` | CI, після `build` | збірка не бруднить робоче дерево |
-| `npm run check:build` | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap, подвоєна база, позиція й хеш інлайн-скриптів |
+| `npm run check:build` | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 
 Файли інваріантів: `beta-checklist`, `ci`, `contrast`, `css-variables`, `error-logger-reachable`,
-`eslint-baseline`, `fluid-sizing`, `structure`, `test-runners`,
-`testid-conventions` у `src/`, плюс `actions/focusTrap`, `i18n/translations`,
-`schemas/news`, `services/errorLogger`, `services/storage`, `states/ui.svelte`.
+`eslint-baseline`, `fluid-sizing`, `hotkeys`, `structure`, `test-runners`,
+`testid-conventions` у `src/`, плюс `actions/focusTrap`, `i18n/locale`,
+`i18n/translations`, `schemas/news`, `services/errorLogger`, `services/keySequence`,
+`services/keyboard`, `services/storage`, `states/ui.svelte`.
 
 `contrast` спирається на `vitest/support/tokens.ts` — розвʼязувач токенів тем,
 `beta-checklist` на `vitest/support/testids.ts` — збирач локаторів у тому
@@ -179,7 +180,7 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 | `svelte/require-each-key` | 0 | `error` | 2026-08-19 |
 | `@typescript-eslint/no-unused-vars` | 0 | `error` | 2026-08-19 |
 | `@typescript-eslint/no-explicit-any` | 0 | `error` | 2026-08-19 |
-| `svelte/no-navigation-without-resolve` | 5 | `warn` | 2026-08-19 |
+| `svelte/no-navigation-without-resolve` | 5 | `warn` | 2026-08-20 |
 
 Разом 5 попереджень, 0 помилок (`npm run lint 2>&1 | grep "^✖"`).
 
@@ -199,10 +200,10 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 
 | Файл | Рядків | Межа | Було 2026-08-16 |
 |---|---|---|---|
-| `src/routes/test/+page.svelte` | 1435 | 400 | 1436 |
-| `src/lib/components/HeaderSection.svelte` | 474 | 300 | 665 |
+| `src/routes/test/+page.svelte` | 1435 | 400 | 1435 |
+| `src/lib/components/HeaderSection.svelte` | 473 | 300 | 665 |
 | `src/lib/components/FooterSection.svelte` | 401 | 300 | 401 |
-| `src/lib/components/ui/PianoModal.svelte` | 331 | 300 | 327 |
+| `src/lib/components/ui/PianoModal.svelte` | 314 | 300 | 327 |
 
 Шапка схудла на 191 рядок не прибиранням, а поділом: мобільне меню стало
 `MobileMenu.svelte` (разом зі своїми стилями), пункти навігації — `config/nav.ts`,
@@ -248,3 +249,10 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 | Сліпа зона інваріанта сіток: `1fr 1fr`, `2fr 1fr` і одинарне `1fr` він не бачив — девʼять місць | 2026-08-19 | 1 |
 | Контраст тем не перевірявся зовсім; перевірка перенесена, знайшла 13 пар нижче AA | 2026-08-19 | 1 |
 | Того, чого не вміє машина, не перевіряв ніхто: зʼявився чеклист бета-тестування з 9 інваріантами | 2026-08-19 | 1 |
+| Англійська сторінка оголошувала себе `<html lang="uk">` при кожному заході, а `en-US` із браузера розходився з усіма порівняннями `$locale` | 2026-08-20 | 1 |
+| Одиночні `T`, `L`, `B` не можна було вимкнути — WCAG SC 2.1.4, рівень A | 2026-08-20 | 1 |
+| Гейта на гарячі клавіші не було; два слухачі на вікні працювали під час набору тексту | 2026-08-20 | 1 |
+| `unhandledrejection` і `window.error` не потрапляли нікуди: табло показувало нуль помилок при будь-якій їх кількості | 2026-08-20 | 1 |
+| Стан кнопок мови й теми жив лише в кольорі — читалка не знала, яка з пари активна | 2026-08-20 | 1 |
+| `handleHttpError: 'warn'` вимикав перевірку биття посилань на всьому сайті заради шести адрес чернетки | 2026-08-20 | 1 |
+| Сторінка, забута в переліку sitemap, не ловилася жодним гейтом | 2026-08-20 | 1 |
