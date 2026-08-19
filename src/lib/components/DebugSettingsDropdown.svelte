@@ -3,7 +3,11 @@
 	import { t } from 'svelte-i18n';
 
 	/**
-	 * Випадайка діагностичних перемикачів (тип тла, блюр).
+	 * Випадайка налаштувань: тип тла, блюр і гарячі клавіші.
+	 *
+	 * Перші два — діагностичні, третій ні: перемикач гарячих клавіш існує тому,
+	 * що цього вимагає WCAG SC 2.1.4 (рівень A), і живе тут лише через те, що тут
+	 * уже є панель налаштувань (HOTKEYS-v8 § 3).
 	 *
 	 * ## Чому стилі тепер тут
 	 *
@@ -93,6 +97,39 @@
 				aria-pressed={ui.enableBlurEffect}
 				onclick={() => ui.toggleBlurEffect()}
 				data-testid="debug-blur-on-btn"
+			>
+				{$t('settings.on')}
+			</button>
+		</div>
+	</div>
+
+	<!-- Не діагностичний перемикач, попри сусідство: це виконання WCAG SC 2.1.4
+	     (HOTKEYS-v8 § 3, рівень A). Стоїть тут, бо тут уже є налаштування —
+	     заводити заради нього окрему панель означало б сховати його ще глибше. -->
+	<div class="debug-dropdown__group">
+		<span class="debug-dropdown__label">{$t('settings.hotkeys')}</span>
+		<div class="debug-dropdown__options">
+			<button
+				type="button"
+				class="debug-dropdown__opt"
+				class:active={!ui.hotkeysEnabled}
+				aria-pressed={!ui.hotkeysEnabled}
+				onclick={() => {
+					if (ui.hotkeysEnabled) ui.toggleHotkeys();
+				}}
+				data-testid="settings-hotkeys-off-btn"
+			>
+				{$t('settings.off')}
+			</button>
+			<button
+				type="button"
+				class="debug-dropdown__opt"
+				class:active={ui.hotkeysEnabled}
+				aria-pressed={ui.hotkeysEnabled}
+				onclick={() => {
+					if (!ui.hotkeysEnabled) ui.toggleHotkeys();
+				}}
+				data-testid="settings-hotkeys-on-btn"
 			>
 				{$t('settings.on')}
 			</button>

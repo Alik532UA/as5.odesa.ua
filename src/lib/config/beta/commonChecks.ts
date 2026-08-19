@@ -127,5 +127,31 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 			uk: 'Пройдіть сторінку очима в темній темі. Жоден напис не мусить зникати, зливаючись із тлом, і жодна кнопка не мусить ставати нечитною.',
 			en: 'Look through the page in the dark theme. No text must disappear into its background, and no button must become unreadable.'
 		}
+	},
+	/*
+	 * Два пункти нижче — єдиний спосіб підтвердити WCAG SC 2.1.4 (HOTKEYS-v8 § 6).
+	 * Машина бачить, що перемикач є й що обробник його читає; що він СПРАВДІ
+	 * відрізає клавіші — різне твердження, і перевіряється лише прогоном.
+	 */
+	{
+		id: 'common_12',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'settings-hotkeys-on-btn',
+		text: {
+			uk: 'Клацніть у порожнє місце сторінки й натисніть клавішу T. Тема мусить перемкнутися. Так само L перемикає мову, а B — тло за спиною сторінки.',
+			en: 'Click an empty spot on the page and press the T key. The theme must switch. In the same way L switches the language and B switches the background behind the page.'
+		}
+	},
+	{
+		id: 'common_13',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		testid: 'settings-hotkeys-off-btn',
+		text: {
+			uk: 'У шестерні знайдіть «Гарячі клавіші» й натисніть «Вимк». Тепер клавіші T, L і B змінювати НІЧОГО не мусять, а Esc мусить і далі закривати меню.',
+			en: 'In the gear menu find "Keyboard shortcuts" and press "Off". Now the T, L and B keys must change NOTHING, while Esc must still close the menu.'
+		}
 	}
 ];

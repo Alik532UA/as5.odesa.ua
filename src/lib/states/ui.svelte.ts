@@ -11,6 +11,24 @@ class UIState {
 	enableDynamicBackground = $state(true);
 	enableBlurEffect = $state(true);
 
+	/**
+	 * Чи діють одиночні літерні скорочення сайту (`T`, `L`, `B`).
+	 *
+	 * **Це виконання WCAG SC 2.1.4 Character Key Shortcuts, рівень A**
+	 * (HOTKEYS-v8 § 3) — тобто мінімальний рівень доступності, а не зручність.
+	 * Критерій вимагає одного з трьох: вимкнути, перепризначити або діяти лише
+	 * у фокусі. Обрано перше — перемикач у наявних налаштуваннях; перепризначення
+	 * коштувало б діалогу конфліктів заради трьох клавіш, а «лише у фокусі» на
+	 * сайті-візитівці означає скорочення, яких немає.
+	 *
+	 * Кому це потрібно насправді: тим, хто вводить текст голосом. Диктування
+	 * розсипається на одиночні літери, і кожна виконує команду — сторінка починає
+	 * миготіти темами й мовами, і причини цього не видно.
+	 *
+	 * Типово `true`: вимикач для тих, кому він потрібен, а не для всіх.
+	 */
+	hotkeysEnabled = $state(true);
+
 	constructor() {
 		if (typeof window !== 'undefined') {
 			// Тема: збережений вибір, інакше налаштування системи.
@@ -60,6 +78,12 @@ class UIState {
 			const enableBlur = storage.get('enableBlurEffect');
 			if (enableBlur !== null) {
 				this.enableBlurEffect = enableBlur === 'true';
+			}
+			// Зберігається так само, як решта перемикачів: STORAGE-NAMESPACE-v8
+			// вимагає, щоб стан жив під префіксом проєкту, а не голим ключем.
+			const hotkeys = storage.get('hotkeysEnabled');
+			if (hotkeys !== null) {
+				this.hotkeysEnabled = hotkeys === 'true';
 			}
 			
 			// Стеження за системною темою. `persist: false` — з тієї ж причини,
@@ -215,6 +239,22 @@ class UIState {
 	toggleBlurEffect = () => {
 		this.enableBlurEffect = !this.enableBlurEffect;
 		storage.set('enableBlurEffect', this.enableBlurEffect.toString());
+	};
+
+	/**
+	 * Вмикає й вимикає літерні скорочення сайту (`ui/ServiceLayer.svelte`).
+	 *
+	 * `Escape` цим НЕ керується: SC 2.1.4 говорить про клавіші-символи, а
+	 * `Escape` до них не належить — і залишити людину в модалці без клавіатурного
+	 * виходу означало б зламати § 6 ACCESSIBILITY-v8 заради виконання § 3 HOTKEYS.
+	 *
+	 * Службові серії `V` і `R` теж лишаються: 55 натискань однієї літери поспіль
+	 * не набираються ні диктуванням, ні тремтінням руки, а саме від випадкового
+	 * набору цей перемикач і захищає.
+	 */
+	toggleHotkeys = () => {
+		this.hotkeysEnabled = !this.hotkeysEnabled;
+		storage.set('hotkeysEnabled', this.hotkeysEnabled.toString());
 	};
 }
 

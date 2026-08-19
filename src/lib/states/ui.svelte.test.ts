@@ -173,3 +173,47 @@ describe('UIState: тема', () => {
 		expect(ui.theme).toBe('light');
 	});
 });
+
+/**
+ * Гарячі клавіші: перемикач як виконання WCAG SC 2.1.4 (HOTKEYS-v8 § 3).
+ *
+ * Тут перевіряється саме СТАН — типове значення, збереження й повернення після
+ * перезавантаження. Що перемикач справді відрізає `T`, `L` і `B`, станом не
+ * доводиться: обробник живе в `.svelte`, який цей раннер не монтує. Це
+ * твердження тримає інваріант джерела в `src/hotkeys.test.ts` і пункт
+ * чеклиста — рівно так, як велить сам § 6 HOTKEYS: «є перемикач» і «перемикач
+ * справді вимикає» — різні твердження.
+ *
+ * Зворотний експеримент: типове значення `false` валить перший тест, забутий
+ * `storage.set` у `toggleHotkeys` — другий і третій.
+ */
+describe('UIState: гарячі клавіші', () => {
+	it('типово увімкнені — вимикач для тих, кому він потрібен, а не для всіх', async () => {
+		stubMatchMedia(false);
+		const ui = await freshUi(makeMemoryStorage());
+		expect(ui.hotkeysEnabled).toBe(true);
+	});
+
+	it('вимкнення зберігається під префіксом проєкту', async () => {
+		const store = makeMemoryStorage();
+		stubMatchMedia(false);
+		const ui = await freshUi(store);
+
+		ui.toggleHotkeys();
+
+		expect(ui.hotkeysEnabled).toBe(false);
+		expect(store.getItem(`${STORAGE_PREFIX}hotkeysEnabled`)).toBe('false');
+		// Голого ключа бути не може: origin запасної адреси спільний із сусідами.
+		expect(store.getItem('hotkeysEnabled')).toBeNull();
+	});
+
+	it('вимкнене лишається вимкненим після перезавантаження', async () => {
+		const store = makeMemoryStorage();
+		store.setItem(`${STORAGE_PREFIX}hotkeysEnabled`, 'false');
+		stubMatchMedia(false);
+
+		const ui = await freshUi(store);
+
+		expect(ui.hotkeysEnabled).toBe(false);
+	});
+});

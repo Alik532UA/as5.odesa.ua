@@ -34,6 +34,7 @@
     "bgWaves": "Waves",
     "bgShapes": "Shapes",
     "blur": "Blur effect when changing language or theme",
+    "hotkeys": "Keyboard shortcuts",
     "off": "Off",
     "on": "On",
     "debugNote": "This is a temporary settings menu. We will choose and approve the preferred option, then hide this menu."
