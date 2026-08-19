@@ -75,6 +75,10 @@ class UIState {
 
 	toggleMenu = () => {
 		this.isMenuOpen = !this.isMenuOpen;
+		// Взаємне виключення — тут, а не в `$effect` у шапці, де воно було раніше.
+		// Ефект, що стежив за двома полями й гасив одне з них, — це те саме правило,
+		// але записане там, де його не видно жодному іншому власнику стану.
+		if (this.isMenuOpen) this.isSettingsOpen = false;
 		// Блокуємо скрол при відкритому меню
 		if (typeof document !== 'undefined') {
 			document.body.style.overflow = this.isMenuOpen ? 'hidden' : '';
@@ -86,6 +90,26 @@ class UIState {
 		if (typeof document !== 'undefined') {
 			document.body.style.overflow = '';
 		}
+	};
+
+	/**
+	 * Випадайка налаштувань у шапці.
+	 *
+	 * **Тут, а не в самій шапці, і причина не в розмірі файла.** Вона взаємно
+	 * виключна з мобільним меню, а те живе тут — тобто правило «одночасно відкрите
+	 * лише одне» мало двох власників у двох файлах і трималося `$effect`-ом, який
+	 * стежив за одним полем і гасив інше. Другий споживач (гаряча клавіша `Esc`) не
+	 * мав до цього стану доступу взагалі.
+	 */
+	isSettingsOpen = $state(false);
+
+	toggleSettings = () => {
+		if (this.isMenuOpen) this.closeMenu();
+		this.isSettingsOpen = !this.isSettingsOpen;
+	};
+
+	closeSettings = () => {
+		this.isSettingsOpen = false;
 	};
 
 	/**

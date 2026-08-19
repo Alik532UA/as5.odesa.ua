@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { t } from 'svelte-i18n';
 	import { safeT } from '$lib/i18n/translate';
-	import { errorLogger } from '$lib/services/errorLogger';
+	import { errorLogger } from '$lib/services/errorLogger.svelte';
 
 	/**
 	 * Межа помилок рендеру (ERROR-HANDLING-v8 § 2.3).

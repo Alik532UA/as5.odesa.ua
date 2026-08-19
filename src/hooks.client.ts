@@ -1,5 +1,5 @@
 import type { HandleClientError } from '@sveltejs/kit';
-import { errorLogger } from '$lib/services/errorLogger';
+import { errorLogger } from '$lib/services/errorLogger.svelte';
 
 /**
  * Неперехоплені помилки клієнта (ERROR-HANDLING-v8 § 2.4).

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from "svelte";
 	import { fade } from "svelte/transition";
 	import { X } from "lucide-svelte";
 	import { t } from "svelte-i18n";
@@ -18,24 +17,9 @@
 	// відкрите (`$lib/states/piano.svelte.ts`).
 	const piano = new PianoState();
 
-	function handleKeydown(e: KeyboardEvent) {
-		if (!isOpen) return;
-		// Escape: без нього виходом лишався лише клік по тлу, тобто з
-		// клавіатури модалку не закрити взагалі (ACCESSIBILITY-v8).
-		if (e.key === "Escape") {
-			onClose();
-			return;
-		}
-		// Пробіл і Enter лишаємо кнопкам: клавіші тепер справжні `<button>`,
-		// і перехоплення тут дало б подвійну ноту на сфокусованій клавіші.
-		if (e.key === " " || e.key === "Enter") return;
-		piano.press(e.keyCode);
-	}
-
-	onMount(() => {
-		window.addEventListener("keydown", handleKeydown);
-		return () => window.removeEventListener("keydown", handleKeydown);
-	});
+	// Клавіатура — у класі: і розкладка, і захоплення на час відкритої модалки
+	// (`states/piano.svelte.ts`). Тут лишається рівно час життя.
+	$effect(() => (isOpen ? piano.listen(onClose) : undefined));
 </script>
 
 {#if isOpen}

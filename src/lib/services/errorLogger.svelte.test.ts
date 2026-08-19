@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { errorLogger } from './errorLogger';
+import { errorLogger } from './errorLogger.svelte';
 
 describe('ErrorLogger', () => {
 	beforeEach(() => {

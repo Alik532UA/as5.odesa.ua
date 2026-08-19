@@ -11,19 +11,9 @@
 	import { NAV_ITEMS } from "$lib/config/nav";
 
 	let scrolled = $state(false);
-	let settingsOpen = $state(false);
+	// Стан випадайки живе в `ui` разом із мобільним меню: вони взаємно виключні, і
+	// це правило тепер в одному місці, а не в `$effect`, який стежив за двома полями.
 	let settingsRef: HTMLDivElement | null = $state(null);
-
-	function toggleSettings() {
-		if (ui.isMenuOpen) {
-			ui.closeMenu();
-		}
-		settingsOpen = !settingsOpen;
-	}
-
-	function closeSettings() {
-		settingsOpen = false;
-	}
 
 	function toggleTheme() {
 		const newTheme = ui.theme === "light" ? "dark" : "light";
@@ -45,23 +35,18 @@
 	});
 
 	$effect(() => {
-		if (ui.isMenuOpen && settingsOpen) {
-			settingsOpen = false;
-		}
-	});
-
-	$effect(() => {
 		const handleClickOutside = (e: MouseEvent) => {
-			if (settingsOpen && settingsRef && !settingsRef.contains(e.target as Node)) {
-				closeSettings();
+			if (ui.isSettingsOpen && settingsRef && !settingsRef.contains(e.target as Node)) {
+				ui.closeSettings();
 			}
 		};
 
-		if (settingsOpen) {
+		if (ui.isSettingsOpen) {
 			document.addEventListener('mousedown', handleClickOutside);
 			return () => document.removeEventListener('mousedown', handleClickOutside);
 		}
 	});
+
 </script>
 
 <a href="#main-content" class="skip-link" data-testid="skip-to-content-link">
@@ -110,8 +95,8 @@
 			{$t("nav.admission")}
 		</a>
 
-		<div class="header__settings" class:open={settingsOpen} bind:this={settingsRef} data-testid="header-settings-container">
-			<button class="header__settings-btn" aria-label={$t("a11y.settings")} onclick={toggleSettings} aria-expanded={settingsOpen} data-testid="header-settings-btn">
+		<div class="header__settings" class:open={ui.isSettingsOpen} bind:this={settingsRef} data-testid="header-settings-container">
+			<button class="header__settings-btn" aria-label={$t("a11y.settings")} onclick={ui.toggleSettings} aria-expanded={ui.isSettingsOpen} data-testid="header-settings-btn">
 				<SettingsIcon size={24} />
 			</button>
 			<div class="header__settings-dropdown">
@@ -154,12 +139,12 @@
 					</div>
 				</div>
 			</div>
-			<DebugSettingsDropdown isOpen={settingsOpen} />
+			<DebugSettingsDropdown isOpen={ui.isSettingsOpen} />
 		</div>
 
 		<button
 			class="header__burger"
-			onclick={() => { settingsOpen = false; ui.toggleMenu(); }}
+			onclick={ui.toggleMenu}
 			aria-label={$t("a11y.openMenu")}
 			aria-expanded={ui.isMenuOpen}
 			id="burger-menu" data-testid="header-burger-btn"

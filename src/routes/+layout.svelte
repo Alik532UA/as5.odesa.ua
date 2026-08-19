@@ -10,6 +10,7 @@
 	import { asset } from '$app/paths';
 	import { t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
+	import ServiceLayer from '$lib/components/ui/ServiceLayer.svelte';
 	import { ui } from '$lib/states/ui.svelte';
 	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor, isHiddenRoute } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
@@ -231,6 +232,10 @@
 <Seagull className="hero__seagull hero__seagull--3" size={35} />
 <Seagull className="hero__seagull hero__seagull--4" size={50} />
 <Seagull className="hero__seagull hero__seagull--5" size={42} />
+
+<!-- Клавіші й табло версії. ПОЗА `ErrorBoundary`: межа при падінні замінює дітей
+     своєю сторінкою, тобто забрала б і те, чим збирають звіт про це падіння. -->
+<ServiceLayer />
 
 <div class="app" class:with-dynamic-bg={ui.enableDynamicBackground} class:page-home={page.route.id === '/'}>
 	<div class="app__base-bg" aria-hidden="true"></div>

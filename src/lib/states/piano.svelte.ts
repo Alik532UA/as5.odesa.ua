@@ -1,5 +1,6 @@
 import { SvelteSet } from 'svelte/reactivity';
 import { PIANO_KEYS } from '$lib/config/piano';
+import { captureKeyboard } from '$lib/services/keyboard';
 
 /**
  * Стан віртуального піаніно (SVELTE-CORE-v8 § 2: логіка — у класі-контролері,
@@ -54,5 +55,40 @@ export class PianoState {
 
 		setTimeout(() => this.activeKeys.delete(keyCode), PianoState.HIGHLIGHT_MS);
 		return true;
+	}
+
+	/**
+	 * Слухає клавіатуру, поки піаніно відкрите. Повертає функцію, що відписує.
+	 *
+	 * **Чому тут, а не в компоненті.** Це та сама логіка, що `press()` вище: «фізична
+	 * клавіша → нота». У модалці вона жила разом із розміткою й стилями, тобто у
+	 * файлі, який не компілюється в тестах, і перевірити її було нічим — рівно те, що
+	 * шапка цього класу вже називає причиною свого існування.
+	 *
+	 * **Захоплення клавіатури — частина того самого рішення.** Розкладка тримає 17
+	 * фізичних клавіш, серед них `T` (нота `F#`) і `L` (нота `D`) — рівно ті, якими
+	 * сайт перемикає тему й мову. Без захоплення гра на цих нотах міняла б заодно
+	 * тему й мову інтерфейсу.
+	 *
+	 * @param onEscape закрити піаніно. З клавіатури це єдиний вихід (ACCESSIBILITY-v8).
+	 */
+	listen(onEscape: () => void): () => void {
+		const handle = (e: KeyboardEvent) => {
+			if (e.key === 'Escape') {
+				onEscape();
+				return;
+			}
+			// Пробіл і Enter лишаємо кнопкам: клавіші — справжні `<button>`, і
+			// перехоплення тут дало б подвійну ноту на сфокусованій клавіші.
+			if (e.key === ' ' || e.key === 'Enter') return;
+			this.press(e.keyCode);
+		};
+
+		const release = captureKeyboard();
+		window.addEventListener('keydown', handle);
+		return () => {
+			window.removeEventListener('keydown', handle);
+			release();
+		};
 	}
 }
