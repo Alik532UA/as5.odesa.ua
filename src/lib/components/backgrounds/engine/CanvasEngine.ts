@@ -1,4 +1,5 @@
 import { browser } from "$app/environment";
+import { onReducedMotionChange, prefersReducedMotion } from "$lib/utils/reducedMotion";
 
 export abstract class CanvasEngine {
 	protected canvas: HTMLCanvasElement | null = null;
@@ -11,6 +12,7 @@ export abstract class CanvasEngine {
 
 	private animationId: number = 0;
 	private lastWidth = 0;
+	private unwatchMotion: () => void = () => {};
 
 	constructor(initialTheme: "light" | "dark", initialColor: string = "#0071e3") {
 		this.theme = initialTheme;
@@ -33,11 +35,20 @@ export abstract class CanvasEngine {
 
 			window.addEventListener("resize", this.handleResizeBound);
 			window.addEventListener("scroll", this.handleScrollBound);
+
+			// Налаштування перемикають саме тоді, коли рух заважає ЗАРАЗ, тож
+			// вимагати заради цього перезавантаження не можна (ACCESSIBILITY-v8 § 7).
+			this.unwatchMotion = onReducedMotionChange(() => {
+				this.stopLoop();
+				this.startLoop();
+			});
 		}
 	}
 
 	public unmount() {
 		this.stopLoop();
+		this.unwatchMotion();
+		this.unwatchMotion = () => {};
 		if (browser) {
 			window.removeEventListener("resize", this.handleResizeBound);
 			window.removeEventListener("scroll", this.handleScrollBound);
@@ -54,6 +65,20 @@ export abstract class CanvasEngine {
 	}
 
 	private startLoop() {
+		/*
+		 * Один кадр замість циклу, коли людина попросила менше руху
+		 * (ACCESSIBILITY-v8 § 7). Тло лишається на місці — воно частина вигляду
+		 * сторінки, — але не рухається й не тягне паралакс за прокруткою.
+		 *
+		 * `@media (prefers-reduced-motion)` у `global.css` цього не робив і не міг:
+		 * він гасить `animation` і `transition`, а тут рух малює
+		 * `requestAnimationFrame`, про який CSS не знає нічого.
+		 */
+		if (prefersReducedMotion()) {
+			if (this.canvas && this.ctx) this.draw();
+			return;
+		}
+
 		const loop = () => {
 			if (!this.canvas || !this.ctx) return;
 			this.draw();
@@ -87,6 +112,10 @@ export abstract class CanvasEngine {
 		this.canvas.height = this.height;
 
 		this.init();
+
+		// Без циклу перемальовувати нема кому, а розмір щойно змінився — інакше
+		// при вимкненому русі тло після повороту екрана лишалося б порожнім.
+		if (prefersReducedMotion() && this.ctx) this.draw();
 	}
 
 	private handleScroll() {

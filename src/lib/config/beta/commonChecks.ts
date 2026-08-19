@@ -144,6 +144,16 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 		}
 	},
 	{
+		id: 'common_14',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'debug-background-2-btn',
+		text: {
+			uk: 'Увімкніть у налаштуваннях системи «зменшити рух» (Windows: Спеціальні можливості → Візуальні ефекти; iOS: Доступність → Рух) і поверніться на сайт. Тло за спиною сторінки мусить завмерти й не рухатися при прокрутці.',
+			en: 'Turn on "reduce motion" in your system settings (Windows: Accessibility → Visual effects; iOS: Accessibility → Motion) and return to the site. The background behind the page must freeze and stop moving as you scroll.'
+		}
+	},
+	{
 		id: 'common_13',
 		tab: 'common',
 		coverage: 'manual',
