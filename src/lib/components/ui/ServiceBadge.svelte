@@ -79,16 +79,18 @@
 		aria-label={`Копіювати звіт / Copy report — ${errorLogger.appVersion}`}
 		data-testid="app-version-value"
 	>
+		<!-- Номер версії — поза гілками: лічильник ДОДАЄТЬСЯ до нього, а не заміняє
+		     його. Інакше на dev, де помилка буває майже завжди, версії не видно. -->
 		{#if copied}
-			<Check size={18} />
+			<Check size={14} class="badge__hint" />
 		{:else if errorLogger.errorCount > 0}
 			<span class="badge__count"
-				>{errorLogger.errorCount > 99 ? '!' : errorLogger.errorCount}</span
+				>{errorLogger.errorCount > 99 ? '99+' : errorLogger.errorCount}</span
 			>
 		{:else}
 			<Copy size={12} class="badge__hint" />
-			<span class="badge__version">{errorLogger.appVersion}</span>
 		{/if}
+		<span class="badge__version">{errorLogger.appVersion}</span>
 	</button>
 {/if}
 
@@ -139,16 +141,10 @@
 	}
 
 	/*
-	 * Помилки — кружок, а не капсула: у цьому стані важлива не версія, а те, що
-	 * щось сталося. Номер версії лишається у звіті, який копіює цей самий клік.
+	 * Форма НЕ змінюється між станами: капсула лишається капсулою, бо номер версії
+	 * лишається на місці. Доти помилки перетворювали табло на кружок 32px — зникала не
+	 * лише версія, а й упізнаваність елемента.
 	 */
-	.badge--has-errors,
-	.badge--copied {
-		width: 32px;
-		min-height: 32px;
-		padding: 0;
-		border-radius: 50%;
-	}
 
 	/*
 	 * Кольори сигналу — літерали, а не токени теми, свідомо: «є помилки» мусить
@@ -168,9 +164,18 @@
 		border-color: #1b5e20;
 	}
 
+	/*
+	 * Лічильник — плашка ПЕРЕД номером, а не текст замість нього. Темніший червоний за
+	 * тло капсули (#7f1d1d на #c92a2a): білий текст дає на ньому 10:1.
+	 */
 	.badge__count {
 		font-weight: 700;
-		font-size: 0.9rem;
+		font-size: 0.75rem;
+		line-height: 1;
+		padding: 2px 5px;
+		border-radius: 8px;
+		background: #7f1d1d;
+		color: #ffffff;
 	}
 
 	/*
@@ -183,12 +188,6 @@
 			min-height: 44px;
 			padding: 0 12px;
 			border-radius: 22px;
-		}
-
-		.badge--has-errors,
-		.badge--copied {
-			width: 44px;
-			padding: 0;
 		}
 
 		.badge__version {
