@@ -220,7 +220,7 @@ grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | g
 
 | Список | Де живе | Причина |
 |---|---|---|
-| `handleHttpError: 'warn'` | `svelte.config.js` | чернетка `/test` посилається на `/news/1…6`, яких немає. Поки так, биті посилання на решті сайту теж не зупиняють збірку |
+| Виняток у `handleHttpError` | `svelte.config.js` | чернетка `/test` посилається на `/news/1…6`, яких немає. Названа пара «звідки → куди» пропускається з попередженням, решта биття валить збірку — доти тут стояв рядок `'warn'`, який вимикав перевірку на весь сайт |
 | `ALLOWED_ORPHANS` | `src/structure.test.ts` | один запис: `src/lib/index.ts`, порожня барел-заглушка з шаблону SvelteKit |
 | `NOINDEX_ROUTES` | `src/routes/+layout.svelte` | один запис: `/test` |
 
