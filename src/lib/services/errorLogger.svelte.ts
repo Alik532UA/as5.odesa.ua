@@ -9,7 +9,14 @@
  * `hooks.client.ts` імпортує його так само, як імпортував.
  */
 
-export interface ErrorEvent {
+/**
+ * Запис у кеші помилок.
+ *
+ * Назва не `ErrorEvent`, як було: під цим іменем у DOM живе подія `window.error`,
+ * і саме в цьому файлі вона тепер потрібна по-справжньому — інтерфейс затуляв би
+ * її мовчки, а помилка була б у типі обробника, тобто там, де її ніхто не шукає.
+ */
+export interface LoggedError {
 	id: string;
 	message: string;
 	stack?: string;
@@ -32,8 +39,11 @@ class ErrorLogger {
 	 * кеш обрізається по `MAX_CACHE`, і на екрані лишилося б число, якого в кеші
 	 * більше немає.
 	 */
-	private cache = $state<ErrorEvent[]>([]);
+	private cache = $state<LoggedError[]>([]);
 	private readonly MAX_CACHE = 50;
+
+	/** Слухачі вікна ставляться один раз: два комплекти писали б кожну помилку двічі. */
+	private globalHandlersInstalled = false;
 
 	/** Скільки помилок у кеші. Реактивне — саме це малює табло. */
 	get errorCount(): number {
@@ -46,12 +56,12 @@ class ErrorLogger {
 	/**
 	 * Log an error. Returns the generated error ID.
 	 */
-	logError(error: Error, context: Partial<ErrorEvent['context']> = {}): string {
+	logError(error: Error, context: Partial<LoggedError['context']> = {}): string {
 		const id = typeof crypto !== 'undefined'
 			? crypto.randomUUID()
 			: `err-${Date.now()}`;
 
-		const event: ErrorEvent = {
+		const event: LoggedError = {
 			id,
 			message: error.message,
 			stack: error.stack,
@@ -83,7 +93,7 @@ class ErrorLogger {
 		return id;
 	}
 
-	private determineSeverity(message: string): ErrorEvent['severity'] {
+	private determineSeverity(message: string): LoggedError['severity'] {
 		const lower = message.toLowerCase();
 		if (lower.includes('memory') || lower.includes('outofmemory')) return 'critical';
 		if (lower.includes('500') || lower.includes('database') || lower.includes('server')) return 'high';
@@ -91,8 +101,56 @@ class ErrorLogger {
 		return 'low';
 	}
 
-	getCache(): ErrorEvent[] {
+	getCache(): LoggedError[] {
 		return [...this.cache];
+	}
+
+	/**
+	 * Сітка безпеки для того, що не проходить через SvelteKit (ERROR-HANDLING-v8 § 5).
+	 *
+	 * **Що саме не проходило.** `hooks.client.ts` ловить лише помилки, які
+	 * SvelteKit сам і веде: рендер, навігація, `load`. Виняток із обробника
+	 * `onclick`, із `setTimeout` і БУДЬ-ЯКЕ неперехоплене відхилення промісу летять
+	 * повз нього. Тобто найзвичайніші помилки браузера не потрапляли в кеш
+	 * взагалі — а на екрані стоїть табло, яке показує його довжину. Нуль на ньому
+	 * читався як «помилок немає», хоча в консолі їх могло бути скільки завгодно,
+	 * і зібраний звіт приходив порожнім рівно тоді, коли був потрібен.
+	 *
+	 * Повертає функцію відписки, а не має пари `uninstall()`: її можна віддати
+	 * прямо в cleanup ефекту, і забути про звільнення важче. Повторний виклик
+	 * нічого не додає — слухачі ставляться один раз, бо два комплекти писали б
+	 * кожну помилку двічі, а лічильник на таблі саме тому й реактивний.
+	 */
+	installGlobalHandlers(): () => void {
+		if (typeof window === 'undefined' || this.globalHandlersInstalled) return () => {};
+		this.globalHandlersInstalled = true;
+
+		const onRejection = (event: PromiseRejectionEvent) => {
+			const reason = event.reason;
+			this.logError(reason instanceof Error ? reason : new Error(String(reason)), {
+				component: 'unhandled-rejection'
+			});
+		};
+
+		// `WindowEventMap['error']` — саме подія DOM, а не запис кеша вище.
+		const onError = (event: WindowEventMap['error']) => {
+			// `event.error` буває порожнім: так приходять помилки зі стороннього
+			// скрипта (`Script error.`). Тоді лишається хоч місце й повідомлення.
+			const error =
+				event.error instanceof Error
+					? event.error
+					: new Error(`${event.message} @ ${event.filename}:${event.lineno}`);
+			this.logError(error, { component: 'window-error' });
+		};
+
+		window.addEventListener('unhandledrejection', onRejection);
+		window.addEventListener('error', onError);
+
+		return () => {
+			window.removeEventListener('unhandledrejection', onRejection);
+			window.removeEventListener('error', onError);
+			this.globalHandlersInstalled = false;
+		};
 	}
 
 	clearCache(): void {

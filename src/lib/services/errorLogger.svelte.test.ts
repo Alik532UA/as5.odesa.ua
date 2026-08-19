@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { errorLogger } from './errorLogger.svelte';
 
 describe('ErrorLogger', () => {
@@ -70,5 +70,79 @@ describe('ErrorLogger', () => {
 		errorLogger.logError(new Error('boom'));
 		const event = errorLogger.getCache()[0];
 		expect(event.context.version).toMatch(/^\d+\.\d+\.\d+/);
+	});
+});
+
+/**
+ * Сітка безпеки над помилками поза SvelteKit (ERROR-HANDLING-v8 § 5).
+ *
+ * Зворотний експеримент: прибрати `window.addEventListener('unhandledrejection')`
+ * — червоніє перший тест; прибрати слухач `error` — другий; повернути установку
+ * без прапорця `globalHandlersInstalled` — третій (запис зʼявляється двічі).
+ */
+describe('ErrorLogger: глобальні обробники', () => {
+	let uninstall = () => {};
+
+	beforeEach(() => {
+		errorLogger.clearCache();
+		uninstall = errorLogger.installGlobalHandlers();
+	});
+
+	afterEach(() => uninstall());
+
+	/** jsdom не має конструктора `PromiseRejectionEvent`, тож подія збирається руками. */
+	function reject(reason: unknown) {
+		const event = new Event('unhandledrejection') as Event & { reason?: unknown };
+		event.reason = reason;
+		window.dispatchEvent(event);
+	}
+
+	it('неперехоплене відхилення промісу потрапляє в кеш', () => {
+		reject(new Error('промісу ніхто не дав catch'));
+
+		const cache = errorLogger.getCache();
+		expect(cache).toHaveLength(1);
+		expect(cache[0].message).toBe('промісу ніхто не дав catch');
+		expect(cache[0].context.component).toBe('unhandled-rejection');
+	});
+
+	it('відхилення НЕ помилкою теж рахується', () => {
+		// `Promise.reject('рядок')` — часта форма, і без приведення вона давала б
+		// запис без повідомлення взагалі.
+		reject('рядок замість Error');
+
+		expect(errorLogger.getCache()[0].message).toBe('рядок замість Error');
+	});
+
+	it('виняток із обробника події потрапляє в кеш', () => {
+		window.dispatchEvent(
+			new window.ErrorEvent('error', {
+				error: new Error('впало в onclick'),
+				message: 'впало в onclick',
+				filename: 'app.js',
+				lineno: 42
+			})
+		);
+
+		const cache = errorLogger.getCache();
+		expect(cache).toHaveLength(1);
+		expect(cache[0].context.component).toBe('window-error');
+	});
+
+	it('повторна установка не подвоює записи', () => {
+		const second = errorLogger.installGlobalHandlers();
+		reject(new Error('одна помилка'));
+		second();
+
+		expect(errorLogger.getCache()).toHaveLength(1);
+	});
+
+	it('відписка справді знімає слухачів', () => {
+		uninstall();
+		uninstall = () => {};
+
+		reject(new Error('після відписки'));
+
+		expect(errorLogger.getCache()).toEqual([]);
 	});
 });

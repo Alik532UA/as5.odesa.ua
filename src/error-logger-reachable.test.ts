@@ -50,4 +50,22 @@ describe('логування помилок досяжне', () => {
 		expect(hook, 'у hooks.client.ts немає handleError').toContain('handleError');
 		expect(hook, 'handleError не звертається до errorLogger').toContain('errorLogger.logError');
 	});
+
+	it('сітка безпеки над помилками поза SvelteKit теж підключена', () => {
+		/*
+		 * `handleError` ловить лише те, що веде сам SvelteKit: рендер, навігацію,
+		 * `load`. Виняток із обробника кнопки, з таймера й будь-яке неперехоплене
+		 * відхилення промісу летять повз нього — а поруч стоїть табло, яке малює
+		 * довжину кеша. Нуль на ньому читається як «помилок немає»
+		 * (ERROR-HANDLING-v8 § 5).
+		 */
+		const callers = sources.filter((f) =>
+			/installGlobalHandlers\(\)/.test(readFileSync(f, 'utf8'))
+		);
+		expect(
+			callers,
+			'installGlobalHandlers не кличе ніхто — unhandledrejection і window.error ' +
+				'не потрапляють ні в кеш, ні в лічильник на таблі'
+		).not.toEqual([]);
+	});
 });

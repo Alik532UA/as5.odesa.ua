@@ -7,6 +7,7 @@
 	import { acceptsShortcut } from '$lib/services/keyboard';
 	import { createKeySequence } from '$lib/services/keySequence';
 	import { debugMode } from '$lib/services/debugMode.svelte';
+	import { errorLogger } from '$lib/services/errorLogger.svelte';
 	import { hardReset, RESET_PRESSES_DEV, RESET_PRESSES_PROD } from '$lib/services/resetService';
 	import ServiceBadge from './ServiceBadge.svelte';
 
@@ -70,6 +71,18 @@
 		threshold: dev ? RESET_PRESSES_DEV : RESET_PRESSES_PROD,
 		onComplete: () => void hardReset(!dev)
 	});
+
+	/**
+	 * Сітка безпеки над помилками (ERROR-HANDLING-v8 § 5) — тут, поруч із таблом,
+	 * яке їх рахує. `hooks.client.ts` ловить лише те, що веде сам SvelteKit:
+	 * рендер, навігацію, `load`. Виняток із `onclick`, із таймера й будь-яке
+	 * неперехоплене відхилення промісу летіли повз нього, тобто повз кеш і повз
+	 * лічильник на екрані.
+	 *
+	 * `$effect`, а не `onMount`: він сам віддає прибирання, і слухачі живуть
+	 * рівно стільки, скільки компонент — а той монтується один раз у layout.
+	 */
+	$effect(() => errorLogger.installGlobalHandlers());
 
 	onDestroy(() => {
 		versionSequence.reset();
