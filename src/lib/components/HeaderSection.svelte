@@ -100,6 +100,9 @@
 				<SettingsIcon size={24} />
 			</button>
 			<div class="header__settings-dropdown">
+				<!-- `aria-pressed`: стан кнопки жив лише в класі `active`, тобто в кольорі — читалка
+				     озвучувала два однакові перемикачі й жодного активного. `aria-keyshortcuts` про
+				     скорочення лише ПОВІДОМЛЯЄ (HOTKEYS-v8 § 5) і зникає разом із ним. -->
 				<div class="header__settings-group">
 					<span class="header__settings-label"
 						>{$t("settings.language")}</span
@@ -108,11 +111,17 @@
 						<button
 							class="header__settings-opt"
 							class:active={$locale === "uk"}
+							aria-pressed={$locale === "uk"}
+							aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
+							data-testid="settings-lang-uk-btn"
 							onclick={() => ui.setLanguage("uk")}>UA</button
 						>
 						<button
 							class="header__settings-opt"
 							class:active={$locale === "en"}
+							aria-pressed={$locale === "en"}
+							aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
+							data-testid="settings-lang-en-btn"
 							onclick={() => ui.setLanguage("en")}>EN</button
 						>
 					</div>
@@ -125,6 +134,9 @@
 						<button
 							class="header__settings-opt"
 							class:active={ui.theme === "light"}
+							aria-pressed={ui.theme === "light"}
+							aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
+							data-testid="settings-theme-light-btn"
 							onclick={() => {
 								if (ui.theme === "dark") toggleTheme();
 							}}>{$t("settings.light")}</button
@@ -132,6 +144,9 @@
 						<button
 							class="header__settings-opt"
 							class:active={ui.theme === "dark"}
+							aria-pressed={ui.theme === "dark"}
+							aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
+							data-testid="settings-theme-dark-btn"
 							onclick={() => {
 								if (ui.theme === "light") toggleTheme();
 							}}>{$t("settings.dark")}</button

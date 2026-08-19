@@ -224,3 +224,45 @@ describe('канонічна карта (§ 1.1, § 4)', () => {
 		expect(bad, bad.join('\n')).toEqual([]);
 	});
 });
+
+describe('виявність (§ 5, HK-DISCOVERABILITY)', () => {
+	/**
+	 * Кожне оголошення окремо, а не «чи є таке у файлі».
+	 *
+	 * Зворотний експеримент показав різницю: перший варіант перевіряв файл
+	 * цілком, і зроблене безумовним оголошення `T` лишалося непоміченим, бо
+	 * сусіднє `L` у тому самому файлі умову ще мало.
+	 */
+	const declarations = sources
+		.filter((f) => /\.svelte$/.test(f))
+		.flatMap((f) =>
+			[...code(f).matchAll(/aria-keyshortcuts=(\{[^}]*\}|"[^"]*"|'[^']*')/g)].map((m) => ({
+				file: f,
+				raw: m[1],
+				key: (m[1].match(/["']([A-Za-z+ ]+)["']/) ?? [])[1] ?? ''
+			}))
+		);
+
+	it('скорочення оголошене хоч десь: інакше воно існує лише для автора', () => {
+		expect(
+			declarations.length,
+			'жодного aria-keyshortcuts — про клавіші не дізнається ні читалка, ні відвідувач'
+		).toBeGreaterThan(1);
+	});
+
+	it('оголошена клавіша справді є в карті обробника', () => {
+		const handler = code(HOTKEY_SOURCE);
+		const bad = declarations
+			.filter(({ key }) => !key || !handler.includes(`Key${key.toUpperCase()}`))
+			.map(({ file, key }) => `${file}: обіцяє «${key}», а обробник її не знає`);
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+
+	it('оголошення зникає разом із вимкненими скороченнями', () => {
+		// Обіцянка клавіші, яку сам користувач вимкнув, — не підказка, а брехня.
+		const bad = declarations
+			.filter(({ raw }) => !/ui\.hotkeysEnabled\s*\?/.test(raw))
+			.map(({ file, key }) => `${file}: «${key}» оголошено безумовно`);
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+});
