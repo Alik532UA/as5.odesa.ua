@@ -1,0 +1,131 @@
+import type { BetaCheck } from './types';
+
+/**
+ * Наскрізна вкладка: шапка, підвал, теми, мова, шрифти.
+ *
+ * Кожен пункт написаний ПІСЛЯ читання коду, а не замість (BETA-CHECKLIST-v8
+ * § 7.2). У джерелі канону з дев'яноста пунктів вісім описували неправду, і три
+ * з них були просто вигадані — тестувальник поставив би «не працює» справному
+ * коду, і кожен такий пункт коштує двічі.
+ *
+ * Кілька пунктів нижче — `covered`. Вони лишаються в списку саме тому, що
+ * покриті: це контрольна група. Якщо людина знайде тут поломку, новина гірша за
+ * звичайний баг — вона означає дефект ТЕСТА, і знецінює зелені прогони.
+ */
+export const COMMON_CHECKS: readonly BetaCheck[] = [
+	{
+		id: 'common_1',
+		tab: 'common',
+		coverage: 'manual',
+		text: {
+			uk: 'Подивіться на заголовок «Одеська школа мистецтв №5» у шапці. Літери мусять бути вузькі й рівні (шрифт e-Ukraine), а не звичайні системні як у Word.',
+			en: 'Look at the "Odesa School of Arts №5" heading in the header. The letters must be narrow and even (the e-Ukraine font), not the default system font you see in Word.'
+		}
+	},
+	{
+		id: 'common_2',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		text: {
+			uk: 'Відкрийте консоль браузера (F12, вкладка Console) і перезавантажте сторінку. Червоних рядків, що починаються зі слова «Refused», бути НЕ мусить.',
+			en: 'Open the browser console (F12, Console tab) and reload the page. There must be NO red lines starting with the word "Refused".'
+		}
+	},
+	{
+		id: 'common_3',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'header-settings-btn',
+		text: {
+			uk: 'Натисніть шестерню в шапці, оберіть темну тему й перезавантажте сторінку. Сайт мусить одразу відкритися темним — світлого спалаху на початку завантаження бути не мусить.',
+			en: 'Press the gear icon in the header, pick the dark theme and reload the page. The site must come up dark right away, with no flash of light colours while it loads.'
+		}
+	},
+	{
+		id: 'common_4',
+		tab: 'common',
+		coverage: 'covered',
+		test: 'src/lib/states/ui.svelte.test.ts',
+		text: {
+			uk: 'Не торкаючись шестерні на сайті, перемкніть тему в налаштуваннях системи (світла ↔ темна). Кольори сайту мусять змінитися разом із нею.',
+			en: 'Without touching the gear on the site, switch the theme in your system settings (light ↔ dark). The site colours must change along with it.'
+		}
+	},
+	{
+		id: 'common_5',
+		tab: 'common',
+		coverage: 'covered',
+		test: 'src/lib/states/ui.svelte.test.ts',
+		negative: true,
+		testid: 'header-settings-btn',
+		text: {
+			uk: 'Оберіть тему шестернею в шапці, а потім перемкніть тему системи. Тепер сайт перемикатися НЕ мусить — ваш власний вибір головніший за системний.',
+			en: 'Pick a theme with the gear in the header, then switch your system theme. Now the site must NOT follow it — your own choice outranks the system one.'
+		}
+	},
+	{
+		id: 'common_6',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'header-burger-btn',
+		text: {
+			uk: 'На телефоні натисніть кнопку меню в шапці. Меню мусить розкритися на весь екран, а поточна сторінка в ньому — бути підкресленою.',
+			en: 'On a phone, press the menu button in the header. The menu must open full-screen, and the page you are on must be underlined in it.'
+		}
+	},
+	{
+		id: 'common_7',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		testid: 'header-burger-btn',
+		text: {
+			uk: 'Відкрийте меню кнопкою в шапці й натискайте Tab. Рамка фокуса мусить ходити по пунктах меню й повертатися на хрестик; вийти на сторінку під меню вона НЕ мусить.',
+			en: 'Open the menu with the header button and press Tab repeatedly. The focus ring must cycle through the menu items and return to the close button; it must NOT escape to the page behind the menu.'
+		}
+	},
+	{
+		id: 'common_8',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		// Пункт питає про три елементи, а локатор називає один — той, з якого
+		// починається перевірка. Інваріант § 5.3 вимагає саме назвати вхід, а не
+		// перелічити все; прибрати поле, не знайшовши локатора, було б рівно тією
+		// помилкою, проти якої він написаний.
+		testid: 'header-settings-btn',
+		text: {
+			uk: 'На телефоні натисніть пальцем шестерню, кнопку меню й посилання в підвалі. Жодне з них НЕ мусить вимагати цілитися — влучати треба з першого разу.',
+			en: 'On a phone, tap the gear, the menu button and the footer links with your finger. None of them must require aiming — each should hit on the first try.'
+		}
+	},
+	{
+		id: 'common_9',
+		tab: 'common',
+		coverage: 'testable',
+		text: {
+			uk: 'Перемкніть мову на English у шестерні. Написи мусять стати англійськими, і сторінка не мусить смикнутися чи втратити прокрутку.',
+			en: 'Switch the language to English with the gear. All labels must become English, and the page must not jump or lose its scroll position.'
+		}
+	},
+	{
+		id: 'common_10',
+		tab: 'common',
+		coverage: 'testable',
+		testid: 'skip-to-content-link',
+		text: {
+			uk: 'Клацніть у порожнє місце сторінки й натисніть Tab один раз. Угорі мусить з’явитися напис «Перейти до основного контенту», який працює як посилання.',
+			en: 'Click an empty spot on the page and press Tab once. A "Skip to main content" link must appear at the top and must work as a link.'
+		}
+	},
+	{
+		id: 'common_11',
+		tab: 'common',
+		coverage: 'testable',
+		text: {
+			uk: 'Пройдіть сторінку очима в темній темі. Жоден напис не мусить зникати, зливаючись із тлом, і жодна кнопка не мусить ставати нечитною.',
+			en: 'Look through the page in the dark theme. No text must disappear into its background, and no button must become unreadable.'
+		}
+	}
+];

@@ -162,7 +162,7 @@
 			onclick={() => { settingsOpen = false; ui.toggleMenu(); }}
 			aria-label={$t("a11y.openMenu")}
 			aria-expanded={ui.isMenuOpen}
-			id="burger-menu"
+			id="burger-menu" data-testid="header-burger-btn"
 		>
 			<Menu size={24} />
 		</button>

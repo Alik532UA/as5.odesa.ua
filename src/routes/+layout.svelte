@@ -11,7 +11,7 @@
 	import { t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { ui } from '$lib/states/ui.svelte';
-	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor } from '$lib/config/site';
+	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor, isHiddenRoute } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
 	import { safeT } from '$lib/i18n/translate';
 	import { onMount } from 'svelte';
@@ -134,24 +134,21 @@
 	}
 
 	/**
-	 * Маршрути, які не мають бути в індексі (SEO-v8 § 4.3).
+	 * Службові маршрути: `noindex`, без `canonical`, поза sitemap.
 	 *
-	 * `/test` — чернетка для ручних перевірок: десяток варіантів галерей і
-	 * посилання на неіснуючі `/news/*`. Вона prerender-иться, тобто це справжня
-	 * сторінка з власним HTML, і доти вона оголошувала `index, follow` разом з
-	 * рештою.
+	 * Перелік живе в `$lib/config/site` — там, де вся політика адрес
+	 * (BETA-CHECKLIST-v8 § 4.1). Доти він лежав тут, у layout, і кожна з трьох
+	 * вимог трималася окремо; тепер одне рішення закриває всі три, а
+	 * `check:build` звіряє їх між собою в зібраному HTML.
 	 *
-	 * `Disallow` у `robots.txt` цього не закривав, а СХОВАВ: заборона обходу
-	 * означає, що краулер сторінку не завантажує — і `noindex` у ній не читає
-	 * ніколи. Адреса, на яку хтось послався ззовні, потрапляє в індекс без
-	 * вмісту саме за такої комбінації. Тому тут `noindex`, а `Disallow` із
-	 * `robots.txt` прибрано: щоб директива подіяла, сторінку треба дати
-	 * прочитати.
+	 * `/test` — чернетка для ручних порівнянь галерей.
+	 * `/beta-test-checklists` — чеклист для живої людини.
+	 *
+	 * `Disallow` у `robots.txt` для них НЕ ставиться: заборона обходу означає,
+	 * що краулер сторінку не завантажує — і `noindex` у ній не читає ніколи.
 	 */
-	const NOINDEX_ROUTES = new Set(['/test']);
-	const robotsContent = $derived(
-		NOINDEX_ROUTES.has(page.route.id ?? '') ? 'noindex, nofollow' : 'index, follow'
-	);
+	const isHidden = $derived(isHiddenRoute(page.route.id));
+	const robotsContent = $derived(isHidden ? 'noindex, nofollow' : 'index, follow');
 
 	const seoKey = $derived(routeToSeoKey(page.route.id));
 	const currentLocale = $derived(($locale as string) || 'uk');
@@ -194,7 +191,9 @@
 
 <svelte:head>
 	<link rel="icon" type="image/svg+xml" href={asset('/favicon.svg')} />
-	<link rel="canonical" href={canonicalUrl} />
+	{#if !isHidden}
+		<link rel="canonical" href={canonicalUrl} />
+	{/if}
 
 	<title>{seoTitle}</title>
 	<meta name="description" content={metaDescription} />

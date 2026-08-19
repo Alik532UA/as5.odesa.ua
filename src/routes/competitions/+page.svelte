@@ -54,6 +54,7 @@
 				<li style="margin-bottom: 0.5rem;">
 					{l2.prefix}
 					<a href={l2.url} target="_blank" rel="noopener noreferrer"
+					   data-testid="competitions-modern-view-link"
 					   style="display: inline-block; padding: 8px 14px; background-color: #0066cc; color: white; text-decoration: none; border-radius: 9999px; transition: all 0.3s; font-weight: 500; margin: 0 4px;">
 						{l2.linkText}
 					</a>

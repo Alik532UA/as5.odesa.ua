@@ -61,3 +61,32 @@ export function canonicalUrl(pathname: string): string {
 export function assetUrl(path: string): string {
 	return `${SITE_ROOT}${path.startsWith('/') ? path : `/${path}`}`;
 }
+
+/**
+ * Маршрути, яких не має бути в індексі (SEO-v8 § 4.3, BETA-CHECKLIST-v8 § 4.1).
+ *
+ * Перелік живе тут, у модулі політики адрес, а не в `+layout.svelte` — і це
+ * один механізм на ТРИ вимоги. Сторінка зі списку:
+ *
+ *  - віддає `noindex, nofollow`;
+ *  - НЕ оголошує `canonical` — інакше сайт водночас каже «не індексуй» і
+ *    «канонічна адреса ось ця», а це суперечливі сигнали;
+ *  - не потрапляє в `sitemap.xml`.
+ *
+ * `Disallow` у `robots.txt` тут свідомо НЕМАЄ, і це записане відхилення від
+ * BETA-CHECKLIST-v8 § 4. Заборона обходу означає, що краулер сторінку не
+ * ЗАВАНТАЖУЄ — і `noindex` у ній не читає ніколи, тож адреса, на яку хтось
+ * послався ззовні, потрапляє в індекс без вмісту. Цей проєкт уже наступав на
+ * це з `/test` (див. коментар у `static/robots.txt`), тому діє рівно та
+ * директива, яку краулер справді прочитає.
+ *
+ * Слаги — лише ASCII: кириличні гомогліфи (`с` U+0441 замість `c`) дають
+ * адресу, яка виглядає правильною й не працює, а в diff різниці не видно.
+ * За цим стежить `scripts/check-build.mjs`.
+ */
+export const HIDDEN_ROUTES: readonly string[] = ['/test', '/beta-test-checklists'];
+
+/** `route.id`, а не `pathname`: перший не містить бази, якою б вона не була. */
+export function isHiddenRoute(routeId: string | null): boolean {
+	return routeId !== null && HIDDEN_ROUTES.includes(routeId);
+}

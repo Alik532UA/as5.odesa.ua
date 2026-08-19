@@ -189,5 +189,37 @@
     "settings": "Settings",
     "heroSection": "Hero section",
     "departmentsSection": "School departments"
+  },
+  "beta": {
+    "title": "Beta testing checklist",
+    "intro": "This page collects what no machine can check: how the site looks on your screen, how it sounds and how it reacts to a finger. Work through the items and mark each one. Your marks stay in your browser.",
+    "progress": "Marked on this version:",
+    "tabsLabel": "Checklist sections",
+    "negative": "boundary",
+    "staleMark": "Marked on version {version} — the site has changed since then, worth checking again.",
+    "copyReport": "Copy the report",
+    "clearMarks": "Clear all marks",
+    "copied": "The report is in your clipboard — paste it into an email or a message.",
+    "copyFailed": "The browser refused to copy. The report is below — select it and copy by hand.",
+    "reportLabel": "Report text",
+    "vote": {
+      "fail": "Does not work",
+      "weird": "Works, but oddly",
+      "ok": "Works"
+    },
+    "level": {
+      "manual": {
+        "title": "People only",
+        "hint": "Eye, finger, ear, a real phone. A machine will never check these — start here."
+      },
+      "testable": {
+        "title": "Coverable by a test, not covered yet",
+        "hint": "If something breaks here it is both a defect and an order for a new automated test."
+      },
+      "covered": {
+        "title": "Covered by an automated test",
+        "hint": "The control group. A failure here means the TEST was wrong — that is bigger news than an ordinary bug, and the report calls it out on its own line."
+      }
+    }
   }
 }

@@ -36,7 +36,7 @@
 			<button
 				class="footer__btn-piano"
 				onclick={() => (isPianoOpen = true)}
-				aria-label={$t("footer.play")}
+				aria-label={$t("footer.play")} data-testid="footer-piano-btn"
 			>
 				<div class="footer__piano-visual">
 					<span class="footer__piano-white"></span>

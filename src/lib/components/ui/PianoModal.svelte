@@ -51,7 +51,7 @@
 	     довелося прибрати: він стосувався саме клавіш, і `eslint` одразу
 	     оголосив його зайвим (`svelte/no-unused-svelte-ignore`, error). -->
 	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<div class="piano-modal" role="dialog" aria-modal="true" tabindex="-1" aria-label={$t("piano.title")} transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()} use:focusTrap>
+	<div class="piano-modal" data-testid="piano-modal" role="dialog" aria-modal="true" tabindex="-1" aria-label={$t("piano.title")} transition:fade={{ duration: 300 }} onclick={(e) => e.target === e.currentTarget && onClose()} use:focusTrap>
 		<button class="close-btn" type="button" aria-label={$t("piano.close")} onclick={onClose} data-testid="piano-close-btn"><X size={32} aria-hidden="true" /></button>
 		
 		<section id="wrap">

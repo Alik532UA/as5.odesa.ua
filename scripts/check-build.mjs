@@ -41,6 +41,21 @@ function readConst(file, re, what) {
 	return m[1];
 }
 
+/** Те саме для масиву рядкових літералів. Порожній список — помилка, не «нічого». */
+function readList(file, re, what) {
+	const m = re.exec(readFileSync(file, 'utf8'));
+	if (!m) {
+		console.error(`check-build: не знайдено ${what} у ${file}. Гейт зупинено — без цього він перевіряв би не те.`);
+		process.exit(1);
+	}
+	const items = [...m[1].matchAll(/['"]([^'"]+)['"]/g)].map((x) => x[1]);
+	if (items.length === 0) {
+		console.error(`check-build: ${what} у ${file} порожній — перевірка службових сторінок була б мертвою.`);
+		process.exit(1);
+	}
+	return items;
+}
+
 const SITE_ORIGIN = readConst(
 	'src/lib/config/site.ts',
 	/export const SITE_ORIGIN\s*=\s*['"]([^'"]+)['"]/,
@@ -78,10 +93,23 @@ const REQUIRED_CONTENT = {
 };
 
 /**
- * Технічні сторінки: prerender-яться, але в індексі їм не місце (SEO-v8 § 4.3).
- * Ключ — файл у `build/`, значення потрібне лише для повідомлення.
+ * Службові сторінки: prerender-яться, але в індексі їм не місце (SEO-v8 § 4.3,
+ * BETA-CHECKLIST-v8 § 4.1).
+ *
+ * Перелік ЧИТАЄТЬСЯ з `src/lib/config/site.ts`, а не дублюється тут. Доти він
+ * був вписаний константою, і це рівно та помилка, через яку цей файл колись
+ * оголосив кожну адресу сайту чужою: два списки, які тримають узгодженими
+ * руками, розходяться на першій же новій сторінці.
  */
-const NOINDEX_PAGES = { 'test.html': 'чернетка для ручних перевірок' };
+const HIDDEN_ROUTES = readList(
+	'src/lib/config/site.ts',
+	/export const HIDDEN_ROUTES[^=]*=\s*\[([^\]]*)\]/,
+	'HIDDEN_ROUTES'
+);
+
+/** `/beta-test-checklists` → `beta-test-checklists.html`. */
+const hiddenFile = (route) => `${route.replace(/^\//, '')}.html`;
+const HIDDEN_PAGES = new Set(HIDDEN_ROUTES.map(hiddenFile));
 
 const problems = [];
 const fail = (msg) => problems.push(msg);
@@ -234,16 +262,26 @@ for (const file of files) {
 		}
 		const robots = html.match(/<meta[^>]+name="robots"[^>]+content="([^"]+)"/)?.[1] ?? '';
 		const name = file.slice(BUILD.length + 1);
-		const shouldHide = name in NOINDEX_PAGES;
+		const shouldHide = HIDDEN_PAGES.has(name);
 		if (shouldHide && !robots.includes('noindex')) {
-			fail(`${file}: ${NOINDEX_PAGES[name]} без noindex — сторінка піде в індекс`);
+			fail(`${file}: службова сторінка без noindex — вона піде в індекс`);
 		}
 		if (!shouldHide && robots.includes('noindex')) {
 			fail(`${file}: справжня сторінка сайту оголошена noindex`);
 		}
 
 		const canonicals = html.match(/<link[^>]+rel="canonical"[^>]*>/g) ?? [];
-		if (canonicals.length !== 1) {
+		// Службова сторінка не оголошує canonical: разом із `noindex` це два
+		// суперечливі сигнали — «не індексуй» і «канонічна адреса ось ця»
+		// (BETA-CHECKLIST-v8 § 5.5). Решту перевірок вона проходить нарівні з
+		// усіма: прирівняти її до 404-оболонки було б дешевше на два рядки й
+		// неправильно — найслабше покритою стала б саме та сторінка, якою
+		// користуються тестувальники.
+		if (shouldHide) {
+			if (canonicals.length !== 0) {
+				fail(`${file}: службова сторінка оголошує canonical (${canonicals.length}) — разом із noindex це суперечливі сигнали`);
+			}
+		} else if (canonicals.length !== 1) {
 			fail(`${file}: canonical знайдено ${canonicals.length} разів, очікується 1`);
 		} else {
 			const href = canonicals[0].match(/href="([^"]+)"/)?.[1] ?? '';
@@ -266,6 +304,25 @@ for (const file of files) {
 
 for (const page of REQUIRED_PAGES) {
 	if (!existsSync(join(BUILD, page))) fail(`немає build/${page} — сторінка не згенерована`);
+}
+
+/**
+ * Службові сторінки перевіряються на ПРОТИЛЕЖНЕ, і насамперед — на існування
+ * (BETA-CHECKLIST-v8 § 5.5). Сторінка, якої немає в `build/`, віддає
+ * `404.html`, і чеклист, надісланий тестувальникові посиланням, просто не
+ * відкриється. Це трапляється мовчки: досить зникнути рядку в
+ * `prerender.entries`, бо краулер на неї не виходить — посилань немає ніде.
+ */
+for (const route of HIDDEN_ROUTES) {
+	const page = hiddenFile(route);
+	if (!existsSync(join(BUILD, page))) {
+		fail(`немає build/${page} — службова сторінка не згенерована (перевір prerender.entries)`);
+	}
+	// § 4.2: кириличні гомогліфи в слазі дають адресу, яка виглядає правильною
+	// й не працює — у шляху вона percent-кодується, а в diff різниці не видно.
+	if (!/^\/[a-z0-9-]+$/.test(route)) {
+		fail(`${route}: слаг службової сторінки мусить бути ASCII-kebab-case`);
+	}
 }
 
 for (const [page, markers] of Object.entries(REQUIRED_CONTENT)) {
@@ -306,7 +363,7 @@ if (!existsSync(robotsPath)) {
 				// правильно; суперечність між ними видно лише при звірці.
 				const path = loc.slice(SITE_ROOT.length).replace(/^\//, '').replace(/\/$/, '');
 				const asFile = path === '' ? 'index.html' : `${path}.html`;
-				if (asFile in NOINDEX_PAGES) {
+				if (HIDDEN_PAGES.has(asFile)) {
 					fail(`sitemap оголошує ${loc}, а сторінка позначена noindex — списки суперечать`);
 				}
 			}
