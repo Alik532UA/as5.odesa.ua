@@ -83,6 +83,9 @@ jobs:
       - name: Збірка не змінює відстежувані файли
         run: git diff --exit-code
 
+      - name: Lighthouse Audit
+        run: npx @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
