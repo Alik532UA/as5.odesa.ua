@@ -17,9 +17,13 @@
 	import { safeT } from '$lib/i18n/translate';
 	import { onMount } from 'svelte';
 	import { trackPageView } from '$lib/services/analytics';
+	import { webVitals } from '$lib/controllers/webVitals.svelte';
 	import { afterNavigate } from '$app/navigation';
 
 	let { children, data } = $props();
+
+	// Start RUM Core Web Vitals collection (OBSERVABILITY-v8 § 2.1)
+	$effect(() => webVitals.start());
 
 	// Fires on the initial load too, so this covers the first view and every
 	// client-side move between pages. trackPageView initialises analytics

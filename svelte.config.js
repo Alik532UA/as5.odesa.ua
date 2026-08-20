@@ -103,7 +103,9 @@ const config = {
 					'self',
 					'https://www.googletagmanager.com',
 					'https://*.google-analytics.com',
-					'https://*.analytics.google.com'
+					'https://*.analytics.google.com',
+					'https://*.sentry.io',
+					'https://*.ingest.sentry.io'
 				],
 				'object-src': ['none'],
 				'base-uri': ['self'],

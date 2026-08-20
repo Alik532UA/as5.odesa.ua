@@ -1,40 +1,49 @@
+import { env } from '$env/dynamic/public';
+import { dev } from '$app/environment';
 import type { HandleClientError } from '@sveltejs/kit';
 import { errorLogger } from '$lib/services/errorLogger.svelte';
 
 /**
- * Неперехоплені помилки клієнта (ERROR-HANDLING-v8 § 2.4).
- *
- * ## Чому цей файл узагалі знадобився
- *
- * `errorLogger` у проєкті був: написаний, з кешем на 50 записів і дев'ятьма
- * зеленими тестами. Але його не імпортував ЖОДЕН файл. Тобто логування помилок
- * існувало як код і не існувало як поведінка — рівно випадок «існування ≠
- * досяжність» з AI-AGENT-PITFALLS-v8 § 3, і найгірший його різновид: зелені
- * тести створювали враження, що все працює.
- *
- * Тепер сервіс має точку входу. Будь-яка помилка, яку не спіймали в місці
- * виникнення, потрапляє в кеш і має свій `errorId`.
- *
- * ## Що повертається відвідувачу
- *
- * `errorId` — і майже нічого більше. Текст від рантайму («Cannot read
- * properties of undefined») відвідувачу сайту школи нічого не пояснює, зате
- * показує нутрощі застосунку.
- *
- * Повідомлення тут навмисно НЕ перекладене й не призначене для показу: воно
- * лишається технічним рядком у логах, а те, що бачить людина, складає
- * `+error.svelte` зі свого словника — там і мова правильна, і запасний текст на
- * випадок, коли словник ще не приїхав. Доти тут стояв український рядок, і
- * англомовний відвідувач бачив його як є (ERROR-HANDLING-v8 § 4.1, § 4.3).
- *
- * `errorId` показується на сторінці помилки, його можна назвати в листі, і за
- * ним запис знаходиться в `errorLogger.getCache()`.
- *
- * Гачок спрацьовує лише на НЕОЧІКУВАНІ помилки: `error()` і `redirect()` через
- * нього не проходять, тож 404 сюди не потрапляє. Перевірка статусу нижче —
- * дешева перестраховка, щоб у кеші не з'явився шум.
+ * Telemetry endpoint for CSP validation (OBSERVABILITY-v8 § 1.5):
+ * - https://*.sentry.io
+ * - https://*.ingest.sentry.io
  */
-export const handleError: HandleClientError = ({ error, event, status }) => {
+const DSN = env.PUBLIC_SENTRY_DSN || '';
+const sentryPkg = '@sentry/sveltekit';
+
+interface SentryClient {
+	init: (options: Record<string, unknown>) => void;
+	captureException: (error: unknown, context?: Record<string, unknown>) => void;
+}
+
+const tracker: Promise<SentryClient | null> | null =
+	DSN && !dev
+		? import(/* @vite-ignore */ sentryPkg)
+				.then((module: unknown) => {
+					const Sentry = module as SentryClient;
+					Sentry.init({
+						dsn: DSN,
+						enabled: !dev,
+						tracesSampleRate: 0.1,
+						replaysSessionSampleRate: 0.0,
+						replaysOnErrorSampleRate: 1.0,
+						environment: import.meta.env.MODE,
+						ignoreErrors: ['AbortError', 'Failed to fetch', 'ResizeObserver loop limit exceeded'],
+						beforeSend(event: Record<string, unknown>) {
+							const req = event.request as Record<string, Record<string, unknown>> | undefined;
+							if (req?.headers) {
+								delete req.headers['authorization'];
+								delete req.headers['cookie'];
+							}
+							return event;
+						}
+					});
+					return Sentry;
+				})
+				.catch(() => null)
+		: null;
+
+export const handleError: HandleClientError = async ({ error, event, status, message }) => {
 	if (status === 404) return;
 
 	const normalized = error instanceof Error ? error : new Error(String(error));
@@ -42,6 +51,11 @@ export const handleError: HandleClientError = ({ error, event, status }) => {
 		component: 'client-unhandled',
 		page: event?.url?.pathname
 	});
+
+	if (tracker) {
+		const Sentry = await tracker;
+		Sentry?.captureException(error, { extra: { route: event?.url?.pathname, status, message, errorId } });
+	}
 
 	return { message: 'unexpected-client-error', errorId };
 };
