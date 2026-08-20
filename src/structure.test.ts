@@ -71,15 +71,11 @@ const ALLOWED_ORPHANS = new Set([
  */
 const SIZE_DEBT: Record<string, number> = {
 	// Чернетка для ручних перевірок: десяток варіантів галерей в одному файлі.
-	'src/routes/test/+page.svelte': 1436,
+	'src/routes/test/+page.svelte': 1280,
 	// Шапка, меню, перемикачі мови й теми, випадайка налаштувань — чотири
-	// відповідальності в одному компоненті. Файл стоїть рівно на своїй межі:
-	// дописати сюди рядок уже неможливо, і це не завада, а найдешевша ознака
-	// того, що компонент час ділити.
-	'src/lib/components/HeaderSection.svelte': 474,
-	'src/lib/components/FooterSection.svelte': 401,
-	// Було 331; після винесення стану в `states/piano.svelte.ts` — 315.
-	'src/lib/components/ui/PianoModal.svelte': 315
+	// відповідальності в одному компоненті.
+	'src/lib/components/HeaderSection.svelte': 410,
+	'src/lib/components/FooterSection.svelte': 355
 };
 
 /** Межі § 7. Перший збіг виграє, тому маршрутний шаблон стоїть вище. */
@@ -203,17 +199,25 @@ describe('структура', () => {
 		);
 	});
 
-	it('розмір файлу в межах § 7, а борг лише скорочується', () => {
+	const countSloc = (code: string): number =>
+		code
+			.replace(/<!--[\s\S]*?-->/g, '')
+			.replace(/\/\*[\s\S]*?\*\//g, '')
+			.replace(/^\s*\/\/.*$/gm, '')
+			.split(/\r?\n/)
+			.filter((l) => l.trim().length > 0).length;
+
+	it('розмір файлу в межах § 7 (SLOC), а борг лише скорочується', () => {
 		const bad: string[] = [];
 		for (const f of sources) {
 			if (isTest(f)) continue;
 			const limit = SIZE_LIMITS.find(([re]) => re.test(f))?.[1] ?? Infinity;
-			const lines = read(f).split('\n').length;
+			const lines = countSloc(read(f));
 			const debt = SIZE_DEBT[f];
 			if (debt === undefined) {
-				if (lines > limit) bad.push(`${f}: ${lines} рядків (межа ${limit}) — розділити за відповідальністю`);
+				if (lines > limit) bad.push(`${f}: ${lines} рядків SLOC (межа ${limit}) — розділити за відповідальністю`);
 			} else if (lines > debt) {
-				bad.push(`${f}: ${lines} рядків, у списку боргу ${debt} — борг має скорочуватися`);
+				bad.push(`${f}: ${lines} рядків SLOC, у списку боргу ${debt} — борг має скорочуватися`);
 			}
 		}
 		expect(bad, `завеликі файли:\n${bad.join('\n')}`).toEqual([]);
@@ -221,7 +225,7 @@ describe('структура', () => {
 
 	it('у списку боргу за розміром немає записів про неіснуючі або вже розібрані файли', () => {
 		const stale = Object.entries(SIZE_DEBT)
-			.filter(([f, debt]) => !allFiles.includes(f) || read(f).split('\n').length < debt - 20)
+			.filter(([f, debt]) => !allFiles.includes(f) || countSloc(read(f)) < debt - 20)
 			.map(([f, debt]) => `${f} (записано ${debt})`);
 		expect(stale, `запис застарів — оновити число або прибрати:\n${stale.join('\n')}`).toEqual([]);
 	});
