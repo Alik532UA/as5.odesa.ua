@@ -153,7 +153,11 @@
 	 * що краулер сторінку не завантажує — і `noindex` у ній не читає ніколи.
 	 */
 	const isHidden = $derived(isHiddenRoute(page.route.id));
-	const robotsContent = $derived(isHidden ? 'noindex, nofollow' : 'index, follow');
+	const robotsContent = $derived(
+		isHidden
+			? 'noindex, nofollow'
+			: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
+	);
 
 	const seoKey = $derived(routeToSeoKey(page.route.id));
 	const currentLocale = $derived(($locale as string) || 'uk');

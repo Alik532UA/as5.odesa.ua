@@ -1,21 +1,15 @@
 User-agent: *
 Allow: /
 
-# Тут БУЛО `Disallow: /test`, і саме тому чернетка й лишалася доступною для
-# індексу. Заборона обходу означає, що краулер сторінку не завантажує — тобто
-# `<meta name="robots" content="noindex">` у ній він не читає НІКОЛИ, і адреса,
-# на яку хтось послався ззовні, потрапляє в індекс без вмісту. Щоб директива
-# подіяла, сторінку треба дати прочитати, тому заборони тут більше немає:
-# `/test` віддає `noindex, nofollow` сам (+layout.svelte), у sitemap його
-# немає, і `check-build.mjs` стежить за обома умовами (SEO-v8 § 4.3).
+# AI Search Crawlers
+User-agent: GPTBot
+Allow: /
 
-# Адреси абсолютні й мусять збігатися з SITE_ORIGIN у src/lib/config/site.ts.
-# Основна адреса сайту — власний домен; alik532ua.github.io/as5.odesa.ua/
-# лишається робочою запасною, але в robots і canonical не згадується, щоб
-# пошуковик не тримав в індексі два дублі.
-#
-# Ці два рядки — частина того самого переїзду, що й SITE_ORIGIN і paths.base.
-# 2026-08-15 вони відстали: код уже віддавав власний домен, а тут лишався
-# github.io, і `npm run check:build` спіймав саме це.
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
 Host: https://as5.odesa.ua
 Sitemap: https://as5.odesa.ua/sitemap.xml
