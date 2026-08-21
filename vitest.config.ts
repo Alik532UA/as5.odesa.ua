@@ -40,7 +40,8 @@ export default defineConfig({
 		// не той код, що їде відвідувачу.
 		conditions: ['browser'],
 		alias: {
-			$lib: path.resolve(__dirname, './src/lib')
+			$lib: path.resolve(__dirname, './src/lib'),
+			'$app/environment': path.resolve(__dirname, './src/test-mocks/app-environment.ts')
 		}
 	}
 });
