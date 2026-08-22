@@ -46,9 +46,11 @@ jobs:
         run: npm run check
 
       - name: Lint
+        if: ${{ !cancelled() }}
         run: npm run lint
 
       - name: Unit tests
+        if: ${{ !cancelled() }}
         run: npm test
 
       # `--omit=dev`, бо у браузер відвідувача їде лише прод-граф: вразливість
@@ -63,6 +65,7 @@ jobs:
       # вимкнути, а вимкнений гейт гірший за відсутній: він створює враження,
       # що перевірка є (DEPENDENCIES-v8 § 3.1).
       - name: Audit dependencies
+        if: ${{ !cancelled() }}
         run: npm audit --omit=dev --audit-level=high
 
       - name: Build
