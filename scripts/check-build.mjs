@@ -525,7 +525,10 @@ for (const file of files) {
 // краулер, що збігся з іменованою групою, ігнорує `User-agent: *` цілком, тож
 // пропущений там `Disallow` не «наслідується», а ВІДКРИВАЄ шлях саме цьому
 // боту. У кількох майже однакових блоках очима така дірка не видно.
-for (const msg of checkGeo(BUILD)) fail(msg);
+// `robotsMeta: false` — кількість тегів `<meta name="robots">` цей файл уже
+// рахує вище, і з назвою сторінки. Другий рахунок дав би той самий дефект
+// двома рядками звіту.
+for (const msg of checkGeo(BUILD, { robotsMeta: false })) fail(msg);
 
 if (problems.length > 0) {
   console.error(
