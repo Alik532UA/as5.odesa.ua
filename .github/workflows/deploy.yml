@@ -30,10 +30,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # DEPENDENCIES-v8 § 2.3 — версія збігається з `engines.node` і `.nvmrc`;
+      # узгодженість усіх трьох тримає інваріант `src/dependencies.test.ts`.
+      #
+      # Було 20. Node 20 вийшов із підтримки 2026-04-30 — оновлень безпеки для
+      # нього більше немає, а локальна розробка йде на 25, тобто раннер лишався
+      # єдиним місцем, де код виконує EOL-рантайм. Vite 7 вимагає
+      # `^20.19 || >=22.12`, тож 22 — найближчий чинний LTS.
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
 
       - name: Install dependencies
