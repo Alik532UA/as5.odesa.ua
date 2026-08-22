@@ -37,3 +37,5 @@ vite.config.ts.timestamp-*
 # Специфічні папки проєкту
 gitignore/
 .private/
+# Звіти Lighthouse CI — артефакт прогону, а не джерело.
+.lighthouseci/
