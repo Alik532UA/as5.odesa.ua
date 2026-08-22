@@ -1,14 +1,36 @@
+# Групи в robots.txt НЕ успадковуються: краулер обирає одну — найточніший
+# збіг за User-agent — і виконує тільки її, ігноруючи `*` цілком. Тому кожен
+# блок нижче повторює той самий перелік Disallow. Це не дублювання: рядок,
+# пропущений в іменованій групі, ВІДКРИВАЄ цей шлях саме названому боту
+# (SEO-v8 § 7.2). Розбіжність ловить `npm run check:build`.
+
 User-agent: *
 Allow: /
 
-# AI Search Crawlers
-User-agent: GPTBot
+# --- Пошукові AI-агенти: від них залежить видимість у відповідях ---
+
+# індексатор ChatGPT Search — від нього залежить поява сайту у відповідях ChatGPT
+User-agent: OAI-SearchBot
 Allow: /
 
+# перехід за посиланням на запит користувача
+User-agent: ChatGPT-User
+Allow: /
+
+# індексатор Perplexity
 User-agent: PerplexityBot
 Allow: /
 
+# краулер Anthropic
 User-agent: ClaudeBot
+Allow: /
+
+# --- Тренувальні краулери: на видимість у пошуку не впливають ---
+# Дозволені свідомо; рішення записане в PROJECT-CONTEXT.md.
+# GPTBot навчає моделі OpenAI і НЕ відповідає за ChatGPT Search — за неї
+# відповідає OAI-SearchBot вище.
+
+User-agent: GPTBot
 Allow: /
 
 Host: https://as5.odesa.ua
