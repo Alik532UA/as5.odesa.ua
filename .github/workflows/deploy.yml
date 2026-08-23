@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # DEPENDENCIES-v8 § 2.3 — версія збігається з `engines.node` і `.nvmrc`;
       # узгодженість усіх трьох тримає інваріант `src/dependencies.test.ts`.
@@ -38,7 +38,7 @@ jobs:
       # єдиним місцем, де код виконує EOL-рантайм. Vite 7 вимагає
       # `^20.19 || >=22.12`, тож 22 — найближчий чинний LTS.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -79,7 +79,7 @@ jobs:
       # `playwright install` без кешу качає ~130 МБ щоразу.
       - name: Cache Playwright browsers
         if: ${{ !cancelled() }}
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: pw-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
@@ -98,7 +98,7 @@ jobs:
 
       - name: Upload Playwright report
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: playwright-report
           path: playwright-report/
@@ -126,10 +126,10 @@ jobs:
         run: npx @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs
 
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: './build'
 
@@ -147,4 +147,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
