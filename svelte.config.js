@@ -17,6 +17,13 @@ import { relative, sep } from "node:path";
  *
  * Кількість перевіряється навмисно: якщо в `app.html` з'явиться другий скрипт,
  * збірка впаде з поясненням замість того, щоб мовчки лишити його без хеша.
+ *
+ * @returns {`sha256-${string}`} Літеральний тип, а не широкий `string`:
+ * `script-src` у SvelteKit типізований проти нього, і один широкий елемент
+ * розширює ЦІЛИЙ масив директиви. Видно це стало 2026-08-23, коли конфіг
+ * уперше потрапив під `svelte-check`: він дивиться на `src/`, а конфіг досі
+ * імпортували лише `scripts/`; інваріант `src/csp-hash.test.ts` імпортує
+ * його зі `src/`.
  */
 function inlineScriptHash() {
   const html = readFileSync("src/app.html", "utf8");
@@ -27,7 +34,18 @@ function inlineScriptHash() {
         "Хеш у CSP покриває лише один — інакше решта мовчки заблокується.",
     );
   }
-  return `sha256-${createHash("sha256").update(scripts[0][1]).digest("base64")}`;
+  // CRLF → LF перед хешуванням: браузер хешує текстовий вузол ПІСЛЯ розбору
+  // HTML, а розбір нормалізує переноси («preprocessing the input stream» у HTML
+  // Standard). Тут `app.html` наразі з LF, тож рядок нічого не змінює — але без
+  // нього правильність трималася б на випадковості: один свіжий клон на Windows,
+  // і в політику поїде хеш, якого браузер не приймає. Ціна не косметична:
+  // блокується ВЕСЬ скрипт першого кадру, а видимого симптому майже немає.
+  // Заміряно 2026-08-23 у `teatralo4ka` (зникла заставка з кулісами) і
+  // `DigitalWorkshop` (мигала тема). Тримає інваріант `src/csp-hash.test.ts`.
+  const body = scripts[0][1].replace(/\r\n/g, "\n");
+  return /** @type {`sha256-${string}`} */ (
+    `sha256-${createHash("sha256").update(body).digest("base64")}`
+  );
 }
 
 /** @type {import('@sveltejs/kit').Config} */
