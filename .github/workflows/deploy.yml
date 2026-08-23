@@ -38,7 +38,7 @@ jobs:
       # єдиним місцем, де код виконує EOL-рантайм. Vite 7 вимагає
       # `^20.19 || >=22.12`, тож 22 — найближчий чинний LTS.
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
