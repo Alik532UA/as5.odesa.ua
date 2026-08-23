@@ -103,9 +103,15 @@ describe('залежності', () => {
 		const sources = [
 			...walk(join(ROOT, 'src'), (n) => /\.(ts|js|svelte)$/.test(n)),
 			...walk(join(ROOT, 'scripts'), (n) => /\.(ts|js|mjs)$/.test(n)),
+			// `tests/` — теж код проєкту, і саме там живе єдиний імпорт
+			// `@axe-core/playwright`. Без цього рядка перевірка оголосила б
+			// залежність невживаною одразу після появи гейта axe: помилка не в
+			// залежності, а в тому, що перевірка дивилася не всюди.
+			...walk(join(ROOT, 'tests'), (n) => /\.(ts|js)$/.test(n)),
 			join(ROOT, 'svelte.config.js'),
 			join(ROOT, 'vite.config.ts'),
 			join(ROOT, 'vitest.config.ts'),
+			join(ROOT, 'playwright.config.ts'),
 			join(ROOT, 'eslint.config.js'),
 			join(ROOT, '.prettierrc')
 			// Цей файл із переліку виключено нижче: він називає пакети в

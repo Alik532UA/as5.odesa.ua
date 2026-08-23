@@ -39,3 +39,8 @@ gitignore/
 .private/
 # Звіти Lighthouse CI — артефакт прогону, а не джерело.
 .lighthouseci/
+
+# Playwright: звіти й артефакти прогону, а не джерело.
+playwright-report/
+test-results/
+blob-report/

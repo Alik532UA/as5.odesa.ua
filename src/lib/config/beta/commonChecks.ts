@@ -163,5 +163,55 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 			uk: 'У шестерні знайдіть «Гарячі клавіші» й натисніть «Вимк». Тепер клавіші T, L і B змінювати НІЧОГО не мусять, а Esc мусить і далі закривати меню.',
 			en: 'In the gear menu find "Keyboard shortcuts" and press "Off". Now the T, L and B keys must change NOTHING, while Esc must still close the menu.'
 		}
+	},
+
+	/*
+	 * ─── ДОСТУПНІСТЬ: РІВНО ТЕ, ЧОГО axe НЕ БАЧИТЬ ───────────────────────────
+	 *
+	 * З 2026-08-23 у проєкті є `tests/a11y.spec.ts` — axe над зібраним сайтом,
+	 * головна й чеклист, у світлій і темній темі. Він ловить приблизно третину
+	 * проблем доступності: те, що видно з атрибутів і обчислених кольорів.
+	 *
+	 * Пункти нижче — друга половина, і кожен названий саме тому, що машина його
+	 * не побачить у принципі: порядок фокуса — це послідовність, а не атрибут;
+	 * осмисленість підпису — це мова, а не наявність рядка; утримання фокуса —
+	 * це поведінка при натисканні.
+	 */
+	{
+		id: 'common_15',
+		tab: 'common',
+		coverage: 'manual',
+		text: {
+			uk: 'Не торкаючись мишки, пройдіть головну лише клавішею Tab від початку до кінця. Рамка фокуса мусить бути видною на КОЖНОМУ кроці, а порядок — іти зверху вниз, як читається сторінка, без стрибків назад.',
+			en: 'Without touching the mouse, walk the home page with Tab alone from start to finish. The focus ring must be visible at EVERY step, and the order must go top to bottom the way the page reads, without jumping back.'
+		}
+	},
+	{
+		id: 'common_16',
+		tab: 'common',
+		coverage: 'manual',
+		text: {
+			uk: 'Відкрийте меню шестерні й пройдіть Tab-ом п’ять-шість кроків. Фокус мусить лишатися ВСЕРЕДИНІ меню й не виходити на сторінку під ним; Esc мусить закривати меню й повертати фокус на саму шестерню.',
+			en: 'Open the gear menu and walk five or six Tab steps. Focus must stay INSIDE the menu and never reach the page behind it; Esc must close it and return focus to the gear itself.'
+		}
+	},
+	{
+		id: 'common_17',
+		tab: 'common',
+		coverage: 'manual',
+		text: {
+			uk: 'Увімкніть екранний читач (Windows: Ctrl+Win+Enter) і пройдіть шапку. Кожна кнопка мусить називатися тим, що вона робить — «Тема», «Мова», «Налаштування». Назви виду «кнопка», «зображення» або сам символ іконки означають дефект.',
+			en: 'Turn on a screen reader (Windows: Ctrl+Win+Enter) and go through the header. Each button must be announced by what it does — «Theme», «Language», «Settings». Announcements like «button», «image» or the icon character itself mean a defect.'
+		}
+	},
+	{
+		id: 'common_18',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		text: {
+			uk: 'Пройдіть Tab-ом по головній і подивіться, чи фокус НЕ потрапляє на декоративні елементи: тло, розділювачі, іконки без дії. Кожна зупинка фокуса мусить щось робити — інакше на шляху до вмісту з’являються порожні кроки.',
+			en: 'Tab through the home page and check that focus does NOT land on decorative elements: background, dividers, icons without an action. Every focus stop must do something — otherwise there are empty steps on the way to the content.'
+		}
 	}
 ];
