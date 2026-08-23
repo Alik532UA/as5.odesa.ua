@@ -28,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       # DEPENDENCIES-v8 § 2.3 — версія збігається з `engines.node` і `.nvmrc`;
       # узгодженість усіх трьох тримає інваріант `src/dependencies.test.ts`.
