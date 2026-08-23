@@ -21,14 +21,63 @@ export type Theme = (typeof THEMES)[number];
 /**
  * Селектор, який задає токени теми, і файл, де він живе.
  *
- * Світла тема — це `:root` у `themes/light.css`, тобто типова; темна
- * перекриває її через `.dark-theme`. Клас на `<html>` ставлять і анти-FOUC
- * скрипт в `app.html`, і `UIState.applyThemeToDocument`.
+ * ОБИДВІ ТЕМИ ТЕПЕР ЧИТАЮТЬСЯ З ОДНОГО БЛОКУ. З 2026-08-23 палітра описана
+ * `light-dark(світле, темне)` у `:root` файлу `themes/light.css`, а
+ * `themes/dark.css` лишився без оголошень — лише з поясненням. Тому темна тема
+ * береться звідти ж, а різницю робить вибір аргументу в `pickLightDark()`.
+ *
+ * Список, а не один файл: якщо колись з'явиться токен, який має сенс лише в
+ * одній темі, його оголошення повернеться у власний файл, і пізніший джерело
+ * перекриє раніше — саме так, як це робить каскад.
  */
-const THEME_SOURCES: Record<Theme, { file: string; selector: RegExp }> = {
-	light: { file: 'themes/light.css', selector: /:root\s*\{/ },
-	dark: { file: 'themes/dark.css', selector: /\.dark-theme\s*\{/ }
+const THEME_SOURCES: Record<Theme, { file: string; selector: RegExp }[]> = {
+	light: [{ file: 'themes/light.css', selector: /:root\s*\{/ }],
+	dark: [
+		{ file: 'themes/light.css', selector: /:root\s*\{/ },
+		{ file: 'themes/dark.css', selector: /\.dark-theme\s*\{/ }
+	]
 };
+
+/**
+ * `light-dark(A, B)` → `A` для світлої теми, `B` для темної.
+ *
+ * Кома тут НЕ розділювач: аргументи бувають виду `rgba(255, 255, 255, 0.7)`,
+ * тобто самі містять коми. Тому ділиться підрахунком дужок, а не `split(',')` —
+ * інакше перший аргумент обривався б на `rgba(255` і не розбирався як колір, а
+ * перевірка МОВЧКИ рахувала б таку пару непокритою (тобто «немає проблем»).
+ *
+ * Значення без `light-dark()` вертається як є: у палітрі 12 токенів однакові в
+ * обох темах і оголошені літералом.
+ */
+function pickLightDark(value: string, theme: Theme): string {
+	const v = value.trim();
+	const open = v.toLowerCase().indexOf('light-dark(');
+	if (open !== 0) return v;
+
+	let depth = 0;
+	const args: string[] = [];
+	let current = '';
+	for (let i = 'light-dark('.length - 1; i < v.length; i += 1) {
+		const ch = v[i];
+		if (ch === '(') {
+			depth += 1;
+			if (depth === 1) continue;
+		} else if (ch === ')') {
+			depth -= 1;
+			if (depth === 0) {
+				args.push(current);
+				break;
+			}
+		} else if (ch === ',' && depth === 1) {
+			args.push(current);
+			current = '';
+			continue;
+		}
+		current += ch;
+	}
+	if (args.length !== 2) return v;
+	return (theme === 'light' ? args[0] : args[1]).trim();
+}
 
 /**
  * Читає файл стилів БЕЗ коментарів.
@@ -118,8 +167,11 @@ export class TokenResolver {
 
 	constructor() {
 		for (const theme of THEMES) {
-			const { file, selector } = THEME_SOURCES[theme];
-			this.perTheme.set(theme, declarationsIn(read(file), selector));
+			const merged = new Map<string, string>();
+			for (const { file, selector } of THEME_SOURCES[theme]) {
+				for (const [name, value] of declarationsIn(read(file), selector)) merged.set(name, value);
+			}
+			this.perTheme.set(theme, merged);
 		}
 	}
 
@@ -145,7 +197,9 @@ export class TokenResolver {
 	/** Те саме для довільного значення властивості, а не лише для токена. */
 	resolveValue(value: string, theme: Theme, depth = 0): Rgb | null {
 		if (depth > 10) return null;
-		const v = value.trim();
+		// `light-dark()` знімається ПЕРЕД усім іншим: усередині нього може стояти і
+		// літерал, і `var()`, і те, чого розв'язувач не знає.
+		const v = pickLightDark(value, theme);
 		const direct = parseColor(v);
 		if (direct) return direct;
 		// Рівно один var() і нічого крім нього: `var(--a)` або `var(--a, fallback)`.

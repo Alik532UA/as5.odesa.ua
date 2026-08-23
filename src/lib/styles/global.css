@@ -35,6 +35,28 @@
 	font-display: swap;
 }
 
+/*
+ * ЯВНИЙ вибір теми звужує `color-scheme` — і робить це селектором, СТРОГО
+ * специфічнішим за `:root` (UI-UX-v8 § 1.5.1, SVELTE-UI-v8 `SUI-SCOPE-SPECIFICITY`).
+ *
+ * `html.dark-theme` і `html[data-theme]` дають (0,1,1) проти (0,1,0) у `:root`.
+ * Спроба поставити `color-scheme: dark` просто в `.dark-theme` дала НІЧИЮ зі
+ * `:root`, і переможця обирав порядок файлів у бандлі. Перевірено в браузері:
+ * обчислений `color-scheme` лишався `light dark` навіть із класом `.dark-theme`,
+ * тобто явний вибір теми не звужував схему, і `light-dark()` і далі йшов за
+ * системною перевагою — саме той тихий дефект, від якого § 1.5.1 і застерігає.
+ *
+ * Правила стоять ПЕРЕД `:root` навмисно: специфічність, а не порядок, тепер
+ * вирішує все, і сусідство з базою робить зв'язок видимим.
+ */
+html.dark-theme {
+	color-scheme: dark;
+}
+
+html[data-theme='light'] {
+	color-scheme: light;
+}
+
 /* --- CSS Custom Properties --- */
 :root {
 	/* Prevent mobile browsers from auto-darkening light theme */
