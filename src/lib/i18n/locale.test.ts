@@ -5,6 +5,7 @@ import {
 	DEFAULT_LOCALE,
 	SUPPORTED_LOCALES,
 	applyDocumentLanguage,
+	matchLocale,
 	resolveLocale
 } from './locale';
 
@@ -48,6 +49,51 @@ describe('resolveLocale', () => {
 		expect(resolveLocale('')).toBe(DEFAULT_LOCALE);
 		expect(resolveLocale(null)).toBe(DEFAULT_LOCALE);
 		expect(resolveLocale(undefined)).toBe(DEFAULT_LOCALE);
+	});
+});
+
+/*
+ * `matchLocale` — те саме зведення, але з чесним «ні». Різниця не косметична:
+ * `resolveLocale` існує, щоб відповідь була ЗАВЖДИ (якою мовою малювати), а
+ * `?lang=` із сусіднього сайту питає інше — чи назвала адреса мову взагалі.
+ * Через `resolveLocale` чужий `?lang=fr` мовчки став би українською й перекрив
+ * би збережений вибір відвідувача.
+ */
+describe('matchLocale', () => {
+	it('віддає мову, яка в проєкті є', () => {
+		for (const locale of SUPPORTED_LOCALES) {
+			expect(matchLocale(locale)).toBe(locale);
+		}
+	});
+
+	it('зводить регіональний тег так само, як resolveLocale', () => {
+		expect(matchLocale('en-US')).toBe('en');
+		expect(matchLocale('EN_us')).toBe('en');
+	});
+
+	it('на невідому мову каже null, а не типову', () => {
+		expect(matchLocale('de')).toBeNull();
+		expect(matchLocale('')).toBeNull();
+		expect(matchLocale(null)).toBeNull();
+		expect(matchLocale(undefined)).toBeNull();
+	});
+});
+
+describe('мова з адреси має пріоритет над збереженою', () => {
+	it('index.ts питає адресу першою', () => {
+		const source = readFileSync(join(process.cwd(), 'src/lib/i18n/index.ts'), 'utf8');
+		// Перевірка джерела з тієї самої причини, що й нижче: `index.ts` тягне
+		// `$app/environment`, якого в цьому раннері немає. Порядок операндів `??`
+		// і є вся поведінка — переставивши їх, збережений вибір перекривав би
+		// мову, з якою відвідувач щойно перейшов із сусіднього сайту.
+		expect(source).toMatch(/localeFromUrl\(\) \?\? storage\.get\('lang'\)/);
+	});
+
+	it('index.ts бере з адреси лише мову, яка тут є', () => {
+		const source = readFileSync(join(process.cwd(), 'src/lib/i18n/index.ts'), 'utf8');
+		// `matchLocale`, не `resolveLocale`: інакше будь-який чужий `?lang=` в
+		// адресі означав би «українська» й скидав би збережений вибір.
+		expect(source).toMatch(/matchLocale\(new URLSearchParams/);
 	});
 });
 

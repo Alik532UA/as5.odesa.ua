@@ -7,9 +7,25 @@
 	import EmailIcon from "./icons/EmailIcon.svelte";
 	import FacebookIcon from "./icons/FacebookIcon.svelte";
 	import InstagramIcon from "./icons/InstagramIcon.svelte";
-	import { t } from "svelte-i18n";
+	import { t, locale } from "svelte-i18n";
+	import { siblingUrl } from "$lib/siblings";
 
 	let isPianoOpen = $state(false);
+
+	/**
+	 * «Замовити сайт» — у DigitalWorkshop, і мовою, якою читають тут.
+	 *
+	 * Вкладка й тема їхали в адресі й доти (`?tab=promo&theme=colorful`) — тобто
+	 * передавати стан на сусідній сайт цей проєкт уже вміє; бракувало саме мови,
+	 * і без неї сторінка «замовити сайт» відкривалася українською навіть тому,
+	 * хто читав цей сайт англійською.
+	 *
+	 * Українська там на голій адресі, тож шлях назвати її не може — її називає
+	 * `?lang=`. Англійська йде сегментом: `/DigitalWorkshop/en/`.
+	 */
+	const orderHref = $derived(
+		siblingUrl("digitalworkshop", $locale ?? "uk", { tab: "promo", theme: "colorful" })
+	);
 </script>
 
 <footer class="footer" id="main-footer">
@@ -115,9 +131,18 @@
 			</div>
 
 			<!-- 4. Button "замовити сайт" -->
-			<a
-				href="https://alik532ua.github.io/DigitalWorkshop/?tab=promo&theme=colorful"
+			<!-- `resolve()` тут не застосовний: адреса веде на ІНШИЙ сайт і вже
+				 абсолютна, а `resolve()` зрізав би схему.
+
+				 `href` стоїть на тому самому рядку, що й `<a`, навмисно: правило звітує
+				 про рядок АТРИБУТА, тож перенесений вниз `href` лишався б поза дією
+				 `eslint-disable-next-line`, а придушення виглядало б застосованим.
+				 Так само не спрацював би JS-коментар усередині `{…}` — він уже після
+				 початку атрибута. Обидва варіанти перевірено на цьому рядку. -->
+			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+			<a href={orderHref}
 				target="_blank"
+				rel="noopener noreferrer"
 				class="footer__btn-order"
 			>
 				{$t("footer.order")}

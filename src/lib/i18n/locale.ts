@@ -30,11 +30,27 @@ export const DEFAULT_LOCALE: SupportedLocale = 'uk';
  * `'en'` його не бачило б.
  */
 export function resolveLocale(candidate: string | null | undefined): SupportedLocale {
-	if (!candidate) return DEFAULT_LOCALE;
+	return matchLocale(candidate) ?? DEFAULT_LOCALE;
+}
+
+/**
+ * Те саме зведення, але з ЧЕСНИМ «ні»: `null`, коли такої мови тут немає.
+ *
+ * `resolveLocale` не розрізняє «прийшло `uk`» і «прийшло казна-що», бо обидва
+ * випадки віддають типову — і для нього це правильно: він відповідає на питання
+ * «якою мовою малювати», а відповідь мусить бути завжди.
+ *
+ * А от `?lang=` із сусіднього сайту питає інше: чи назвала адреса мову взагалі.
+ * Через `resolveLocale` невідомий тег мовчки став би українською й перекрив би
+ * збережений вибір відвідувача — тобто чужий параметр в адресі скидав би мову.
+ * Тому зведення одне, а відповідей дві.
+ */
+export function matchLocale(candidate: string | null | undefined): SupportedLocale | null {
+	if (!candidate) return null;
 	const primary = candidate.toLowerCase().replace(/_/g, '-').split('-')[0];
 	return (SUPPORTED_LOCALES as readonly string[]).includes(primary)
 		? (primary as SupportedLocale)
-		: DEFAULT_LOCALE;
+		: null;
 }
 
 /**
