@@ -132,3 +132,83 @@ describe('фасад сховища', () => {
 		expect(warn).toHaveBeenCalledTimes(1);
 	});
 });
+
+/**
+ * PRERENDER: фасад не торкається `localStorage` ЗОВСІМ.
+ *
+ * Не «повертає null» — саме не торкається. Раніше єдиним захистом був
+ * `typeof localStorage !== 'undefined'`, і сучасний Node його проходить:
+ * глобальний `localStorage` там є, а `getItem` у нього `undefined` (заміряно
+ * на 25.4.0). Тому кожна збірка друкувала «[storage] сховище недоступне (get
+ * «betaChecklist»)» — попередження, що читається як дефект сайту й ним не є.
+ *
+ * Гірше за шум: `available` живе в модулі, а prerender виконує всі сторінки в
+ * ОДНОМУ процесі, тож одна відмова вимикала фасад до кінця збірки.
+ *
+ * Стенд відтворює саме ту форму — обʼєкт БЕЗ методів, а не `undefined`, — бо
+ * стенд із `undefined` проходив би й зі старим кодом.
+ *
+ * ПЕРЕВІРЯЄТЬСЯ ДОТИК, а не результат, і це не педантизм. Старий код теж
+ * віддавав `null`: `getItem` кидав `TypeError`, і його ловив власний
+ * `try/catch` фасаду. Тобто правильна відповідь досягалася шляхом помилки — з
+ * попередженням у консоль і зі спаленим `available`. Перевірка на `null`
+ * такої різниці не бачить, тому стенд рахує звернення до властивостей.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v8 § 1.1), прогнано: прибрати
+ * `!browser` із `ls()` — червоніють обидві перевірки, перша з переліком
+ * зачеплених властивостей, друга із зайвим попередженням.
+ */
+describe('фасад під prerender (browser === false)', () => {
+	/** Що саме фасад спробував прочитати з глобального обʼєкта. */
+	let touched: string[] = [];
+
+	/**
+	 * Те, що бачить SvelteKit під час prerender на Node ≥ 22: обʼєкт є, методів
+	 * у нього немає. `Proxy` записує кожне звернення, тож «не торкався» стає
+	 * перевірним твердженням.
+	 */
+	function nodeStub(): Storage {
+		return new Proxy(
+			{ length: 0 },
+			{
+				get(target, prop) {
+					touched.push(String(prop));
+					return Reflect.get(target, prop);
+				}
+			}
+		) as unknown as Storage;
+	}
+
+	async function ssrStorage() {
+		vi.resetModules();
+		touched = [];
+		vi.doMock('$app/environment', () => ({ browser: false, dev: false, building: true }));
+		vi.stubGlobal('localStorage', nodeStub());
+		return (await import('./storage')).storage;
+	}
+
+	afterEach(() => {
+		vi.doUnmock('$app/environment');
+		vi.unstubAllGlobals();
+		vi.restoreAllMocks();
+	});
+
+	it('не торкається localStorage жодною операцією', async () => {
+		const s = await ssrStorage();
+		expect(s.get('betaChecklist')).toBeNull();
+		expect(s.set('theme', 'dark')).toBe(false);
+		s.remove('lang');
+		s.clear();
+		expect(touched, `фасад звернувся до localStorage: ${touched.join(', ')}`).toEqual([]);
+	});
+
+	it('мовчить: жодного попередження в консоль під час збірки', async () => {
+		const s = await ssrStorage();
+		const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+		s.get('betaChecklist');
+		s.set('theme', 'dark');
+		s.remove('lang');
+		s.clear();
+		expect(warn, 'збірка не мусить друкувати попереджень про сховище').not.toHaveBeenCalled();
+	});
+});

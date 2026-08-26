@@ -1,3 +1,4 @@
+import { browser } from '$app/environment';
 import { STORAGE_PREFIX, getStorageKey } from '$lib/config/storage';
 
 /**
@@ -12,7 +13,8 @@ import { STORAGE_PREFIX, getStorageKey } from '$lib/config/storage';
  * ## Чому «не кидає» — це головне, а не дрібниця
  *
  * Перевірити `typeof localStorage !== 'undefined'` (як було в `ui.svelte.ts`)
- * досить для SSR і недосить для браузера: сховище може бути на місці й кидати.
+ * не досить НІ для SSR, ні для браузера — сховище може бути на місці й кидати,
+ * а під Node воно на місці й несправне (див. `ls()` нижче).
  *
  * - `setItem` кидає `QuotaExceededError` при переповненні;
  * - у приватному режимі частини браузерів запис кидає завжди;
@@ -44,8 +46,33 @@ function fail(operation: string, key: string, error: unknown): void {
 	available = false;
 }
 
+/**
+ * Сховище або `null`. Порядок перевірок тут — не смак.
+ *
+ * `browser` СТОЇТЬ ПЕРШИМ і замінює собою `typeof localStorage`, який тут був.
+ * Докблок вище стверджував, що `typeof` «досить для SSR», і з Node 22 це
+ * перестало бути правдою: сучасний Node оголошує глобальний `localStorage` як
+ * обʼєкт, у якого `getItem` — `undefined`. Заміряно на Node 25.4.0:
+ *
+ *     typeof localStorage === 'object'
+ *     localStorage.getItem === undefined
+ *
+ * Тобто перевірка проходила, а перший же виклик кидав
+ * `TypeError: t.getItem is not a function`. Симптом було видно в КОЖНІЙ
+ * збірці: prerender сторінки чеклиста друкував «[storage] сховище недоступне
+ * (get «betaChecklist»)» — попередження, що читається як справжній дефект
+ * сайту й ним не є.
+ *
+ * Гірша половина — прапорець `available`. Prerender виконує всі сторінки в
+ * ОДНОМУ процесі, тож одна відмова вимикала фасад до кінця збірки. Наслідку
+ * для виводу не було лише тому, що під prerender сховище й мусить мовчати, —
+ * але правильна відповідь досягалася через шлях помилки.
+ *
+ * `!browser` НЕ палить `available`: це не відмова сховища, а середовище без
+ * нього. Інакше перший же серверний виклик вимикав би фасад назавжди.
+ */
 function ls(): Storage | null {
-	if (!available) return null;
+	if (!available || !browser) return null;
 	try {
 		return typeof localStorage !== 'undefined' ? localStorage : null;
 	} catch (e) {
