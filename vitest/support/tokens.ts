@@ -75,8 +75,86 @@ function pickLightDark(value: string, theme: Theme): string {
 		}
 		current += ch;
 	}
-	if (args.length !== 2) return v;
+	if (args.length !== 2) {
+		throw new Error(
+			`light-dark() приймає рівно два аргументи, тут ${args.length}: ${v}\n` +
+				'Значення недійсне, і властивість зникне цілком (UI-UX-v8 § 1.5.1.3).'
+		);
+	}
+
+	/*
+	 * Обидва аргументи мусять бути кольорами — не лише той, що знадобився цій
+	 * темі. Інакше `light-dark(#fff, 0 1px 3px #000)` був би зелений у світлій
+	 * темі й червоний у темній, тобто дефект залежав би від того, яку тему
+	 * перевіряють першою.
+	 */
+	const notColour = args.map((a) => a.trim()).filter((a) => !isColourArgument(a));
+	if (notColour.length > 0) {
+		throw new Error(
+			`неколірний аргумент у light-dark(): ${notColour.join(' | ')}\n` +
+				`  повне значення: ${v}\n` +
+				'`light-dark()` приймає лише <color>. Довжина, url() і ціла тінь зі зсувами ' +
+				'роблять значення недійсним, і властивість зникає ЦІЛКОМ — мовчки. ' +
+				'Складене значення пишеться як `0 1px 3px light-dark(світле, темне)`, ' +
+				'тобто функція стоїть у КОЛІРНІЙ позиції (UI-UX-v8 § 1.5.1.3).'
+		);
+	}
 	return (theme === 'light' ? args[0] : args[1]).trim();
+}
+
+/** Функції, що дають КОЛІР. `url()` тут немає, і це весь зміст переліку. */
+const COLOUR_FUNCTIONS = new Set([
+	'rgb',
+	'rgba',
+	'hsl',
+	'hsla',
+	'hwb',
+	'lab',
+	'lch',
+	'oklab',
+	'oklch',
+	'color',
+	'color-mix',
+	'light-dark',
+	// `var()` пропускається наскрізь: що в ній — розбирає `resolveValue`.
+	'var'
+]);
+
+/**
+ * Чи є аргумент кольором — за ФОРМОЮ, а не за розв'язністю.
+ *
+ * Тут навмисно не використовується `parseColor()`: він вертає `null` і на
+ * `color-mix()`, і на напівпрозоре, тобто на речі, які кольором є, просто цей
+ * розв'язувач їх не рахує. Змішати ці два «ні» означало б кидати на законному
+ * `color-mix()` у палітрі.
+ */
+function isColourArgument(arg: string): boolean {
+	if (arg === '') return false;
+	if (/^#[0-9a-fA-F]{3,8}$/.test(arg)) return true;
+	// Іменований колір, `transparent`, `currentColor` — самі літери, без одиниць.
+	if (/^[a-zA-Z]+$/.test(arg)) return true;
+
+	const open = arg.indexOf('(');
+	if (open === -1) return false;
+	const name = arg.slice(0, open).trim();
+	if (!/^[a-zA-Z-]+$/.test(name) || !COLOUR_FUNCTIONS.has(name.toLowerCase())) return false;
+
+	/*
+	 * Дужка функції мусить закриватися САМИМ КІНЦЕМ аргумента. Без цієї умови
+	 * `0 2px 8px rgba(0, 0, 0, 0.2)` не пройшло б, а `rgba(0, 0, 0, 0.2) 0 2px
+	 * 8px` — пройшло: жадібний розбір узяв би перше ім'я функції й вирішив, що це
+	 * колір. Тобто перевірка мовчала б на тому самому дефекті залежно від
+	 * порядку слів у значенні.
+	 */
+	let depth = 0;
+	for (let i = open; i < arg.length; i += 1) {
+		if (arg[i] === '(') depth += 1;
+		else if (arg[i] === ')') {
+			depth -= 1;
+			if (depth === 0) return i === arg.length - 1;
+		}
+	}
+	return false;
 }
 
 /**

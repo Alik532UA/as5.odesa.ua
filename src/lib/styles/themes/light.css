@@ -64,7 +64,8 @@
 	/* Component-specific colors */
 	--theme-seagull-color: light-dark(#36c7f3, #f0faff);
 	--theme-hero-story-bg: light-dark(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.05));
-	--theme-image-shadow: light-dark(0 20px 40px rgba(0, 0, 0, 0.1), 0 20px 40px rgba(0, 0, 0, 0.28));
+	/* Тінь — `light-dark()` у КОЛІРНІЙ позиції, див. блок тіней нижче. */
+	--theme-image-shadow: 0 20px 40px light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.28));
 	--theme-cloud-strong: light-dark(rgba(33, 150, 186, 0.15), rgba(58, 172, 206, 0.2));
 	--theme-cloud-soft: light-dark(rgba(33, 150, 186, 0.1), rgba(58, 172, 206, 0.14));
 	--theme-gallery-overlay-from: light-dark(rgba(0, 95, 174, 0.85), rgba(0, 95, 174, 0.7));
@@ -78,11 +79,31 @@
 	--theme-footer-piano-text-bg: light-dark(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.78));
 	--theme-footer-order-hover-text: #ffffff;
 
-	/* Shadow tokens */
-	--shadow-sm: light-dark(0 1px 3px rgba(27, 94, 123, 0.08), 0 1px 3px rgba(8, 20, 33, 0.35));
-	--shadow-md: light-dark(0 4px 12px rgba(27, 94, 123, 0.1), 0 4px 12px rgba(8, 20, 33, 0.4));
-	--shadow-lg: light-dark(0 8px 30px rgba(27, 94, 123, 0.12), 0 8px 30px rgba(8, 20, 33, 0.45));
-	--shadow-xl: light-dark(0 12px 40px rgba(27, 94, 123, 0.15), 0 12px 40px rgba(8, 20, 33, 0.5));
-	--shadow-btn-primary: light-dark(0 4px 15px rgba(245, 166, 35, 0.35), 0 4px 15px rgba(245, 166, 35, 0.3));
-	--shadow-btn-primary-hover: light-dark(0 6px 20px rgba(245, 166, 35, 0.45), 0 6px 20px rgba(245, 166, 35, 0.4));
+	/*
+	 * Shadow tokens.
+	 *
+	 * `light-dark()` СТОЇТЬ У КОЛІРНІЙ ПОЗИЦІЇ, а не навколо всього значення
+	 * (UI-UX-v8 § 1.5.1.3, `UIUX-LIGHT-DARK-COLOR-ONLY`).
+	 *
+	 * Доти всі сім токенів тіней були виду `light-dark(0 1px 3px rgba(…), 0 1px
+	 * 3px rgba(…))`, і кожне з цих значень НЕДІЙСНЕ: `light-dark()` приймає лише
+	 * `<color>`, а тінь зі зсувами кольором не є. Наслідок не «взяти перший
+	 * аргумент», а зникла властивість цілком. Заміряно на as5.odesa.ua 26.08:
+	 * тінь мали 0 із 6 правил, що її просять, — шапка, обидва випадні меню,
+	 * панель зневадження й герой лишилися пласкі В ОБОХ темах.
+	 *
+	 * Геометрія в кожній парі БУЛА ОДНАКОВА (`0 1px 3px` проти `0 1px 3px`) —
+	 * різнилася тільки прозорість кольору. Тож у `light-dark()` іде рівно те, що
+	 * справді різне, і вигляд повертається до стану до 621dc3b без зміни на
+	 * піксель.
+	 */
+	--shadow-sm: 0 1px 3px light-dark(rgba(27, 94, 123, 0.08), rgba(8, 20, 33, 0.35));
+	--shadow-md: 0 4px 12px light-dark(rgba(27, 94, 123, 0.1), rgba(8, 20, 33, 0.4));
+	--shadow-lg: 0 8px 30px light-dark(rgba(27, 94, 123, 0.12), rgba(8, 20, 33, 0.45));
+	/* Споживачів немає — токен лишений у парі з рештою, щоб наступний механічний
+	   перехід не завів його назад у зламаній формі. */
+	--shadow-xl: 0 12px 40px light-dark(rgba(27, 94, 123, 0.15), rgba(8, 20, 33, 0.5));
+	--shadow-btn-primary: 0 4px 15px light-dark(rgba(245, 166, 35, 0.35), rgba(245, 166, 35, 0.3));
+	--shadow-btn-primary-hover: 0 6px 20px
+		light-dark(rgba(245, 166, 35, 0.45), rgba(245, 166, 35, 0.4));
 }

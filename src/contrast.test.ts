@@ -328,3 +328,51 @@ describe('контраст тексту й тла', () => {
 		).toEqual([]);
 	});
 });
+
+/**
+ * Запобіжник у самому розвʼязувачі (UI-UX-v8 § 1.5.1.3).
+ *
+ * Доти `pickLightDark()` знімав `light-dark()` із ЛЮБИМ вмістом, і на тіні
+ * `parseColor()` вертав `null` — тобто токен тихо пропускався, а розвʼязувач
+ * вважав виклик дійсним рівно там, де браузер викидає властивість. Саме так
+ * сім мертвих токенів тіней співіснували з 207 зеленими тестами, і гейт
+ * контрасту був серед них.
+ *
+ * Ці два твердження тримають запобіжник живим. Без них він мертвий код: на
+ * `--shadow-*` він не вистрелить ніколи, бо в пари контрасту вони не входять.
+ */
+describe('розвʼязувач токенів не приймає більше за браузер', () => {
+	const resolver = new TokenResolver();
+
+	it('кидає на неколірному аргументі в light-dark()', () => {
+		expect(() =>
+			resolver.resolveValue(
+				'light-dark(0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.4))',
+				'light'
+			)
+		).toThrow(/неколірний аргумент/);
+		expect(() => resolver.resolveValue('light-dark(4px, 8px)', 'dark')).toThrow(
+			/неколірний аргумент/
+		);
+		// Обидва аргументи, не лише потрібний цій темі: інакше дефект залежав би
+		// від того, яку тему перевіряють першою.
+		expect(() => resolver.resolveValue('light-dark(#ffffff, 0 1px 3px #000000)', 'light')).toThrow(
+			/неколірний аргумент/
+		);
+	});
+
+	it('і далі розвʼязує законні значення', () => {
+		expect(resolver.resolveValue('light-dark(#ffffff, #000000)', 'light')).toEqual([255, 255, 255]);
+		expect(resolver.resolveValue('light-dark(#ffffff, #000000)', 'dark')).toEqual([0, 0, 0]);
+		expect(resolver.resolveValue('rgb(27, 94, 123)', 'light')).toEqual([27, 94, 123]);
+		/*
+		 * Напівпрозоре й `color-mix()` розвʼязувач не рахує — вертає `null`, і це
+		 * НЕ дефект: такі пари він відкрито називає непокритими. Тому вони не
+		 * кидають, і саме цим `null` відрізняється від недійсного значення.
+		 */
+		expect(resolver.resolveValue('rgba(27, 94, 123, 0.08)', 'light')).toBeNull();
+		expect(() =>
+			resolver.resolveValue('light-dark(color-mix(in srgb, #fff, #000), #111111)', 'light')
+		).not.toThrow();
+	});
+});
