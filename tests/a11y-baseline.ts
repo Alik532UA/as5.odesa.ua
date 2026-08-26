@@ -15,20 +15,72 @@
  *   COUNT — кількість. Може лише спадати, і кожне зменшення робиться разом із
  *           правкою, що його спричинила.
  *
- * Числа отримані ПРОГОНОМ `npm run test:e2e`, а не оцінені
- * (AI-AGENT-PITFALLS-v8 § 5.5).
+ * ## ЩО САМЕ РАХУЄ COUNT — вузли, а не правила
+ *
+ * До 2026-08-27 тут лежала `results.violations.length`, тобто кількість
+ * ПРАВИЛ. На нулях різниці немає, а на боргу вона вирішальна: тринадцять пар
+ * нижче AA і тридцять три дають однакове число «1», тож погіршення втричі
+ * лишалося б зеленим. Тепер рахуються вузли — те, що бачить відвідувач.
+ *
+ * ## ЯК ОТРИМАНІ ЧИСЛА
+ *
+ * Прогоном `npm run test:e2e`, двічі, з однаковим результатом
+ * (AI-AGENT-PITFALLS-v8 § 5.5). Попередній замір цих самих сторінок давав
+ * «порушення контрасту» на `/competitions` і `/admission` — і був
+ * АРТЕФАКТОМ: axe міряв сторінку посеред `fadeInUp`, коли `.page-content`
+ * стоїть на прозорості 0.13–0.22, тобто обидва кольори пари змішані з тлом.
+ * Умову готовності виправлено в `a11y.spec.ts`; після цього обидві сторінки
+ * дають нуль.
  */
 
+/**
+ * Ключ — маршрут і схема кольорів: контраст є властивістю ПАРИ кольорів, тож
+ * зелений результат у світлій темі не говорить про темну нічого.
+ */
+export type A11yKey = string;
+
 /** Типи порушень, які вже є. Новий id — падіння, навіть якщо кількість не зросла. */
-export const A11Y_KNOWN: Record<string, readonly string[]> = {
-	home: [],
-	homeDark: [],
-	betaChecklist: []
+export const A11Y_KNOWN: Record<A11yKey, readonly string[]> = {
+	'/ light': [],
+	'/ dark': [],
+	'/about light': [],
+	'/about dark': [],
+	'/admission light': [],
+	'/admission dark': [],
+	'/beta-test-checklists light': [],
+	'/beta-test-checklists dark': [],
+	'/competitions light': [],
+	'/competitions dark': [],
+	'/history light': [],
+	'/history dark': [],
+	/*
+	 * `/test` — чернетка для ручних порівнянь галерей. У меню її немає, в
+	 * індексі немає, але віддається вона всім, і борг у ній справжній:
+	 * `color-contrast` на підписах карток новин і `scrollable-region-focusable`
+	 * на горизонтальній стрічці — область прокручується, а з клавіатури до неї
+	 * не дістатися.
+	 *
+	 * У ТЕМНІЙ ТЕМІ ВТРИЧІ ГІРШЕ (33 вузли проти 13), і це саме те, чого не
+	 * видно без окремого прогону на схему.
+	 */
+	'/test light': ['color-contrast', 'scrollable-region-focusable'],
+	'/test dark': ['color-contrast', 'scrollable-region-focusable']
 };
 
-/** Кількість порушень. Рухається лише вниз. */
-export const A11Y_BASELINE: Record<string, number> = {
-	home: 0,
-	homeDark: 0,
-	betaChecklist: 0
+/** Кількість ВУЗЛІВ із порушеннями. Рухається лише вниз. */
+export const A11Y_BASELINE: Record<A11yKey, number> = {
+	'/ light': 0,
+	'/ dark': 0,
+	'/about light': 0,
+	'/about dark': 0,
+	'/admission light': 0,
+	'/admission dark': 0,
+	'/beta-test-checklists light': 0,
+	'/beta-test-checklists dark': 0,
+	'/competitions light': 0,
+	'/competitions dark': 0,
+	'/history light': 0,
+	'/history dark': 0,
+	'/test light': 14,
+	'/test dark': 34
 };

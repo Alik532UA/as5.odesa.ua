@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { readdirSync } from 'node:fs';
+import { EXPECTED_ROUTE_COUNT, dynamicRoutes, htmlRoutes } from './routes';
 
 /**
  * Дублікати `data-testid` у ЖИВОМУ DOM (TESTID-AND-NAMING-v8, `GATE-TESTID-RUNTIME`).
@@ -42,29 +42,11 @@ import { readdirSync } from 'node:fs';
  * кількістю; звузити `ROUTES` до одного маршруту — червоніє звірка переліку.
  */
 
-/** Корінь маршрутів. Перелік виводиться звідси, а не вписується руками. */
-const ROUTES_DIR = 'src/routes';
-
 /**
- * Маршрути, які віддають HTML.
- *
- * Виводяться з файлової системи, тож новий маршрут потрапляє під гейт сам —
- * вписаний рядком перелік застаріває мовчки й рівно тоді, коли з'являється
- * сторінка, якої ще ніхто не дивився.
- *
- * `sitemap.xml` відкидається за розширенням: це ендпоїнт, у ньому немає
- * розмітки. Динамічних сегментів тут немає, і поява першого мусить БУТИ
- * помітною — звідси окрема перевірка нижче, а не тихий `filter`.
+ * Перелік сторінок — спільний із axe-гейтом (`tests/routes.ts`), і саме тому
+ * винесений: два власні переліки розходяться на першій же новій сторінці, а
+ * виглядає це як «там перевірено».
  */
-function htmlRoutes(): string[] {
-	const dirs = readdirSync(ROUTES_DIR, { withFileTypes: true })
-		.filter((entry) => entry.isDirectory())
-		.map((entry) => entry.name)
-		.filter((name) => !name.includes('.'));
-
-	return ['/', ...dirs.map((name) => `/${name}`)];
-}
-
 const ROUTES = htmlRoutes();
 
 /** Кожен `data-testid` сторінки з кількістю входжень більше одного. */
@@ -99,15 +81,8 @@ async function expectNoDuplicates(page: Page, where: string) {
 }
 
 test('перелік маршрутів під гейтом виведено, а не вписано', () => {
-	const dynamic = readdirSync(ROUTES_DIR, { withFileTypes: true })
-		.filter((entry) => entry.isDirectory())
-		.map((entry) => entry.name)
-		.filter((name) => name.includes('['));
-
-	expect(dynamic, 'динамічний маршрут — перелік нижче його не розгортає').toEqual([]);
-	// Сім сторінок на 2026-08-27. Число, а не `toBeGreaterThan(0)`: зникнення
-	// маршруту з перебору мусить бути видно, а не тільки поява.
-	expect(ROUTES.length, `маршрути під гейтом: ${ROUTES.join(', ')}`).toBe(7);
+	expect(dynamicRoutes(), 'динамічний маршрут — перелік нижче його не розгортає').toEqual([]);
+	expect(ROUTES.length, `маршрути під гейтом: ${ROUTES.join(', ')}`).toBe(EXPECTED_ROUTE_COUNT);
 });
 
 for (const route of ROUTES) {

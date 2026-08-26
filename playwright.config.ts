@@ -40,6 +40,22 @@ export default defineConfig({
 		 * Настройка не штучна: `src/lib/styles/global.css` уже має
 		 * `@media (prefers-reduced-motion: reduce)`, тобто перевіряється реальний
 		 * шлях реального відвідувача.
+		 *
+		 * АЛЕ ЦЬОГО РЯДКА САМОГО ПО СОБІ НЕ ВИСТАЧАЄ, і це замір, а не здогад
+		 * (Playwright 1.62.1, 2026-08-27). `testInfo.project.use.reducedMotion`
+		 * дорівнює `'reduce'`, тобто конфіг розібрано правильно, — а сторінка
+		 * при цьому каже
+		 * `matchMedia('(prefers-reduced-motion: reduce)').matches === false`, і
+		 * `.page-content` лишається з `animation-duration: 0.6s`. Перенесення
+		 * налаштування в `use` проєкту (поруч із `devices[…]`) нічого не
+		 * змінює. Спрацьовує лише явний `page.emulateMedia({ reducedMotion })`:
+		 * після нього `matches === true`, а тривалість стає `1e-05s`.
+		 *
+		 * Тому рядок лишається (це намір, і він стане чинним, щойно поведінка
+		 * виправиться), але покладатися на нього не можна: `tests/a11y.spec.ts`
+		 * викликає `emulateMedia` явно й, головне, чекає на ЗАВЕРШЕННЯ анімацій,
+		 * а не на зменшену тривалість. Достовірність заміру тримає та умова, а
+		 * не цей рядок.
 		 */
 		reducedMotion: 'reduce'
 	},
