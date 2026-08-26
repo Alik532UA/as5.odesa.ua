@@ -210,7 +210,16 @@
 					scheduleNextFish();
 				}, nextTime);
 			};
-			fishInterval = setTimeout(scheduleNextFish, Math.random() * 500); // Debug: 10x faster (was 5000)
+			// Розкид ПЕРШОГО планування, а не поява першої рибки: сама рибка все
+			// одно чекає `nextTime` вище. Розкид потрібен тому, що компонент
+			// стоїть на сторінці двічі (герой і підвал) — без нього обидві хвилі
+			// заводили б таймери в один і той самий момент.
+			//
+			// Було `Math.random() * 500` із поміткою «Debug: 10x faster (was
+			// 5000)» — тимчасове значення, лишене в коді. Це єдиний слід
+			// налагодження в `src/` (`grep -rniE "TODO|FIXME|debug:"`), і саме
+			// тому його видно: помітка обіцяє, що поруч є ще, а її немає.
+			fishInterval = setTimeout(scheduleNextFish, Math.random() * 5000);
 		}
 
 		return () => {
