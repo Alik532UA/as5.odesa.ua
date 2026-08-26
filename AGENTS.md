@@ -120,8 +120,8 @@ prerendered повністю. Два з них службові й не в ін�
 npm run check        # svelte-check, має бути 0 помилок
 npm run lint         # eslint, має бути 0 помилок
 npm test             # юніт-інваріанти
-npm run test:e2e     # Playwright над ПРЕВ'Ю зібраного сайту (наразі axe).
-                     # Сам робить build і піднімає сервер на 5499
+npm run test:e2e     # Playwright над ПРЕВ'Ю зібраного сайту: axe і дублікати
+                     # data-testid. Сам робить build і піднімає сервер на 5499
 npm run build        # збірка
 npm run check:build  # гейт над build/: canonical, og:image, title, JSON-LD,
                      # robots/sitemap, подвоєна база, позиція й хеш інлайн-скриптів
