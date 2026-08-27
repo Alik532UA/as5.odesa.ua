@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { ui } from "$lib/states/ui.svelte";
 	import { asset } from "$app/paths";
+	import { t } from "svelte-i18n";
 
 	let { size = 'large' }: { size?: 'large' | 'small' } = $props();
 
@@ -13,9 +14,18 @@
 	const logoSrc = $derived(ui.theme === 'dark' ? asset('/ods-as5-logo-full-inverted.svg') : asset('/ods-as5-logo-full.svg'));
 </script>
 
+<!--
+	`alt` — зі словника, а не рядком у розмітці.
+
+	Тут він був захардкоджений українською, і це не дрібниця локалізації: логотип
+	стоїть у шапці КОЖНОЇ сторінки, тобто англійська версія сайту віддавала
+	українське `alt` завжди. Пропустила його не неуважність, а сама команда
+	пошуку — `PROJECT-CONTEXT.md` міряв хардкод грепом по `aria-label=`, і `alt`
+	у ту команду не входив. Тепер за атрибутами стежить `src/i18n-literals.test.ts`.
+-->
 <img
 	src={logoSrc}
-	alt="Логотип Одеської школи мистецтв №5"
+	alt={$t("a11y.logoAlt")}
 	class="logo-img"
 	width={d.width}
 	height={d.height}
