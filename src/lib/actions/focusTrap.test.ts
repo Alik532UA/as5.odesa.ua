@@ -1,4 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import { focusTrap } from './focusTrap';
 
 /**
@@ -125,5 +127,96 @@ describe('focusTrap', () => {
 
 		const event = tab(dialog);
 		expect(event.defaultPrevented).toBe(true);
+	});
+});
+
+/**
+ * Інваріант над РОЗМІТКОЮ: кожна модалка справді бере дію.
+ *
+ * Тести вище доводять, що `focusTrap` працює. Вони за побудовою не доводять,
+ * що його хтось застосував — а саме це й губиться першим: `aria-modal="true"`
+ * пишуть разом із `role="dialog"`, бо так каже приклад у документації, і на
+ * цьому зупиняються. Браузер обіцянки `aria-modal` не виконує: Tab виходить із
+ * діалогу на сторінку під оверлеєм, а після закриття фокус падає на `<body>`.
+ *
+ * Правило доти жило лише рядком в `AGENTS.md` серед тих, що «не ловить жоден
+ * гейт». Дія існує, тести на неї зелені — і третя модалка мовчки лишилася б без
+ * неї, а звіт про якість цього не показав би (AI-AGENT-PITFALLS-v8 § 3:
+ * існування ≠ досяжність).
+ *
+ * Зворотний експеримент: прибрати `use:focusTrap` з `PianoModal.svelte` —
+ * перевірка червоніє саме на ньому. Прогнано.
+ */
+describe('кожна модалка бере focusTrap (ACCESSIBILITY-v8 § 6)', () => {
+	const ROOT = resolve(__dirname, '../../..');
+
+	function svelteFiles(dir: string, out: string[] = []): string[] {
+		for (const entry of readdirSync(join(ROOT, dir))) {
+			const rel = `${dir}/${entry}`;
+			if (statSync(join(ROOT, rel)).isDirectory()) svelteFiles(rel, out);
+			else if (entry.endsWith('.svelte')) out.push(rel);
+		}
+		return out;
+	}
+
+	/**
+	 * Відкривальний тег цілком.
+	 *
+	 * Регулярка `<[a-zA-Z][^<>]*>` тут НЕ годиться, і це знайдено падінням, а не
+	 * читанням: у `PianoModal.svelte` в тезі стоїть
+	 * `onclick={(e) => e.target === e.currentTarget && onClose()}`, і стрілка
+	 * `=>` обриває збіг на своєму `>`. Тег «закінчувався» до `use:focusTrap`, і
+	 * перевірка звинувачувала файл, який усе робить правильно — тобто хибне
+	 * спрацювання, від якого гейт вимикають.
+	 *
+	 * Тому тег читається сканером: `>` рахується кінцем лише поза лапками й поза
+	 * фігурними дужками.
+	 */
+	function openTags(source: string): string[] {
+		const tags: string[] = [];
+		for (let i = 0; i < source.length; i++) {
+			if (source[i] !== '<' || !/[a-zA-Z]/.test(source[i + 1] ?? '')) continue;
+			let depth = 0;
+			let quote = '';
+			for (let j = i + 1; j < source.length; j++) {
+				const c = source[j];
+				if (quote) {
+					if (c === quote) quote = '';
+					continue;
+				}
+				if (c === '"' || c === "'" || c === '`') quote = c;
+				else if (c === '{') depth++;
+				else if (c === '}') depth--;
+				else if (c === '<' && depth === 0) break;
+				else if (c === '>' && depth === 0) {
+					tags.push(source.slice(i, j + 1));
+					i = j;
+					break;
+				}
+			}
+		}
+		return tags;
+	}
+
+	const dialogs = svelteFiles('src').flatMap((file) =>
+		openTags(readFileSync(join(ROOT, file), 'utf8'))
+			.filter((tag) => /aria-modal=["{]?\s*(true|"true")/.test(tag))
+			.map((tag) => ({ file, tag }))
+	);
+
+	it('модалки в проєкті знайдено — перевірка жива', () => {
+		// Нуль тут означав би не «модалок немає», а «регулярка їх не бачить»:
+		// у проєкті їх дві, і обидві названі в докблоці вище.
+		expect(dialogs.length, 'жодного aria-modal у розмітці — перевірка сліпа').toBe(2);
+	});
+
+	it('кожен aria-modal несе use:focusTrap на тому самому елементі', () => {
+		const bare = dialogs
+			.filter(({ tag }) => !tag.includes('use:focusTrap'))
+			.map(({ file }) => file);
+		expect(
+			bare,
+			`браузер обіцянки \`aria-modal\` не виконує — Tab вийде з діалогу:\n${bare.join('\n')}`
+		).toEqual([]);
 	});
 });
