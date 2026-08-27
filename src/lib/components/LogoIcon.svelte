@@ -11,7 +11,7 @@
 	};
 
 	const d = $derived(dimensions[size]);
-	const logoSrc = $derived(ui.theme === 'dark' ? asset('/ods-as5-logo-full-inverted.svg') : asset('/ods-as5-logo-full.svg'));
+	const logoSrc = $derived(ui.theme === 'dark' ? asset('/svg/ods-as5-logo-full-inverted.svg') : asset('/svg/ods-as5-logo-full.svg'));
 </script>
 
 <!--

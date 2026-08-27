@@ -181,7 +181,7 @@
 		'@type': 'EducationalOrganization',
 		name: safeT($t, 'seo.org.name', SEO_FALLBACK[activeLang].orgName),
 		url: SITE_ROOT,
-		logo: assetUrl('/ods-as5-logo-full.svg'),
+		logo: assetUrl('/svg/ods-as5-logo-full.svg'),
 		description: safeT($t, 'seo.org.description', SEO_FALLBACK[activeLang].orgDescription),
 		telephone: '+38 048 723 81 10',
 		email: 'dmsh-5odesa@ukr.net',
