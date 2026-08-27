@@ -1,4 +1,5 @@
 <script lang="ts">
+	import FooterContactItem from "./FooterContactItem.svelte";
 	import PianoModal from "./ui/PianoModal.svelte";
 	import WaveBackground from "./WaveBackground.svelte";
 	import Seagull from "./ui/Seagull.svelte";
@@ -70,41 +71,31 @@
 
 			<!-- 2. Contacts Group -->
 			<div class="footer__contacts">
-				<!-- Address -->
+				{#snippet locationIcon()}<LocationIcon className="footer__icon" size={18} />{/snippet}
+				{#snippet phoneIcon()}<PhoneIcon className="footer__icon" size={18} />{/snippet}
+				{#snippet emailIcon()}<EmailIcon className="footer__icon" size={18} />{/snippet}
+
 				<div class="footer__info" id="footer-address">
-					<div class="footer__info-item">
-						<LocationIcon className="footer__icon" size={18} />
-						<a
-							href="https://maps.app.goo.gl/khSVpMmKieTdW2Ao7"
-							target="_blank"
-							rel="noopener noreferrer"
-							class="footer__link"
-						>
-							{$t("footer.address")}
-						</a>
-					</div>
+					<FooterContactItem
+						href="https://maps.app.goo.gl/khSVpMmKieTdW2Ao7"
+						label={$t("footer.address")}
+						icon={locationIcon}
+						external
+					/>
 				</div>
 				<div class="footer__info" id="footer-phones">
-					<div class="footer__info-item">
-						<PhoneIcon className="footer__icon" size={18} />
-						<div>
-							<a href="tel:+380487238110" class="footer__link"
-								>{$t("footer.phone")}</a
-							>
-						</div>
-					</div>
+					<FooterContactItem
+						href="tel:+380487238110"
+						label={$t("footer.phone")}
+						icon={phoneIcon}
+					/>
 				</div>
-
 				<div class="footer__info" id="footer-email">
-					<div class="footer__info-item">
-						<EmailIcon className="footer__icon" size={18} />
-						<div>
-							<a
-								href="mailto:{$t('footer.email')}"
-								class="footer__link">{$t("footer.email")}</a
-							>
-						</div>
-					</div>
+					<FooterContactItem
+						href="mailto:{$t('footer.email')}"
+						label={$t("footer.email")}
+						icon={emailIcon}
+					/>
 				</div>
 			</div>
 
@@ -315,21 +306,16 @@
 		align-items: center;
 	}
 
-	.footer__info-item {
-		display: flex;
-		align-items: center;
-		gap: var(--space-xs);
-		font-size: 0.8rem;
-		color: var(--color-body-text);
-		white-space: nowrap;
-	}
-
-	.footer__link {
-		transition: color var(--transition-fast);
-	}
-
-	.footer__link:hover {
-		color: var(--color-deep-ocean);
+	/*
+	 * Кружечок соцмережі — 36×36 мишею; на дотику канон вимагає 44×44
+	 * (UI-ELEMENTS-v8 § 1). Мінімум SC 2.5.8 (24×24) 36 px виконує й так, тож
+	 * росте ціль лише там, де в неї цілять пальцем.
+	 */
+	@media (pointer: coarse) {
+		.footer__social-link {
+			width: 44px;
+			height: 44px;
+		}
 	}
 
 	/* Social */
@@ -359,9 +345,6 @@
 	@media (max-width: 1200px) {
 		.footer__contacts {
 			gap: var(--space-md);
-		}
-		.footer__info-item {
-			font-size: 0.75rem;
 		}
 	}
 
