@@ -10,7 +10,9 @@
 		enabled?: boolean;
 	}>();
 
-	let fixedHeight = $state("100vh");
+	// Значення до гідратації: далі `onMount` міняє його на виміряні пікселі.
+	// `dvh`, бо саме цей рядок їде в prerendered HTML і живе перший кадр.
+	let fixedHeight = $state("100dvh");
 	let lastWidth = 0;
 	let isVisible = $derived(enabled && backgroundType !== 0);
 
