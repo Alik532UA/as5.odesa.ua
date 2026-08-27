@@ -9,7 +9,6 @@
     "about": "About School",
     "history": "History",
     "contests": "Contests",
-    "announcements": "Announcements",
     "admission": "ADMISSION"
   },
   "footer": {
@@ -22,13 +21,11 @@
     "order": "order website"
   },
   "settings": {
-    "title": "Settings",
     "language": "Language",
     "theme": "Theme",
     "light": "Light",
     "dark": "Dark",
     "dynamicBg": "Dynamic Background",
-    "bgType": "Background Type",
     "bgNone": "None",
     "bgParticles": "Particles",
     "bgWaves": "Waves",
@@ -36,8 +33,7 @@
     "blur": "Blur effect when changing language or theme",
     "hotkeys": "Keyboard shortcuts",
     "off": "Off",
-    "on": "On",
-    "debugNote": "This is a temporary settings menu. We will choose and approve the preferred option, then hide this menu."
+    "on": "On"
   },
   "departments": {
     "description": "Today, the school has 6 departments where 335 students study:",
