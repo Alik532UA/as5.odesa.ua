@@ -93,3 +93,48 @@ describe('логування помилок досяжне', () => {
 		).not.toEqual([]);
 	});
 });
+
+/**
+ * `<svelte:boundary>` без сніпета `failed` (ERROR-HANDLING-v8, HIGH).
+ *
+ * Межа знищує власне тіло й рендерить на його місце `failed`. Немає `failed` —
+ * на екрані ПОРОЖНЬО: не повідомлення про помилку, не старий вміст, а нічого.
+ * Симптом при цьому не схожий на виняток; він схожий на «сторінка не
+ * завантажилася», і шукати починають у мережі.
+ *
+ * Проєкт це вже проходив: дві реалізації `ErrorBoundary`, і та, що стояла в
+ * layout, показувала на помилці порожню сторінку (`PROJECT-CONTEXT.md`,
+ * 2026-08-16). Виправили — а перевірки, яка не дасть повторити, не завели, і
+ * правило три місяці жило рядком в `AGENTS.md` серед тих, що «не ловить жоден
+ * гейт».
+ *
+ * Зворотний експеримент: перейменувати сніпет `failed` в `ErrorBoundary.svelte`
+ * — перевірка червоніє саме на ньому. Прогнано.
+ */
+describe('межі помилок мають запасний вміст', () => {
+	const files = walk('src').filter((f) => f.endsWith('.svelte'));
+
+	const boundaries = files.flatMap((file) => {
+		const source = readFileSync(file, 'utf8');
+		return [...source.matchAll(/<svelte:boundary[\s\S]*?<\/svelte:boundary>/g)].map((m) => ({
+			file,
+			body: m[0]
+		}));
+	});
+
+	it('межі в проєкті знайдено — перевірка жива', () => {
+		// Нуль означав би «розбір зламався», а не «меж немає»: межа тут одна, у
+		// `ErrorBoundary.svelte`, і вона в layout на кожній сторінці.
+		expect(boundaries.length, 'жодного <svelte:boundary> — перевірка сліпа').toBeGreaterThan(0);
+	});
+
+	it('кожна межа має сніпет failed', () => {
+		const bare = boundaries
+			.filter(({ body }) => !/\{#snippet\s+failed\s*\(/.test(body))
+			.map(({ file }) => file);
+		expect(
+			bare,
+			`без сніпета \`failed\` межа рендерить ПОРОЖНЄ місце, а не помилку:\n${bare.join('\n')}`
+		).toEqual([]);
+	});
+});
