@@ -20,6 +20,12 @@
 </script>
 
 {#snippet DeptCard({ name, iconPath, id, description }: Department)}
+	<!-- Обгортка існує рівно заради `container-type`: елемент не може питати
+	     власну ширину, бо сам її й задає. Ширину слота призначає сітка, і ніщо
+	     всередині картки на неї не впливає — саме тому запит стабільний.
+	     Поставити `container-type` на саму `.dept-card` не можна: її паддінг
+	     залежав би від заміру, а замір — від паддінга (FLUID-SIZING-v8 § 7A). -->
+	<div class="dept-card-slot">
 	<article class="dept-card" {id} data-testid="department-card-{id}">
 		<div class="dept-card__icon-wrap">
 			<!-- Render image instead of SVG icon -->
@@ -32,6 +38,7 @@
 			<p class="dept-card__description">{description}</p>
 		{/if}
 	</article>
+	</div>
 {/snippet}
 
 <section class="departments" id="departments" aria-label={$t("a11y.departmentsSection")} data-testid="departments-section">
@@ -90,8 +97,36 @@
 		gap: var(--space-2xl);
 	}
 
+	/*
+	 * КОНТЕЙНЕР ВИМІРЮВАННЯ (FLUID-SIZING-v8 § 7A, `FS-CONTAINER`, HIGH).
+	 *
+	 * До 2026-08-28 вигляд картки залежав від ширини ВІКНА, хоч картка стоїть у
+	 * сітці й ширину дістає від неї. Заміряно в браузері — ось що з цього
+	 * виходило:
+	 *
+	 *   вікно 769 → 3 колонки → картка 219 px → паддінг 32/24, іконка 80
+	 *   вікно 768 → 2 колонки → картка 340 px → паддінг 48/32, іконка 80
+	 *   вікно 481 → 2 колонки → картка 197 px → паддінг 48/32, іконка 80
+	 *   вікно 480 → 2 колонки → картка 200 px → паддінг 24/8,  іконка 60
+	 *
+	 * Дві середні пари — це і є дефект у чистому вигляді. Картка на 197 px
+	 * діставала НАЙБІЛЬШИЙ паддінг (48 px згори, 32 з боків — тобто на текст
+	 * лишалося 133 px), а сусіднє значення 200 px — найменший. Три пікселі
+	 * різниці, протилежне оформлення: вікно перетнуло 480, а картка ні.
+	 * Дзеркально вгорі: 219 px діставала середній паддінг, а 340 px — більший.
+	 *
+	 * Тепер поріг стоїть на тому, що справді впливає: на ширині, яку картка
+	 * ОТРИМАЛА. Кількість колонок лишається за `@media` — її контейнерним
+	 * запитом не порахувати, бо в момент заміру колонок ще немає.
+	 */
+	.dept-card-slot {
+		container-type: inline-size;
+		container-name: dept-card;
+	}
+
 	/* Card styles */
 	.dept-card {
+		height: 100%;
 		background: var(--color-white);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius-lg);
@@ -144,24 +179,20 @@
 		margin: 0;
 	}
 
-	/* Responsive */
-	@media (max-width: 768px) {
-		.departments__grid {
-			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-			gap: var(--space-lg);
-		}
-
-		.departments {
-			padding: var(--space-2xl) 0;
+	/*
+	 * ВИГЛЯД КАРТКИ — від місця, яке вона отримала.
+	 *
+	 * Пороги взяті із заміру, а не з круглих чисел: 280 px відділяє картку в
+	 * три колонки на широкому екрані (304–347) від тісної (219–263), а 220 px —
+	 * той рубіж, за яким на текст лишається менше половини ширини.
+	 */
+	@container dept-card (max-width: 280px) {
+		.dept-card {
+			padding: var(--space-xl) var(--space-lg);
 		}
 	}
 
-	@media (max-width: 480px) {
-		.departments__grid {
-			grid-template-columns: repeat(2, minmax(0, 1fr));
-			gap: var(--space-md);
-		}
-
+	@container dept-card (max-width: 220px) {
 		.dept-card {
 			padding: var(--space-lg) var(--space-sm);
 			border-radius: var(--radius-md);
@@ -179,6 +210,30 @@
 		.dept-card__description {
 			font-size: 0.75rem;
 		}
+	}
+
+	/*
+	 * ВІКНО лишається за `@media`, і це не залишки: тут рівно те, що справді є
+	 * властивістю сторінки, а не картки, — кількість колонок (контейнерним
+	 * запитом її не порахувати: у момент заміру колонок ще немає), відступи
+	 * секції та розмір її власного вступного абзацу.
+	 */
+	@media (max-width: 768px) {
+		.departments__grid {
+			grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+			gap: var(--space-lg);
+		}
+
+		.departments {
+			padding: var(--space-2xl) 0;
+		}
+	}
+
+	@media (max-width: 480px) {
+		.departments__grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			gap: var(--space-md);
+		}
 
 		.departments__description {
 			font-size: 1.1rem;
@@ -189,10 +244,6 @@
 	@media (min-width: 769px) and (max-width: 1024px) {
 		.departments__grid {
 			gap: var(--space-lg);
-		}
-
-		.dept-card {
-			padding: var(--space-xl) var(--space-lg);
 		}
 	}
 </style>
