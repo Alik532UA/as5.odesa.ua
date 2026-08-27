@@ -112,12 +112,36 @@
 		transform: scale(1.1);
 	}
 
+	/*
+	 * `max-height` тут — не косметика, а CRITICAL-анти-патерн FLUID-SIZING-v8:
+	 * «модальне вікно без `max-height` у центрованому оверлеї».
+	 *
+	 * Заміряно в браузері (Playwright над прев'ю зібраного сайту, 2026-08-28),
+	 * бо в джерелах і в `build/` цього не видно ніяк — дефект живе лише в
+	 * рантаймі й лише на короткому вікні (AI-AGENT-PITFALLS-v8 § 2.1):
+	 *
+	 *   844×390 (телефон, ландшафт): #wrap 668 px, top −139, bottom 529
+	 *   1280×600 (ноутбук):          #wrap 668 px, top  −34, bottom 634
+	 *
+	 * Батько центрує (`justify-content: center`) і має `overflow: hidden`, тож
+	 * зайве обрізається З ОБОХ БОКІВ і доскролити до нього не можна. На
+	 * телефоні в ландшафті — тобто в орієнтації, для якої піаніно й
+	 * призначене, — з клавіатури зникало 119 px.
+	 *
+	 * Лікування — «зменшити», а не «прокрутити»: піаніно, яке доводиться
+	 * гортати, гірше за менше піаніно. Тому висоти нижче ростуть від `dvh` і
+	 * впираються в старі значення стелею `clamp()`: на вікні від ~1000 px
+	 * заввишки вигляд той самий, що й був, до пікселя. `overflow-y: auto`
+	 * лишається останнім рубежем на випадок, коли не вистачило й цього.
+	 */
 	#wrap {
 		position: relative;
 		z-index: 1;
 		width: 100%;
 		max-width: 1200px;
-		padding: 20px;
+		max-height: 100dvh;
+		overflow-y: auto;
+		padding: clamp(8px, 2dvh, 20px);
 		transition: all 0.3s ease;
 		animation: modalSlideIn 0.3s ease-out;
 	}
@@ -135,7 +159,7 @@
 
 	header {
 		position: relative;
-		margin: 30px 0;
+		margin: clamp(8px, 3dvh, 30px) 0;
 	}
 
 	h2 {
@@ -143,16 +167,21 @@
 		font-size: clamp(16px, 3vw, 24px);
 		font-style: italic;
 		font-weight: 400;
-		margin: 0 0 30px;
+		margin: 0 0 clamp(8px, 3dvh, 30px);
 		font-family: var(--font-main);
 	}
 
+	/*
+	 * `min(10vw, 13dvh)` — обидві осі, а не лише ширина. На телефоні в
+	 * ландшафті `10vw` дає 84 px там, де по висоті лишилося менше: назва ноти
+	 * розпирала блок рівно в тій орієнтації, де місця найменше.
+	 */
 	.nowplaying {
-		font-size: clamp(60px, 10vw, 120px);
+		font-size: clamp(32px, min(10vw, 13dvh), 120px);
 		line-height: 1;
 		color: #eee;
 		transition: all .07s ease;
-		min-height: 120px;
+		min-height: clamp(44px, 14dvh, 120px);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -176,10 +205,10 @@
 	.keys {
 		display: block;
 		width: 100%;
-		height: 350px;
+		height: clamp(110px, 40dvh, 350px);
 		max-width: 880px;
 		position: relative;
-		margin: 40px auto 0;
+		margin: clamp(10px, 4dvh, 40px) auto 0;
 	}
 
 	.key {

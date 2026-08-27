@@ -76,6 +76,38 @@ const TRACK_FR = /(?<![\w-])\d*\.?\d*fr(?![\w-])/;
  */
 const PX_MINMAX = /grid-template-columns:[^;}]*repeat\(\s*auto-(?:fit|fill)\s*,\s*minmax\(\s*\d+px\s*,/g;
 
+/**
+ * Анти-патерн CRITICAL «модальне вікно без `max-height` у центрованому
+ * оверлеї». Дефекту не видно НІ в джерелах, НІ в `build/`: розмітка правильна,
+ * стилі на місці, і на екрані розробника все вміщається. Він живе лише в
+ * рантаймі й лише на короткому вікні (AI-AGENT-PITFALLS-v8 § 2.1).
+ *
+ * Заміряно 2026-08-28 у `PianoModal.svelte`: на 844×390 вміст мав 668 px і
+ * стирчав на 139 px угору й на 139 px униз. Батько центрує і має
+ * `overflow: hidden`, тож зайве обрізається З ОБОХ БОКІВ — доскролити до
+ * нього не можна взагалі. З клавіатури піаніно зникало 119 px.
+ *
+ * Перевірка навмисно груба: вона питає не «чи правильна стеля», а «чи взагалі
+ * хтось про неї подумав». Точну геометрію міряє `tests/overlay-fit.spec.ts` у
+ * живому браузері — тут же йде клас, тобто наступна модалка, якої ще немає.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v8 § 1.1): прибрати
+ * `max-height: 100dvh` з `#wrap` у `PianoModal.svelte` — перевірка червоніє
+ * саме на цьому файлі. Прогнано.
+ */
+/** `селектор { тіло }` без вкладеності — цього досить для блоків-оверлеїв. */
+const RULE = /([^{}]+)\{([^{}]*)\}/g;
+
+function isCenteredOverlay(body: string): boolean {
+	const fixed = /position\s*:\s*fixed/.test(body);
+	const spansViewport = /inset\s*:\s*0/.test(body) || /(top|bottom)\s*:\s*0/.test(body);
+	const centers =
+		/justify-content\s*:\s*center/.test(body) ||
+		/align-items\s*:\s*center/.test(body) ||
+		/place-items\s*:\s*center/.test(body);
+	return fixed && spansViewport && centers;
+}
+
 describe('гнучкі розміри', () => {
 	it('знаходить стилі — перевірка жива', () => {
 		expect(files.length, 'у src/ немає жодного .svelte чи .css').toBeGreaterThan(10);
@@ -102,5 +134,24 @@ describe('гнучкі розміри', () => {
 			}
 		}
 		expect(bad, `на вузькому екрані доріжка ширша за екран:\n${bad.join('\n')}`).toEqual([]);
+	});
+
+	it('центрований оверлей обмежує висоту вмісту (CRITICAL)', () => {
+		const bad: string[] = [];
+		for (const f of files) {
+			const source = readFileSync(join(ROOT, f), 'utf8');
+			const overlays = [...source.matchAll(RULE)]
+				.filter((m) => isCenteredOverlay(m[2]))
+				.map((m) => m[1].trim());
+			if (overlays.length === 0) continue;
+			if (!/max-height\s*:/.test(source)) {
+				bad.push(`${f}: ${overlays.join(', ')} — центрує вміст, але жодного max-height у файлі`);
+			}
+		}
+		expect(
+			bad,
+			'вміст, вищий за коротке вікно, обрізається З ОБОХ БОКІВ і доскролити до нього ' +
+				`не можна:\n${bad.join('\n')}`
+		).toEqual([]);
 	});
 });

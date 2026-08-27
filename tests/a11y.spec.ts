@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { A11Y_BASELINE, A11Y_KNOWN } from './a11y-baseline';
 import { EXPECTED_ROUTE_COUNT, dynamicRoutes, htmlRoutes } from './routes';
+import { waitForSettled } from './settled';
 
 /**
  * Машинно-виявні порушення WCAG (ACCESSIBILITY-v8 § 10, `GATE-A11Y-AXE`).
@@ -29,67 +30,12 @@ import { EXPECTED_ROUTE_COUNT, dynamicRoutes, htmlRoutes } from './routes';
  * ## Що змінилося 2026-08-27
  *
  * Сторінок було дві з семи, і саме розширення переліку виявило, що умова
- * готовності неправильна — див. `waitForSettled` нижче.
+ * готовності неправильна — див. `waitForSettled` у `tests/settled.ts`.
  */
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag22aa'];
 
 const SCHEMES = ['light', 'dark'] as const;
-
-/**
- * ГОТОВНІСТЬ ДО ЗАМІРУ: усі скінченні CSS-анімації дограли.
- *
- * ## Що тут було й чому воно не працювало
- *
- * Стояло очікування `opacity: 1` на першому `<h1>`. Обидві половини хибні:
- *
- *  - прозорість, яка псує замір, лежить не на заголовку, а на його ПРЕДКОВІ:
- *    `.page-content { animation: fadeInUp 0.6s }`. У дитини
- *    `getComputedStyle().opacity` дорівнює одиниці незалежно від предка, тож
- *    умова наставала одразу — заміряно: `.page-content` у цю мить стоїть на
- *    0.13–0.22;
- *  - на `/test` заголовка `<h1>` немає взагалі, і очікування падало з
- *    «element(s) not found» — тобто сторінку неможливо було додати до гейта, не
- *    змінивши умову.
- *
- * Ціна першого була не теоретична: замір на непрозорій сторінці давав
- * `color-contrast` на `/competitions` і `/admission`, якого на дограній
- * сторінці немає. Обидва кольори пари змішані з тлом, тож axe міряє пару,
- * якої не існує ні одного кадру після завершення.
- *
- * ## Чому `reducedMotion` у конфізі цього не рятував
- *
- * ЗАМІРЯНО: із `use: { reducedMotion: 'reduce' }` сторінка повідомляє
- * `matchMedia('(prefers-reduced-motion: reduce)').matches === false`, а
- * `.page-content` — `animation-duration: 0.6s`. Перенесення налаштування на
- * рівень проєкту нічого не змінює. Спрацьовує лише явний виклик
- * `page.emulateMedia()` — після нього `matches === true` і тривалість стає
- * `1e-05s`. Тому налаштування дублюється викликом нижче, а НЕ мається на
- * увазі з конфіга.
- *
- * ## Чому саме `getAnimations()`, і чому лише `CSSAnimation`
- *
- * Умова на стан, а не пауза: `waitForFunction` перепитує сам. Нескінченні
- * анімації (чайки, `seagullFly 4s infinite`) виключені — вони не завершаться
- * ніколи й на колір не впливають.
- *
- * `CSSTransition` виключено НАВМИСНО і за заміром: на сторінці постійно висить
- * перехід на SVG хвилі, який щокадру перезапускається кадровою анімацією.
- * Умова «усі анімації дограли» без цього фільтра не настає ніколи — перша
- * редакція цієї функції впала на всіх 14 замірах саме так.
- */
-async function waitForSettled(page: Page) {
-	await page.waitForFunction(() =>
-		document
-			.getAnimations()
-			.filter((animation): animation is CSSAnimation => animation instanceof CSSAnimation)
-			.every(
-				(animation) =>
-					animation.effect?.getTiming().iterations === Infinity ||
-					animation.playState === 'finished'
-			)
-	);
-}
 
 async function audit(page: Page, key: string) {
 	const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
