@@ -1,10 +1,11 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { htmlRoutes } from './routes';
 import { waitForSettled } from './settled';
-import { TOUCH_DEBT, TOUCH_MIN } from './touch-baseline';
+import { TOUCH_DEBT, TOUCH_DEBT_COARSE, TOUCH_MIN, TOUCH_MIN_COARSE } from './touch-baseline';
 
 /**
- * GATE-TOUCH-TARGET — розмір сенсорних цілей (WCAG 2.2 SC 2.5.8, рівень AA).
+ * GATE-TOUCH-TARGET — розмір сенсорних цілей (WCAG 2.2 SC 2.5.8, рівень AA, і
+ * UI-ELEMENTS-v8 § 1 для дотику).
  *
  * ## Чому гейт з'явився лише тепер
  *
@@ -20,13 +21,29 @@ import { TOUCH_DEBT, TOUCH_MIN } from './touch-baseline';
  * Це той самий клас, що й `GATE-OVERLAY-FIT`: правило, віддане людині, живе
  * рівно доти, доки людина про нього пам'ятає.
  *
- * ## Поріг — 24, а не 44, і це не поблажка
+ * ## Два пороги, бо їх справді два
  *
  * 24×24 — нормативний мінімум SC 2.5.8 і діє на будь-якому вказівнику. 44×44
- * канон вимагає на ДОТИКУ (UI-ELEMENTS-v8 § 1), і саме там воно й стоїть — у
- * `@media (pointer: coarse)`. Playwright ходить мишею, тобто `coarse`-гілка в
- * замір не потрапляє; ставити 44 порогом гейта означало б міряти одне, а
- * вимагати інше.
+ * канон вимагає на ДОТИКУ, і в проєкті воно живе в `@media (pointer: coarse)`.
+ *
+ * Перша редакція цього файлу міряла лише перший поріг, і причина була записана
+ * прямо: «Playwright ходить мишею, тобто `coarse`-гілка в замір не потрапляє».
+ * Твердження виявилося неправдою — контекст із `hasTouch: true` дає
+ * `matchMedia('(pointer: coarse)').matches === true`, — і саме за ним ховався
+ * справжній дефект (заміряно 2026-09-02, усі 7 сторінок):
+ *
+ *     header-settings-btn  40×40      footer-piano-btn  120×36
+ *     header-burger-btn    40×40      order website     120×36
+ *     Facebook, Instagram  36×36      skip-to-content   195×38
+ *
+ * Кружечки соцмереж мали власне правило `@media (pointer: coarse)` на 44×44 —
+ * і воно не діяло ніколи: стояло ВИЩЕ за базове `width: 36px` тієї ж
+ * специфічності, тобто програвало порядком. Поруч лежав коментар, який
+ * пояснював, чому кружечок 44×44. Найдорожча форма помилки: код виглядає
+ * зробленим, і в нього ніхто не повертається.
+ *
+ * Тепер мінімум задає одна утиліта `.touch-target` у `global.css` через
+ * `min-width`/`min-height` — вони від нічиєї специфічності не залежать узагалі.
  *
  * ## Борг — переліком, а не числом
  *
@@ -51,6 +68,68 @@ const VIEWPORTS = [
 
 type Target = { label: string; w: number; h: number };
 
+/** Замір однієї сторінки в одному вікні. Спільний для обох порогів. */
+async function measure(page: Page, route: string, vp: { w: number; h: number }, min: number) {
+	await page.emulateMedia({ reducedMotion: 'reduce' });
+	await page.setViewportSize({ width: vp.w, height: vp.h });
+	await page.goto(route);
+	await expect(page.getByTestId('app-header')).toBeVisible();
+	await waitForSettled(page);
+
+	return page.evaluate(
+		([selector, limit]) => {
+			const small: Target[] = [];
+			let seen = 0;
+			for (const node of Array.from(document.querySelectorAll(selector as string))) {
+				const el = node as HTMLElement;
+				const box = el.getBoundingClientRect();
+				if (box.width === 0 || box.height === 0) continue;
+				const style = getComputedStyle(el);
+				if (style.visibility === 'hidden' || style.display === 'none') continue;
+				seen++;
+				if (box.width >= (limit as number) && box.height >= (limit as number)) continue;
+				// Підпис має пережити зміну розкладки: спершу локатор,
+				// далі текст, і лише потім тег — щоб борг не «зникав»
+				// від правки, якої ніхто не робив.
+				const label =
+					el.dataset.testid ||
+					(el.textContent ?? '').trim().slice(0, 40) ||
+					el.getAttribute('aria-label') ||
+					el.tagName.toLowerCase();
+				small.push({
+					label,
+					w: Math.round(box.width),
+					h: Math.round(box.height)
+				});
+			}
+			return { seen, small };
+		},
+		[INTERACTIVE, min] as const
+	);
+}
+
+function report(
+	route: string,
+	min: number,
+	seen: number,
+	small: Target[],
+	debt: Record<string, readonly string[]>
+) {
+	// Canary: сторінка без жодної цілі дала б «порушень немає»
+	// (AI-AGENT-PITFALLS-v8 § 1). Шапка є всюди, тож нуль неможливий.
+	expect(seen, `на ${route} не знайдено жодної інтерактивної цілі`).toBeGreaterThan(0);
+
+	const known = debt[route] ?? [];
+	const unexpected = small
+		.filter((t) => !known.includes(t.label))
+		.map((t) => `«${t.label}» ${t.w}×${t.h}`);
+
+	expect(
+		unexpected,
+		`ціль менша за ${min}×${min} CSS px:\n${unexpected.join('\n')}`
+	).toEqual([]);
+}
+
 test.describe('GATE-TOUCH-TARGET', () => {
 	test('перелік сторінок і вікон не порожній — гейт живий', () => {
 		expect(htmlRoutes().length, 'жодної сторінки під замір').toBeGreaterThan(0);
@@ -62,58 +141,43 @@ test.describe('GATE-TOUCH-TARGET', () => {
 			test(`${route} (${vp.name}) — цілі не менші за ${TOUCH_MIN}×${TOUCH_MIN}`, async ({
 				page
 			}) => {
-				await page.emulateMedia({ reducedMotion: 'reduce' });
-				await page.setViewportSize({ width: vp.w, height: vp.h });
-				await page.goto(route);
-				await expect(page.getByTestId('app-header')).toBeVisible();
-				await waitForSettled(page);
-
-				const { seen, small } = await page.evaluate(
-					([selector, min]) => {
-						const small: Target[] = [];
-						let seen = 0;
-						for (const node of Array.from(document.querySelectorAll(selector as string))) {
-							const el = node as HTMLElement;
-							const box = el.getBoundingClientRect();
-							if (box.width === 0 || box.height === 0) continue;
-							const style = getComputedStyle(el);
-							if (style.visibility === 'hidden' || style.display === 'none') continue;
-							seen++;
-							if (box.width >= (min as number) && box.height >= (min as number)) continue;
-							// Підпис має пережити зміну розкладки: спершу локатор,
-							// далі текст, і лише потім тег — щоб борг не «зникав»
-							// від правки, якої ніхто не робив.
-							const label =
-								el.dataset.testid ||
-								(el.textContent ?? '').trim().slice(0, 40) ||
-								el.getAttribute('aria-label') ||
-								el.tagName.toLowerCase();
-							small.push({
-								label,
-								w: Math.round(box.width),
-								h: Math.round(box.height)
-							});
-						}
-						return { seen, small };
-					},
-					[INTERACTIVE, TOUCH_MIN] as const
-				);
-
-				// Canary: сторінка без жодної цілі дала б «порушень немає»
-				// (AI-AGENT-PITFALLS-v8 § 1). Шапка є всюди, тож нуль неможливий.
-				expect(seen, `на ${route} не знайдено жодної інтерактивної цілі`).toBeGreaterThan(0);
-
-				const known = TOUCH_DEBT[route] ?? [];
-				const unexpected = small
-					.filter((t) => !known.includes(t.label))
-					.map((t) => `«${t.label}» ${t.w}×${t.h}`);
-
-				expect(
-					unexpected,
-					`ціль менша за ${TOUCH_MIN}×${TOUCH_MIN} CSS px — WCAG 2.2 SC 2.5.8, рівень AA:\n` +
-						unexpected.join('\n')
-				).toEqual([]);
+				const { seen, small } = await measure(page, route, vp, TOUCH_MIN);
+				report(route, TOUCH_MIN, seen, small, TOUCH_DEBT);
 			});
 		}
+	}
+});
+
+/**
+ * Той самий замір у контексті, який браузер вважає сенсорним.
+ *
+ * `hasTouch: true` — і більше нічого: `isMobile` додав би емуляцію мобільного
+ * viewport разом із власним UA, тобто змінив би не лише те, що перевіряється.
+ * Заміряно: обидва варіанти дають `(pointer: coarse)` і `(hover: none)`, тож
+ * зайва половина емуляції нічого не додає, а вплив на розкладку додає.
+ *
+ * Вікно лише мобільне: `(pointer: coarse)` на десктопній ширині — це планшет у
+ * ландшафті, і правила проєкту від ширини тут не залежать.
+ */
+test.describe('GATE-TOUCH-TARGET на дотику', () => {
+	test.use({ hasTouch: true });
+
+	const vp = VIEWPORTS[0];
+
+	test('браузер справді вважає вказівник грубим — перевірка жива', async ({ page }) => {
+		await page.goto('/');
+		const coarse = await page.evaluate(() => matchMedia('(pointer: coarse)').matches);
+		expect(coarse, '`hasTouch` не дав `pointer: coarse` — гейт міряв би десктопну гілку').toBe(
+			true
+		);
+	});
+
+	for (const route of htmlRoutes()) {
+		test(`${route} (дотик) — цілі не менші за ${TOUCH_MIN_COARSE}×${TOUCH_MIN_COARSE}`, async ({
+			page
+		}) => {
+			const { seen, small } = await measure(page, route, vp, TOUCH_MIN_COARSE);
+			report(route, TOUCH_MIN_COARSE, seen, small, TOUCH_DEBT_COARSE);
+		});
 	}
 });

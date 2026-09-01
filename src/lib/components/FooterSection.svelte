@@ -51,7 +51,7 @@
 		<div class="footer__content">
 			<!-- 1. Button "грати" - Piano Keyboard Style -->
 			<button
-				class="footer__btn-piano"
+				class="footer__btn-piano touch-target"
 				onclick={() => (isPianoOpen = true)}
 				aria-label={$t("footer.play")} data-testid="footer-piano-btn"
 			>
@@ -103,7 +103,7 @@
 			<div class="footer__social" id="footer-social">
 				<a
 					href={$t("footer.facebook")}
-					class="footer__social-link"
+					class="footer__social-link touch-target"
 					aria-label="Facebook"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -112,7 +112,7 @@
 				</a>
 				<a
 					href={$t("footer.instagram")}
-					class="footer__social-link"
+					class="footer__social-link touch-target"
 					aria-label="Instagram"
 					target="_blank"
 					rel="noopener noreferrer"
@@ -134,7 +134,7 @@
 			<a href={orderHref}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="footer__btn-order"
+				class="footer__btn-order touch-target"
 			>
 				{$t("footer.order")}
 			</a>
@@ -304,18 +304,6 @@
 		display: flex;
 		gap: var(--space-lg);
 		align-items: center;
-	}
-
-	/*
-	 * Кружечок соцмережі — 36×36 мишею; на дотику канон вимагає 44×44
-	 * (UI-ELEMENTS-v8 § 1). Мінімум SC 2.5.8 (24×24) 36 px виконує й так, тож
-	 * росте ціль лише там, де в неї цілять пальцем.
-	 */
-	@media (pointer: coarse) {
-		.footer__social-link {
-			width: 44px;
-			height: 44px;
-		}
 	}
 
 	/* Social */

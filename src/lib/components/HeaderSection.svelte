@@ -44,7 +44,7 @@
 
 </script>
 
-<a href="#main-content" class="skip-link" data-testid="skip-to-content-link">
+<a href="#main-content" class="skip-link touch-target" data-testid="skip-to-content-link">
 	{$t("a11y.skipToContent")}
 </a>
 
@@ -91,14 +91,14 @@
 		</a>
 
 		<div class="header__settings" class:open={ui.isSettingsOpen} bind:this={settingsRef} data-testid="header-settings-container">
-			<button class="header__settings-btn" aria-label={$t("a11y.settings")} onclick={ui.toggleSettings} aria-expanded={ui.isSettingsOpen} data-testid="header-settings-btn">
+			<button class="header__settings-btn touch-target" aria-label={$t("a11y.settings")} onclick={ui.toggleSettings} aria-expanded={ui.isSettingsOpen} data-testid="header-settings-btn">
 				<SettingsIcon size={24} />
 			</button>
 			<SettingsPanel isOpen={ui.isSettingsOpen} />
 		</div>
 
 		<button
-			class="header__burger"
+			class="header__burger touch-target"
 			onclick={ui.toggleMenu}
 			aria-label={$t("a11y.openMenu")}
 			aria-expanded={ui.isMenuOpen}
@@ -116,6 +116,8 @@
 <style>
 	.skip-link {
 		position: absolute;
+		display: inline-flex;
+		align-items: center;
 		top: -100%;
 		left: var(--space-md);
 		background: var(--color-deep-ocean);
