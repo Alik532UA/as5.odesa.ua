@@ -197,27 +197,30 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | Гейт                                      | Де                                    | Що ловить                                                                                                                                                                                                                 |
 | ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run lint`                            | CI                                    | eslint, базовий набір за CODE-QUALITY-v8 § 6.4.1                                                                                                                                                                          |
+| `GATE-DOC-NUMBERS` (у складі `npm test`)  | CI                                    | число в `AGENTS.md` чи `PROJECT-CONTEXT.md`, що розійшлося з джерелом гейта, який ним володіє: переліки файлів інваріантів і E2E, `SIZE_DEBT`, `DEBT` ESLint, `ORPHAN_DEBT`, перелік `eslint-disable`                       |
 | `GATE-EOL` (у складі `npm test`)          | CI                                    | `.gitattributes` без `* text=auto eol=lf`; двійковий тип, лишений на евристиці git; розходження індексу з робочим деревом. Джерело — `git ls-files --eol`, тобто те, що бачить сам git, а не текст конфіга                  |
-| `npm run check`                           | CI                                    | `svelte-check`, 0 помилок на 4221 файлі                                                                                                                                                                                   |
-| `npm test`                                | CI                                    | **31 файл, 261 перевірка** (`npx vitest run \| grep "Tests "`)                                                                                                                                                          |
-| `npm run test:e2e`                        | CI, до збірки                         | **55 перевірок** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), і розмір сенсорних цілей (`GATE-TOUCH-TARGET`). Число звіряється командою `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
+| `npm run check`                           | CI                                    | `svelte-check`, 0 помилок. Кількість оброблених файлів тут не записана навмисно: вона міняється від кожного нового модуля й від версії SvelteKit, тобто застаріває швидше, ніж її читають (`PIT-NUMBER-UNDER-GATE`)                                                                                                                                                                                   |
+| `npm test`                                | CI                                    | **31 файл** інваріантів; перелік і число — під `GATE-DOC-NUMBERS`. Кількість самих перевірок друкує прогін (`npx vitest run \| grep "Tests "`) і тут не дублюється: друга копія факту рветься саме тому, що вона друга                                                                                                                                                          |
+| `npm run test:e2e`                        | CI, до збірки                         | **5 файлів** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), і розмір сенсорних цілей (`GATE-TOUCH-TARGET`). Кількість самих перевірок друкує `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
 | `npm audit --omit=dev --audit-level=high` | CI                                    | вразливості **прод**-залежностей                                                                                                                                                                                          |
 | `git diff --exit-code`                    | CI, після `build`                     | збірка не бруднить робоче дерево                                                                                                                                                                                          |
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів: `beta-checklist`, `ci`, `contrast`, `css-variables`, `dependencies`,
-`dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`, `hotkeys`,
-`i18n-literals`, `static-assets`, `structure`, `test-runners`, `testid-conventions` у `src/`, плюс `actions/focusTrap`,
-`i18n/locale`, `i18n/translations`, `schemas/news`, `actions/anchoredPanel`,
-`services/analytics`,
-`services/errorLogger`, `services/keySequence`, `services/keyboard`,
-`services/storage`, `states/ui.svelte`, `utils/reducedMotion`,
-`lib/siblings`, `hooks.client`, `csp-hash`.
+Файли інваріантів під `src/` — **32**, і перелік стоїть під `GATE-DOC-NUMBERS`
+(`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
+`beta-checklist`, `ci`, `contrast`, `csp-hash`, `css-variables`, `dependencies`,
+`doc-numbers`, `dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`,
+`hooks.client`, `hotkeys`, `i18n-literals`, `lib/actions/anchoredPanel`,
+`lib/actions/focusTrap`, `lib/i18n/locale`, `lib/i18n/translations`,
+`lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
+`lib/services/keySequence`, `lib/services/keyboard`, `lib/services/storage`,
+`lib/siblings`, `lib/states/ui.svelte`, `lib/utils/reducedMotion`,
+`static-assets`, `structure`, `test-runners`, `testid-conventions`.
 
-E2E живуть у кореневому `tests/`: `a11y.spec.ts`, `testid-runtime.spec.ts`,
-`overlay-fit.spec.ts`, `panel-fit.spec.ts`, `touch-targets.spec.ts` і чотири
-модулі даних поруч —
+E2E живуть у кореневому `tests/` — **5** файлів, теж під `GATE-DOC-NUMBERS`:
+`a11y.spec.ts`, `overlay-fit.spec.ts`, `panel-fit.spec.ts`,
+`testid-runtime.spec.ts`, `touch-targets.spec.ts`. Поруч — чотири модулі даних:
 `a11y-baseline.ts` (пара KNOWN/COUNT), `touch-baseline.ts` (перелік цілей нижче
 межі), `routes.ts` (перелік сторінок, СПІЛЬНИЙ для всіх гейтів; два власні
 переліки розходяться на першій же новій сторінці, а виглядає це як «там
@@ -339,10 +342,12 @@ E2E живуть у кореневому `tests/`: `a11y.spec.ts`, `testid-runti
 Різниця між схемами втричі — рівно те, чого не видно без окремого прогону на
 кожну: контраст є властивістю ПАРИ кольорів.
 
-Два `eslint-disable` у проєкті, обидва з причиною поруч
-(`grep -rn "eslint-disable" src/`): `prefer-rest-params` у `analytics.ts`
-(gtag.js читає сирий `arguments`) і `svelte/no-at-html-tags` у `+layout.svelte`
-(JSON-LD, виняток SECURITY-v8 § 5.3).
+Чотири `eslint-disable` у проєкті, кожен із причиною поруч, і число під
+`GATE-DOC-NUMBERS`: `prefer-rest-params` у `services/analytics.ts` (gtag.js
+читає сирий `arguments`), `svelte/no-at-html-tags` у `routes/+layout.svelte`
+(JSON-LD, виняток SECURITY-v8 § 5.3) і двічі `svelte/no-navigation-without-resolve`
+на зовнішніх посиланнях підвалу — `components/FooterContactItem.svelte` і
+`components/FooterSection.svelte`.
 
 ## Легасі-зони та списки винятків
 
@@ -401,6 +406,7 @@ E2E живуть у кореневому `tests/`: `a11y.spec.ts`, `testid-runti
 | Картка відділу міряла ВІКНО: на 197 px діставала найбільший паддінг, на 200 px — найменший (три пікселі різниці)  | 2026-08-28 | 1       |
 | Правило «модалка без `use:focusTrap`» жило лише рядком в AGENTS.md — дія була, а перевірки, що її застосували, не було | 2026-08-28 | 1       |
 | Випадайка налаштувань не вміщалася у вікно: на 320 px починалася в −4 px, а її перемикач «Гарячі клавіші» на 844×390 лежав на 219 px нижче краю. Перемикач — це ОБРАНИЙ спосіб виконати WCAG SC 2.1.4 (рівень A), і на телефоні в ландшафті до нього не було як дістатися | 2026-09-02 | 2       |
+| Число в документі старіло мовчки: `b00df49` виправив це руками, і за два тижні розійшлися ще три числа — файлів під `svelte-check`, `eslint-disable` і перевірок, які читають власні джерела | 2026-09-02 | 1       |
 | `.gitattributes` лежав без перевірки з 2026-08-26, а `.woff2` тримався на евристиці git: шрифт, що починається схоже на текст, отримав би нормалізацію й перестав відкриватися | 2026-09-02 | 1       |
 | `<svelte:boundary>` без сніпета `failed` показує ПОРОЖНЄ місце; проєкт це вже проходив, а гейта проти повтору не завів | 2026-08-28 | 1       |
 
