@@ -79,7 +79,7 @@ const EXCEPTIONS: { selector: string; theme: Theme | '*'; ratio: number; why: st
 		why: 'Іконка соцмережі на наведенні. Іконка векторна й тексту поруч не показує, але правило задає `color`, і перевірка міряє саме його'
 	},
 	{
-		selector: '.header__settings-opt.active',
+		selector: '.settings-panel__opt.active',
 		theme: 'light',
 		ratio: 2.03,
 		why: 'Обраний варіант у випадайці налаштувань: золотий текст на білому. Стан дублюється тлом і `aria-pressed`, тобто не лише кольором'

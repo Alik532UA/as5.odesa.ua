@@ -1,11 +1,11 @@
 <script lang="ts">
 	import LogoIcon from "./LogoIcon.svelte";
-	import DebugSettingsDropdown from "./DebugSettingsDropdown.svelte";
+	import SettingsPanel from "./SettingsPanel.svelte";
 	import MobileMenu from "./MobileMenu.svelte";
 	import SettingsIcon from "./icons/SettingsIcon.svelte";
 	import { Menu } from "lucide-svelte";
 	import { ui } from "$lib/states/ui.svelte";
-	import { t, locale } from "svelte-i18n";
+	import { t } from "svelte-i18n";
 	import { page } from "$app/state";
 	import { resolve } from "$app/paths";
 	import { NAV_ITEMS } from "$lib/config/nav";
@@ -14,11 +14,6 @@
 	// Стан випадайки живе в `ui` разом із мобільним меню: вони взаємно виключні, і
 	// це правило тепер в одному місці, а не в `$effect`, який стежив за двома полями.
 	let settingsRef: HTMLDivElement | null = $state(null);
-
-	function toggleTheme() {
-		const newTheme = ui.theme === "light" ? "dark" : "light";
-		ui.setTheme(newTheme);
-	}
 
 	// Самі пункти — у `$lib/config/nav`. Тут лишається лише переклад підпису:
 	// він мовний і мусить перемальовуватися при зміні мови.
@@ -99,62 +94,7 @@
 			<button class="header__settings-btn" aria-label={$t("a11y.settings")} onclick={ui.toggleSettings} aria-expanded={ui.isSettingsOpen} data-testid="header-settings-btn">
 				<SettingsIcon size={24} />
 			</button>
-			<div class="header__settings-dropdown">
-				<!-- `aria-pressed`: стан кнопки жив лише в класі `active`, тобто в кольорі — читалка
-				     озвучувала два однакові перемикачі й жодного активного. `aria-keyshortcuts` про
-				     скорочення лише ПОВІДОМЛЯЄ (HOTKEYS-v8 § 5) і зникає разом із ним. -->
-				<div class="header__settings-group">
-					<span class="header__settings-label"
-						>{$t("settings.language")}</span
-					>
-					<div class="header__settings-options">
-						<button
-							class="header__settings-opt"
-							class:active={$locale === "uk"}
-							aria-pressed={$locale === "uk"}
-							aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
-							data-testid="settings-lang-uk-btn"
-							onclick={() => ui.setLanguage("uk")}>UA</button
-						>
-						<button
-							class="header__settings-opt"
-							class:active={$locale === "en"}
-							aria-pressed={$locale === "en"}
-							aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
-							data-testid="settings-lang-en-btn"
-							onclick={() => ui.setLanguage("en")}>EN</button
-						>
-					</div>
-				</div>
-				<div class="header__settings-group">
-					<span class="header__settings-label"
-						>{$t("settings.theme")}</span
-					>
-					<div class="header__settings-options">
-						<button
-							class="header__settings-opt"
-							class:active={ui.theme === "light"}
-							aria-pressed={ui.theme === "light"}
-							aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
-							data-testid="settings-theme-light-btn"
-							onclick={() => {
-								if (ui.theme === "dark") toggleTheme();
-							}}>{$t("settings.light")}</button
-						>
-						<button
-							class="header__settings-opt"
-							class:active={ui.theme === "dark"}
-							aria-pressed={ui.theme === "dark"}
-							aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
-							data-testid="settings-theme-dark-btn"
-							onclick={() => {
-								if (ui.theme === "light") toggleTheme();
-							}}>{$t("settings.dark")}</button
-						>
-					</div>
-				</div>
-			</div>
-			<DebugSettingsDropdown isOpen={ui.isSettingsOpen} />
+			<SettingsPanel isOpen={ui.isSettingsOpen} />
 		</div>
 
 		<button
@@ -317,74 +257,6 @@
 	.header__settings.open .header__settings-btn {
 		background: var(--color-sky-blue);
 		transform: rotate(45deg);
-	}
-
-	.header__settings-dropdown {
-		position: absolute;
-		top: 100%;
-		right: 0;
-		width: 220px;
-		background: var(--color-white);
-		border-radius: var(--radius-lg);
-		box-shadow: var(--shadow-lg);
-		padding: var(--space-md);
-		opacity: 0;
-		visibility: hidden;
-		transform: translateY(10px);
-		transition: all var(--transition-base);
-		z-index: 330;
-	}
-
-	.header__settings.open .header__settings-dropdown {
-		opacity: 1;
-		visibility: visible;
-		transform: translateY(5px);
-	}
-
-	.header__settings-group {
-		margin-bottom: var(--space-md);
-	}
-
-	.header__settings-group:last-child {
-		margin-bottom: 0;
-	}
-
-	.header__settings-label {
-		display: block;
-		font-size: 0.75rem;
-		font-weight: 700;
-		color: var(--color-muted-text);
-		text-transform: uppercase;
-		margin-bottom: var(--space-xs);
-		letter-spacing: 0.05em;
-	}
-
-	.header__settings-options {
-		display: flex;
-		gap: var(--space-xs);
-		background: var(--color-ice-blue);
-		padding: 4px;
-		border-radius: var(--radius-md);
-	}
-
-	.header__settings-opt {
-		flex: 1;
-		padding: 6px;
-		font-size: 0.8rem;
-		font-weight: 700;
-		border-radius: var(--radius-sm);
-		transition: all var(--transition-fast);
-		color: var(--color-deep-ocean);
-	}
-
-	.header__settings-opt:hover {
-		background: rgba(255, 255, 255, 0.5);
-	}
-
-	.header__settings-opt.active {
-		background: var(--color-white);
-		box-shadow: var(--shadow-sm);
-		color: var(--color-golden);
 	}
 
 	/* CTA Button */
