@@ -79,11 +79,12 @@ prerendered повністю. Два з них службові й не в ін�
 | Ключ у словнику, якого не читає ніхто | паритет `uk`↔`en` такий ключ пропускає завжди. Гейт — `translations.test.ts` |
 | Медіафайл у корені `static/` | там лише службове (`favicon.*`, `robots.txt`, `llms.txt`, `CNAME`…). Решта — у підпапки. Гейт `src/static-assets.test.ts`; він же тримає борг сиріт: 1504 КБ статики не просить ніхто |
 | `@media` для вигляду компонента, що залежить від наявного місця | картка в сітці міряла ВІКНО: на 197 px діставала найбільший паддінг, на 200 px — найменший. `container-type` ставиться на ОБГОРТЦІ: на самому елементі паддінг залежав би від заміру, а замір — від паддінга |
+| Панель біля кнопки, прив’язана до її краю (`position: absolute; right: 0`) | позиція міряється при відкритті — `use:anchoredPanel` (`$lib/actions/anchoredPanel`). Ширина панелі й місце кнопки відомі лише в браузері. Випадайка налаштувань на вікні 320 px починалася в −4 px, а її перемикач «Гарячі клавіші» на 844×390 лежав на 219 px нижче краю — і доскролити до нього не можна, бо шапка `position: fixed`. Гейти — `src/fluid-sizing.test.ts` (клас) і `tests/panel-fit.spec.ts` (пікселі) |
 
 Рядки до `console.log` включно тримає ESLint. Далі йдуть ті, що під `npm test`
 і `npm run test:e2e`: `structure`, `hotkeys`, `fluid-sizing`, `i18n-literals`,
 `static-assets`, `translations`, `check:build` через `REQUIRED_CONTENT`,
-`GATE-OVERLAY-FIT` і `GATE-TOUCH-TARGET`.
+`GATE-OVERLAY-FIT`, `GATE-PANEL-FIT` і `GATE-TOUCH-TARGET`.
 
 **Рівно два рядки не ловить жоден гейт**, і вони тут саме тому — прочитай їх
 уважно: `svelte-ignore` без перевірки того, що саме він глушить, і рядок

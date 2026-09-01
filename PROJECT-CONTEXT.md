@@ -198,8 +198,8 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run lint`                            | CI                                    | eslint, базовий набір за CODE-QUALITY-v8 § 6.4.1                                                                                                                                                                          |
 | `npm run check`                           | CI                                    | `svelte-check`, 0 помилок на 4221 файлі                                                                                                                                                                                   |
-| `npm test`                                | CI                                    | **29 файлів, 248 перевірок** (`npx vitest run \| grep "Tests "`)                                                                                                                                                          |
-| `npm run test:e2e`                        | CI, до збірки                         | **49 перевірок** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`) і розмір сенсорних цілей (`GATE-TOUCH-TARGET`). Число звіряється командою `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
+| `npm test`                                | CI                                    | **30 файлів, 256 перевірок** (`npx vitest run \| grep "Tests "`)                                                                                                                                                          |
+| `npm run test:e2e`                        | CI, до збірки                         | **55 перевірок** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), і розмір сенсорних цілей (`GATE-TOUCH-TARGET`). Число звіряється командою `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
 | `npm audit --omit=dev --audit-level=high` | CI                                    | вразливості **прод**-залежностей                                                                                                                                                                                          |
 | `git diff --exit-code`                    | CI, після `build`                     | збірка не бруднить робоче дерево                                                                                                                                                                                          |
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
@@ -208,13 +208,15 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 Файли інваріантів: `beta-checklist`, `ci`, `contrast`, `css-variables`, `dependencies`,
 `dom-ids`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`, `hotkeys`,
 `i18n-literals`, `static-assets`, `structure`, `test-runners`, `testid-conventions` у `src/`, плюс `actions/focusTrap`,
-`i18n/locale`, `i18n/translations`, `schemas/news`, `services/analytics`,
+`i18n/locale`, `i18n/translations`, `schemas/news`, `actions/anchoredPanel`,
+`services/analytics`,
 `services/errorLogger`, `services/keySequence`, `services/keyboard`,
 `services/storage`, `states/ui.svelte`, `utils/reducedMotion`,
 `lib/siblings`, `hooks.client`, `csp-hash`.
 
 E2E живуть у кореневому `tests/`: `a11y.spec.ts`, `testid-runtime.spec.ts`,
-`overlay-fit.spec.ts`, `touch-targets.spec.ts` і чотири модулі даних поруч —
+`overlay-fit.spec.ts`, `panel-fit.spec.ts`, `touch-targets.spec.ts` і чотири
+модулі даних поруч —
 `a11y-baseline.ts` (пара KNOWN/COUNT), `touch-baseline.ts` (перелік цілей нижче
 межі), `routes.ts` (перелік сторінок, СПІЛЬНИЙ для всіх гейтів; два власні
 переліки розходяться на першій же новій сторінці, а виглядає це як «там
@@ -397,6 +399,7 @@ E2E живуть у кореневому `tests/`: `a11y.spec.ts`, `testid-runti
 | Чотири ключі словника не читав ніхто: паритет звіряв `uk` з `en` і жодного разу — з кодом                       | 2026-08-28 | 1       |
 | Картка відділу міряла ВІКНО: на 197 px діставала найбільший паддінг, на 200 px — найменший (три пікселі різниці)  | 2026-08-28 | 1       |
 | Правило «модалка без `use:focusTrap`» жило лише рядком в AGENTS.md — дія була, а перевірки, що її застосували, не було | 2026-08-28 | 1       |
+| Випадайка налаштувань не вміщалася у вікно: на 320 px починалася в −4 px, а її перемикач «Гарячі клавіші» на 844×390 лежав на 219 px нижче краю. Перемикач — це ОБРАНИЙ спосіб виконати WCAG SC 2.1.4 (рівень A), і на телефоні в ландшафті до нього не було як дістатися | 2026-09-02 | 2       |
 | `<svelte:boundary>` без сніпета `failed` показує ПОРОЖНЄ місце; проєкт це вже проходив, а гейта проти повтору не завів | 2026-08-28 | 1       |
 
 ---

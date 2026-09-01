@@ -24,15 +24,18 @@
 	 * завгодно на сторінці. Тепер правила скоупні, і класи можуть мати короткі
 	 * власні імена — вони більше нічому не мусять збігатися.
 	 *
-	 * ## Чому `isOpen` став робочим пропом
+	 * ## Чому пропа видимості тут більше немає
 	 *
-	 * Він передавався й не використовувався жодного разу: видимістю керувало
-	 * правило `.header__settings.open :global(…-debug)`, тобто СТАН БАТЬКА
-	 * через CSS. Проп при цьому обіцяв реактивність, якої не було, а компонент
-	 * не можна було показати ніде, крім тієї конкретної шапки. Тепер відкриття
-	 * виражає сам проп, і залежності від чужої розмітки не лишилося.
+	 * Спершу `isOpen` передавався й не використовувався жодного разу: видимістю
+	 * керувало правило `.header__settings.open :global(…-debug)`, тобто СТАН
+	 * БАТЬКА через CSS. Проп зробили робочим — і це було правильно доти, доки
+	 * картка позиціонувалася сама.
+	 *
+	 * Тепер вона лежить ПОТОКОМ усередині `SettingsPanel`, який і показується, і
+	 * прокручується, і міряє себе цілком. Власна видимість тут означала б другий
+	 * вимикач на тому самому стані — а два джерела одного факту розходяться
+	 * рівно тоді, коли на це ніхто не дивиться.
 	 */
-	let { isOpen = false }: { isOpen?: boolean } = $props();
 
 	type BackgroundOption = {
 		id: 0 | 1 | 2 | 3;
@@ -56,7 +59,7 @@
 	];
 </script>
 
-<div class="debug-dropdown" class:open={isOpen} data-testid="debug-settings-panel">
+<div class="debug-dropdown" data-testid="debug-settings-panel">
 	<div class="debug-dropdown__group">
 		<span class="debug-dropdown__label">{$t('settings.dynamicBg')}</span>
 		<div class="debug-dropdown__options debug-dropdown__options--stacked">
@@ -138,26 +141,18 @@
 </div>
 
 <style>
+	/*
+	 * Картка, а не панель: позицію, видимість і стелю висоти тримає контейнер
+	 * `SettingsPanel`. Доти тут стояло `top: calc(100% + 170px)` — тобто висота
+	 * СУСІДНЬОЇ картки, записана числом (насправді 166), — і кожен доданий у неї
+	 * рядок залазив під цю.
+	 */
 	.debug-dropdown {
-		position: absolute;
-		top: calc(100% + 170px);
-		right: 0;
-		width: 220px;
+		margin-top: var(--space-sm);
 		background: var(--color-white);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-lg);
 		padding: var(--space-md);
-		opacity: 0;
-		visibility: hidden;
-		transform: translateY(10px);
-		transition: all var(--transition-base);
-		z-index: 329;
-	}
-
-	.debug-dropdown.open {
-		opacity: 1;
-		visibility: visible;
-		transform: translateY(5px);
 	}
 
 	.debug-dropdown__group {

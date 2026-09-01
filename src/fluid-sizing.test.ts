@@ -121,6 +121,55 @@ const VH_ALLOWED: readonly string[] = ['src/lib/components/ui/PianoModal.svelte:
 /** `селектор { тіло }` без вкладеності — цього досить для блоків-оверлеїв. */
 const RULE = /([^{}]+)\{([^{}]*)\}/g;
 
+/**
+ * Панель, прив'язана до кнопки (FLUID-SIZING-v8 § 5, рівень CRITICAL).
+ *
+ * Ознака саме та, яку дає анти-патерн: абсолютне позиціонування, прив'язка до
+ * горизонтального краю тригера і ШИРИНА В ПІКСЕЛЯХ. Останнє обовʼязкове —
+ * без нього під ознаку потрапляє кожна декоративна підкладка з `left: 0`
+ * (підкреслення пункту меню, тло секції), яка нічого не показує й ніде не
+ * вилазить.
+ *
+ * Заміряно 2026-09-02: випадайка налаштувань на вікні 320 px починалася в
+ * −4 px, а перемикач «Гарячі клавіші» на 844×390 лежав на 219 px нижче краю —
+ * і доскролити до нього не можна, бо шапка `position: fixed`.
+ *
+ * Перевірка навмисно груба, як і сусідня про центровані оверлеї: вона питає не
+ * «чи правильно виміряно», а «чи взагалі хтось вимірює». Пікселі міряє
+ * `tests/panel-fit.spec.ts` (`GATE-PANEL-FIT`) у живому браузері.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v8 § 1.1): повернути в
+ * `SettingsPanel.svelte` `right: 0; width: 220px` без `use:anchoredPanel` —
+ * перевірка червоніє саме на цьому файлі. Прогнано.
+ */
+function isAnchoredPanel(body: string): boolean {
+	return (
+		/position\s*:\s*absolute/.test(body) &&
+		/(?:^|[;{\s])(?:left|right)\s*:\s*0(?:px)?\s*;/.test(body) &&
+		/(?:^|[;\s])width\s*:[^;]*\d+px/.test(body)
+	);
+}
+
+/**
+ * Дія, якою канон велить вирішувати позицію такої панелі, — і саме в РОЗМІТЦІ.
+ *
+ * Перша редакція шукала слово `anchoredPanel` будь-де у файлі й була зеленою на
+ * навмисно поверненому дефекті: назву дії згадував ВЛАСНИЙ докблок компонента.
+ * Тобто перевірка доводила наявність пояснення, а не наявність заміру — рівно
+ * та мовчазна зелень, проти якої написаний AI-AGENT-PITFALLS-v8 § 1.
+ */
+const MEASURES_PANEL = /use:anchoredPanel/;
+
+/** Коментарі не є кодом: гейт, який їх читає, вимикається одним реченням. */
+const withoutComments = (source: string) =>
+	source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/<!--[\s\S]*?-->/g, '');
+
+/**
+ * Панелі, які позиціонуються без заміру, — кожна з причиною. Порожній список
+ * означає, що винятків немає, а не що правило нове.
+ */
+const ANCHORED_ALLOWED: readonly string[] = [];
+
 function isCenteredOverlay(body: string): boolean {
 	const fixed = /position\s*:\s*fixed/.test(body);
 	const spansViewport = /inset\s*:\s*0/.test(body) || /(top|bottom)\s*:\s*0/.test(body);
@@ -175,6 +224,26 @@ describe('гнучкі розміри', () => {
 			bad,
 			'`100vh` на мобільному — це вікно зі СХОВАНОЮ панеллю браузера, тобто ' +
 				`висота, якої зараз немає:\n${bad.join('\n')}`
+		).toEqual([]);
+	});
+
+	it('панель біля кнопки вимірює своє місце, а не задає його наперед (CRITICAL)', () => {
+		const bad: string[] = [];
+		for (const f of files) {
+			const source = readFileSync(join(ROOT, f), 'utf8');
+			const panels = [...source.matchAll(RULE)]
+				.filter((m) => isAnchoredPanel(m[2]))
+				.map((m) => m[1].trim().split(/\s+/).pop() ?? m[1].trim());
+			if (panels.length === 0) continue;
+			if (ANCHORED_ALLOWED.includes(f)) continue;
+			if (!MEASURES_PANEL.test(withoutComments(source))) {
+				bad.push(`${f}: ${panels.join(', ')} — прив'язка до краю тригера без заміру`);
+			}
+		}
+		expect(
+			bad,
+			'панель успадковує позицію кнопки й вилазить за той бік, до якого кнопка ближча; ' +
+				`у fixed-шапці до втраченого не доскролити:\n${bad.join('\n')}`
 		).toEqual([]);
 	});
 
