@@ -31,6 +31,14 @@
  * стоїть на прозорості 0.13–0.22, тобто обидва кольори пари змішані з тлом.
  * Умову готовності виправлено в `a11y.spec.ts`; після цього обидві сторінки
  * дають нуль.
+ *
+ * Оверлеї (ключ — `data-testid` кореня, перелік у `overlays.ts`) заміряні
+ * 2026-09-02 тим самим прогоном — після того, як `settled.ts` навчився чекати
+ * на анімації Web Animations API, а не лише на `CSSAnimation`. До цього меню
+ * давало «контраст 1.06:1» на кнопці, яку axe бачив на прозорості 0.2. Після
+ * виправлення лишився ОДИН вузол у світлому меню — і це не артефакт, а 2.02:1
+ * білого на золотому, той самий брендовий борг, що й на сторінках (див.
+ * коментар у KNOWN). Стабільність доведена трьома прогонами поспіль.
  */
 
 /**
@@ -64,7 +72,18 @@ export const A11Y_KNOWN: Record<A11yKey, readonly string[]> = {
 	 * видно без окремого прогону на схему.
 	 */
 	'/test light': ['color-contrast', 'scrollable-region-focusable'],
-	'/test dark': ['color-contrast', 'scrollable-region-focusable']
+	'/test dark': ['color-contrast', 'scrollable-region-focusable'],
+	// Оверлеї у відкритому стані (ACCESSIBILITY-v8 § 10.2), з 2026-09-02.
+	// Світле меню: та сама брендова пара, що в EXCEPTIONS `src/contrast.test.ts` —
+	// `.btn-primary`, білий на золотому #f5a623, 2.02:1. Тут це кнопка «Вступ»,
+	// єдиний `.btn-primary`, досяжний з головної у відкритому меню. У темній схемі
+	// пара інша, і меню чисте. Борг той самий, записаний із двох боків.
+	'mobile-menu-modal light': ['color-contrast'],
+	'mobile-menu-modal dark': [],
+	'header-settings-panel light': [],
+	'header-settings-panel dark': [],
+	'piano-modal light': [],
+	'piano-modal dark': []
 };
 
 /** Кількість ВУЗЛІВ із порушеннями. Рухається лише вниз. */
@@ -82,5 +101,11 @@ export const A11Y_BASELINE: Record<A11yKey, number> = {
 	'/history light': 0,
 	'/history dark': 0,
 	'/test light': 14,
-	'/test dark': 34
+	'/test dark': 34,
+	'mobile-menu-modal light': 1,
+	'mobile-menu-modal dark': 0,
+	'header-settings-panel light': 0,
+	'header-settings-panel dark': 0,
+	'piano-modal light': 0,
+	'piano-modal dark': 0
 };

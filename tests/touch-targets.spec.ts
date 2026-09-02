@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { htmlRoutes } from './routes';
+import { OVERLAYS } from './overlays';
 import { waitForSettled } from './settled';
 import { TOUCH_DEBT, TOUCH_DEBT_COARSE, TOUCH_MIN, TOUCH_MIN_COARSE } from './touch-baseline';
 
@@ -225,27 +226,10 @@ test.describe('GATE-TOUCH-TARGET на дотику', () => {
  *
  * Тобто кожен пункт мобільного меню був на 15 px нижчий за норму дотику.
  *
- * Перелік і спосіб відкриття збігаються з `testid-runtime.spec.ts` навмисно:
- * два власні переліки станів розходяться на першому ж новому оверлеї, а
- * виглядає це як «там перевірено».
+ * Перелік і спосіб відкриття — спільний `tests/overlays.ts`, той самий, що
+ * міряє axe: два власні переліки станів розходяться на першому ж новому
+ * оверлеї, а виглядає це як «там перевірено».
  */
-const OVERLAYS = [
-	{
-		name: 'мобільне меню',
-		open: 'header-burger-btn',
-		root: 'mobile-menu-modal'
-	},
-	{
-		name: 'налаштування',
-		open: 'header-settings-btn',
-		root: 'header-settings-panel'
-	},
-	{
-		name: 'піаніно',
-		open: 'footer-piano-btn',
-		root: 'piano-modal'
-	}
-];
 
 test.describe('GATE-TOUCH-TARGET у станах на дотику', () => {
 	test.use({ hasTouch: true });

@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 import { A11Y_BASELINE, A11Y_KNOWN } from './a11y-baseline';
+import { OVERLAYS } from './overlays';
 import { EXPECTED_ROUTE_COUNT, dynamicRoutes, htmlRoutes } from './routes';
 import { waitForSettled } from './settled';
 
@@ -24,13 +25,24 @@ import { waitForSettled } from './settled';
  * автотестом / ще ні / лише людина» (BETA-CHECKLIST-v8).
  *
  * Третя межа (§ 10.2): `analyze()` бачить лише той стан, що є одразу після
- * `goto()`. Модалки, відкриті меню й тости в нього не потрапляють НІКОЛИ.
- * (Дублікати `data-testid` у цих станах ловить `testid-runtime.spec.ts`.)
+ * `goto()`. Тому оверлеї — мобільне меню, панель налаштувань, піаніно — тут
+ * відкриваються й міряються окремо, за спільним переліком `tests/overlays.ts`
+ * (той самий, що й у `touch-targets.spec.ts`). Тости в аудит не потрапляють і
+ * досі. (Дублікати `data-testid` у цих станах ловить `testid-runtime.spec.ts`.)
  *
  * ## Що змінилося 2026-08-27
  *
  * Сторінок було дві з семи, і саме розширення переліку виявило, що умова
  * готовності неправильна — див. `waitForSettled` у `tests/settled.ts`.
+ *
+ * ## Що змінилося 2026-09-02
+ *
+ * Оверлеї під аудитом — і саме перша спроба їх заміряти показала, що умова
+ * готовності знову була неправильна, іншим способом: `waitForSettled` рахував
+ * лише `CSSAnimation`, а Svelte 5 веде `in:fly` меню через Web Animations API.
+ * axe бачив кнопку «Вступ» на прозорості 0.2 — контраст 1.06:1 у світлій схемі,
+ * 1.17:1 у темній, пара, якої не існує жодного кадру після завершення.
+ * Виправлено в `tests/settled.ts`; тут лишився лише виклик.
  */
 
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag22aa'];
@@ -68,17 +80,16 @@ test('перелік сторінок під аудитом виведено, а
 	expect(dynamicRoutes(), 'динамічний маршрут — перебір його не розгортає').toEqual([]);
 	expect(htmlRoutes().length, `сторінки: ${htmlRoutes().join(', ')}`).toBe(EXPECTED_ROUTE_COUNT);
 
-	// Кожна сторінка мусить мати запис у базі в ОБОХ схемах — інакше нову
-	// сторінку можна додати, не замірявши її, і гейт лишиться зеленим.
-	const missing = htmlRoutes()
-		.flatMap((route) => SCHEMES.map((scheme) => `${route} ${scheme}`))
-		.filter((key) => !(key in A11Y_BASELINE) || !(key in A11Y_KNOWN));
+	// Кожна сторінка й кожен оверлей мусять мати запис у базі в ОБОХ схемах —
+	// інакше новий стан можна додати, не замірявши його, і гейт лишиться зеленим.
+	const expected = [...htmlRoutes(), ...OVERLAYS.map((overlay) => overlay.root)].flatMap((state) =>
+		SCHEMES.map((scheme) => `${state} ${scheme}`)
+	);
+	const missing = expected.filter((key) => !(key in A11Y_BASELINE) || !(key in A11Y_KNOWN));
 	expect(missing, `немає запису в базі axe:\n${missing.join('\n')}`).toEqual([]);
 
-	const stale = Object.keys(A11Y_BASELINE).filter(
-		(key) => !htmlRoutes().some((route) => key === `${route} light` || key === `${route} dark`)
-	);
-	expect(stale, `запис про сторінку, якої вже немає:\n${stale.join('\n')}`).toEqual([]);
+	const stale = Object.keys(A11Y_BASELINE).filter((key) => !expected.includes(key));
+	expect(stale, `запис про стан, якого вже немає:\n${stale.join('\n')}`).toEqual([]);
 });
 
 for (const route of htmlRoutes()) {
@@ -102,6 +113,31 @@ for (const route of htmlRoutes()) {
 			await expect(page.getByTestId('app-header')).toBeVisible();
 			await waitForSettled(page);
 			await audit(page, `${route} ${scheme}`);
+		});
+	}
+}
+
+for (const overlay of OVERLAYS) {
+	for (const scheme of SCHEMES) {
+		/**
+		 * Оверлей міряється у ВІДКРИТОМУ стані (ACCESSIBILITY-v8 § 10.2): після
+		 * `goto()` його в DOM немає, і жоден прогін по сторінках його не бачить.
+		 * Друге `waitForSettled` — після кліку: `in:fly` меню їде через Web
+		 * Animations API, і без нього axe міряє кольори посеред анімації.
+		 */
+		test(`${overlay.name} (${scheme}) не має машинно-виявних порушень WCAG у відкритому стані`, async ({
+			page
+		}) => {
+			await page.emulateMedia({ colorScheme: scheme, reducedMotion: 'reduce' });
+			await page.setViewportSize(overlay.viewport);
+			await page.goto('/');
+			await expect(page.getByTestId('app-header')).toBeVisible();
+			await waitForSettled(page);
+
+			await page.getByTestId(overlay.open).click();
+			await page.getByTestId(overlay.root).waitFor({ state: 'visible' });
+			await waitForSettled(page);
+			await audit(page, `${overlay.root} ${scheme}`);
 		});
 	}
 }

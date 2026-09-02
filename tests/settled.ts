@@ -36,7 +36,7 @@ import type { Page } from '@playwright/test';
  * `1e-05s`. Тому налаштування дублюється викликом у самому гейті, а НЕ мається
  * на увазі з конфіга.
  *
- * ## Чому саме `getAnimations()`, і чому лише `CSSAnimation`
+ * ## Чому саме `getAnimations()`, і що з них рахується
  *
  * Умова на стан, а не пауза: `waitForFunction` перепитує сам. Нескінченні
  * анімації (чайки, `seagullFly 4s infinite`) виключені — вони не завершаться
@@ -49,16 +49,62 @@ import type { Page } from '@playwright/test';
  * уже в `overlay-fit.spec.ts`, повторила ту саму помилку з `document
  * .getAnimations().every(a => a.playState !== 'running')` і впала на всіх
  * шести вікнах — тому фільтр і живе тепер в одному місці.
+ *
+ * ## Чому фільтр «усе, крім CSSTransition», а не «лише CSSAnimation»
+ *
+ * Перша редакція лишала САМЕ `CSSAnimation` — і разом із переходами викидала
+ * анімації Web Animations API. Svelte 5 веде свої `transition:`/`in:`/`out:`
+ * саме через `element.animate()`, тобто створює звичайний `Animation`, а не
+ * `CSSAnimation`. Отже кожен оверлей проєкту (`in:fly` мобільного меню,
+ * `transition:fade` піаніно) вважався «дограним» у ту саму мить, коли починав
+ * вʼїжджати.
+ *
+ * Ціна заміряна 2026-09-02: axe у відкритому мобільному меню бачив на кнопці
+ * «Вступ» контраст 1.06:1 у світлій схемі й 1.17:1 у темній — пару кольорів,
+ * якої не існує жодного кадру після завершення (`in:fly` веде `opacity` від
+ * 0.2, і axe композитить крізь предка). Той самий клас, що й `.page-content`
+ * вище, лише через інший API.
+ *
+ * `CSSTransition` лишається виключеним, і причина не змінилася.
+ *
+ * ## Чому три кадри поспіль, а не одна перевірка
+ *
+ * Перша редакція з фільтром вище була НЕСТАБІЛЬНА, і це заміряно 2026-09-02:
+ * у повному прогоні аудит меню падав в обох схемах, у повторі — лише у
+ * світлій, і щоразу з `color-contrast`, якого на дограному меню немає.
+ * Причина в порядку подій: Playwright бачить корінь оверлея «видимим» одразу
+ * після вставки в DOM, а Svelte запускає `element.animate()` для `in:fly`
+ * на наступному кадрі. У цей проміжок `getAnimations()` порожній, а
+ * `every()` над порожнім переліком — істинний. Тобто умова наставала до
+ * того, як анімація взагалі з'явилася, і axe міряв перший її кадр.
+ *
+ * Тому «дограли» мусить триматися ТРИ кадри поспіль (`polling: 'raf'`):
+ * анімація, що з'явиться на наступному кадрі, скидає лічильник. Ціна —
+ * близько 50 мс на замір; ціна без цього — гейт, що бреше в один бік і
+ * червоніє без причини в інший.
  */
+/** Скільки кадрів поспіль не мусить лишатися жодної незавершеної скінченної анімації. */
+const SETTLED_FRAMES = 3;
+
 export async function waitForSettled(page: Page) {
-	await page.waitForFunction(() =>
-		document
-			.getAnimations()
-			.filter((animation): animation is CSSAnimation => animation instanceof CSSAnimation)
-			.every(
-				(animation) =>
-					animation.effect?.getTiming().iterations === Infinity ||
-					animation.playState === 'finished'
-			)
+	await page.evaluate(() => {
+		(window as Window & { __settledFrames?: number }).__settledFrames = 0;
+	});
+	await page.waitForFunction(
+		(needed) => {
+			const w = window as Window & { __settledFrames?: number };
+			const settled = document
+				.getAnimations()
+				.filter((animation) => !(animation instanceof CSSTransition))
+				.every(
+					(animation) =>
+						animation.effect?.getTiming().iterations === Infinity ||
+						animation.playState === 'finished'
+				);
+			w.__settledFrames = settled ? (w.__settledFrames ?? 0) + 1 : 0;
+			return w.__settledFrames >= needed;
+		},
+		SETTLED_FRAMES,
+		{ polling: 'raf' }
 	);
 }
