@@ -134,3 +134,111 @@ test.describe('GATE-OVERLAY-FIT', () => {
 		}
 	}
 });
+
+/**
+ * Ті самі оверлеї в контексті, який браузер вважає сенсорним.
+ *
+ * Без цього половина умови лишалася непоміряною: на дотику цілі виростають до
+ * 44×44 (`.touch-target`), тобто мобільне меню стає ВИЩИМ рівно там, де його й
+ * дивляться. Запас, записаний у `MobileMenu.svelte`, — 6 px на 667×375, тобто
+ * пʼять пунктів по +15 px з\u0027їли б його вшестеро. Проміжок списку тому й
+ * стискається на `(pointer: coarse)` — а перевіряє цю арифметику ось цей блок,
+ * а не коментар поруч із нею.
+ */
+test.describe('GATE-OVERLAY-FIT на дотику', () => {
+	test.use({ hasTouch: true });
+
+	/**
+	 * Вміститися й не потребувати прокрутки — різні твердження, і перше без
+	 * другого нічого не варте саме тут.
+	 *
+	 * `nav` мобільного меню має `max-height: 100dvh; overflow-y: auto`, тож у
+	 * вікно він вміщається ЗАВЖДИ: зайве не зрізається, а ховається під власну
+	 * прокрутку. Гейт вище цього не бачить — для нього все гаразд.
+	 *
+	 * Заміряно 2026-09-02 на 667×375, найкоротшому вікні, де бургер узагалі
+	 * показується:
+	 *
+	 *     проміжок стиснуто на дотику   список 321.6 px, прокрутки немає
+	 *     без стиснення                 список 385.6 px у 375 px — прокрутка є
+	 *
+	 * Тобто без компенсації проміжку остання позиція меню («Вступ») на телефоні
+	 * в ландшафті лежить нижче краю, і дістатися до неї можна лише прокруткою
+	 * ВСЕРЕДИНІ меню — жесту, якого ніхто не очікує від списку з пʼяти пунктів.
+	 *
+	 * Запас, який лишається: 53 px на 375 px вікна. Шостий пункт коштує 60 px
+	 * (44 px цілі плюс проміжок), тобто не влізе — і саме про це скаже цей
+	 * рядок, а не коментар поруч зі стилями.
+	 */
+	test('мобільне меню не просить власної прокрутки на найкоротшому вікні', async ({ page }) => {
+		await page.emulateMedia({ reducedMotion: 'reduce' });
+		await page.setViewportSize({ width: 667, height: 375 });
+		await page.goto('/');
+		await page.getByTestId('header-burger-btn').click();
+		await page.getByTestId('mobile-menu-modal').waitFor();
+		await waitForSettled(page);
+
+		const nav = await page.evaluate(() => {
+			const el = document.querySelector('[data-testid="mobile-menu-modal"] nav');
+			if (!(el instanceof HTMLElement)) return null;
+			return { scroll: el.scrollHeight, client: el.clientHeight };
+		});
+
+		expect(nav, 'nav мобільного меню не знайдено — перевірка міряла б порожнечу').not.toBeNull();
+		expect(
+			Math.max(0, nav!.scroll - nav!.client),
+			`список меню ${nav!.scroll} px у видимих ${nav!.client} px — остання позиція нижче краю, ` +
+				'і дістатися до неї можна лише прокруткою всередині меню'
+		).toBe(0);
+	});
+
+	for (const vp of VIEWPORTS) {
+		for (const overlay of OVERLAYS) {
+			test(`${overlay.name} вміщається у ${vp.w}×${vp.h} на дотику (${vp.name})`, async ({
+				page
+			}) => {
+				await page.emulateMedia({ reducedMotion: 'reduce' });
+				await page.setViewportSize({ width: vp.w, height: vp.h });
+				await page.goto('/');
+
+				if (overlay.skipIfHidden) {
+					const trigger = page.getByTestId(overlay.skipIfHidden);
+					if (!(await trigger.isVisible())) {
+						test.skip(true, `тригер ${overlay.skipIfHidden} на цій ширині не показується`);
+					}
+				}
+
+				await overlay.open(page);
+				await page.getByTestId(overlay.testId).waitFor();
+				await waitForSettled(page);
+
+				const box = await page.evaluate(
+					([testId, selector]) => {
+						const root = document.querySelector(`[data-testid="${testId}"]`);
+						const el = root?.querySelector(selector as string);
+						if (!(el instanceof HTMLElement)) return null;
+						const r = el.getBoundingClientRect();
+						return {
+							top: Math.round(r.top),
+							bottom: Math.round(r.bottom),
+							height: Math.round(r.height),
+							viewport: window.innerHeight
+						};
+					},
+					[overlay.testId, overlay.content] as const
+				);
+
+				expect(box, `${overlay.content} не знайдено — перевірка міряла б порожнечу`).not.toBeNull();
+				const { top, bottom, height, viewport } = box!;
+				const hiddenAbove = Math.max(0, -top);
+				const hiddenBelow = Math.max(0, bottom - viewport);
+
+				expect(
+					{ hiddenAbove, hiddenBelow },
+					`${overlay.name} на дотику: вміст ${height} px у вікні ${viewport} px — ` +
+						`${hiddenAbove} px зрізано зверху й ${hiddenBelow} px знизу`
+				).toEqual({ hiddenAbove: 0, hiddenBelow: 0 });
+			});
+		}
+	}
+});

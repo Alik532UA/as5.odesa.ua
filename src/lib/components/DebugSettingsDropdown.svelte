@@ -66,7 +66,7 @@
 			{#each backgrounds as bg (bg.id)}
 				<button
 					type="button"
-					class="debug-dropdown__opt debug-dropdown__opt--wide"
+					class="debug-dropdown__opt debug-dropdown__opt--wide touch-target"
 					class:active={(bg.id === 0 && !ui.enableDynamicBackground) ||
 						(bg.id !== 0 && ui.enableDynamicBackground && ui.backgroundType === bg.id)}
 					aria-pressed={(bg.id === 0 && !ui.enableDynamicBackground) ||
@@ -85,7 +85,7 @@
 		<div class="debug-dropdown__options">
 			<button
 				type="button"
-				class="debug-dropdown__opt"
+				class="debug-dropdown__opt touch-target"
 				class:active={!ui.enableBlurEffect}
 				aria-pressed={!ui.enableBlurEffect}
 				onclick={() => ui.toggleBlurEffect()}
@@ -95,7 +95,7 @@
 			</button>
 			<button
 				type="button"
-				class="debug-dropdown__opt"
+				class="debug-dropdown__opt touch-target"
 				class:active={ui.enableBlurEffect}
 				aria-pressed={ui.enableBlurEffect}
 				onclick={() => ui.toggleBlurEffect()}
@@ -114,7 +114,7 @@
 		<div class="debug-dropdown__options">
 			<button
 				type="button"
-				class="debug-dropdown__opt"
+				class="debug-dropdown__opt touch-target"
 				class:active={!ui.hotkeysEnabled}
 				aria-pressed={!ui.hotkeysEnabled}
 				onclick={() => {
@@ -126,7 +126,7 @@
 			</button>
 			<button
 				type="button"
-				class="debug-dropdown__opt"
+				class="debug-dropdown__opt touch-target"
 				class:active={ui.hotkeysEnabled}
 				aria-pressed={ui.hotkeysEnabled}
 				onclick={() => {
@@ -186,6 +186,10 @@
 	}
 
 	.debug-dropdown__opt {
+		/* Підпис лишається по центру, коли на дотику ціль виростає до 44 px. */
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex: 1;
 		padding: 6px;
 		font-size: 0.8rem;

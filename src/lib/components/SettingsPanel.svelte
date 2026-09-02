@@ -54,7 +54,7 @@
 			<span class="settings-panel__label">{$t("settings.language")}</span>
 			<div class="settings-panel__options">
 				<button
-					class="settings-panel__opt"
+					class="settings-panel__opt touch-target"
 					class:active={$locale === "uk"}
 					aria-pressed={$locale === "uk"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
@@ -62,7 +62,7 @@
 					onclick={() => ui.setLanguage("uk")}>UA</button
 				>
 				<button
-					class="settings-panel__opt"
+					class="settings-panel__opt touch-target"
 					class:active={$locale === "en"}
 					aria-pressed={$locale === "en"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "L" : undefined}
@@ -75,7 +75,7 @@
 			<span class="settings-panel__label">{$t("settings.theme")}</span>
 			<div class="settings-panel__options">
 				<button
-					class="settings-panel__opt"
+					class="settings-panel__opt touch-target"
 					class:active={ui.theme === "light"}
 					aria-pressed={ui.theme === "light"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
@@ -85,7 +85,7 @@
 					}}>{$t("settings.light")}</button
 				>
 				<button
-					class="settings-panel__opt"
+					class="settings-panel__opt touch-target"
 					class:active={ui.theme === "dark"}
 					aria-pressed={ui.theme === "dark"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
@@ -183,6 +183,10 @@
 	}
 
 	.settings-panel__opt {
+		/* Підпис лишається по центру, коли на дотику ціль виростає до 44 px. */
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex: 1;
 		padding: 6px;
 		font-size: 0.8rem;

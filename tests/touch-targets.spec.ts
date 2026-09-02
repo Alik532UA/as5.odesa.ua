@@ -108,6 +108,35 @@ async function measure(page: Page, route: string, vp: { w: number; h: number }, 
 	);
 }
 
+/** Той самий замір, але в межах одного піддерева — для станів після взаємодії. */
+async function measureWithin(page: Page, rootTestId: string, min: number) {
+	return page.evaluate(
+		([selector, limit, root]) => {
+			const scope = document.querySelector(`[data-testid="${root as string}"]`);
+			const small: Target[] = [];
+			let seen = 0;
+			if (!scope) return { seen, small };
+			for (const node of Array.from(scope.querySelectorAll(selector as string))) {
+				const el = node as HTMLElement;
+				const box = el.getBoundingClientRect();
+				if (box.width === 0 || box.height === 0) continue;
+				const style = getComputedStyle(el);
+				if (style.visibility === 'hidden' || style.display === 'none') continue;
+				seen++;
+				if (box.width >= (limit as number) && box.height >= (limit as number)) continue;
+				const label =
+					el.dataset.testid ||
+					(el.textContent ?? '').trim().slice(0, 40) ||
+					el.getAttribute('aria-label') ||
+					el.tagName.toLowerCase();
+				small.push({ label, w: Math.round(box.width), h: Math.round(box.height) });
+			}
+			return { seen, small };
+		},
+		[INTERACTIVE, min, rootTestId] as const
+	);
+}
+
 function report(
 	route: string,
 	min: number,
@@ -178,6 +207,71 @@ test.describe('GATE-TOUCH-TARGET на дотику', () => {
 		}) => {
 			const { seen, small } = await measure(page, route, vp, TOUCH_MIN_COARSE);
 			report(route, TOUCH_MIN_COARSE, seen, small, TOUCH_DEBT_COARSE);
+		});
+	}
+});
+
+/**
+ * Стани, яких у завантаженій сторінці немає.
+ *
+ * Замір лише «як воно приїхало» пропускає рівно те, чим на телефоні
+ * користуються найбільше: мобільне меню — це ВСЯ навігація сайту на вузькому
+ * екрані, а бачив її гейт нуль разів. Заміряно 2026-09-02 у контексті з
+ * `hasTouch` (390×844), до виправлення:
+ *
+ *     mobile-menu-close-btn   40×40      mobile-nav-home-link      78×29
+ *     piano-close-btn         32×48      mobile-nav-about-link    178×29
+ *                                        ще три пункти             …×29
+ *
+ * Тобто кожен пункт мобільного меню був на 15 px нижчий за норму дотику.
+ *
+ * Перелік і спосіб відкриття збігаються з `testid-runtime.spec.ts` навмисно:
+ * два власні переліки станів розходяться на першому ж новому оверлеї, а
+ * виглядає це як «там перевірено».
+ */
+const OVERLAYS = [
+	{
+		name: 'мобільне меню',
+		open: 'header-burger-btn',
+		root: 'mobile-menu-modal'
+	},
+	{
+		name: 'налаштування',
+		open: 'header-settings-btn',
+		root: 'header-settings-panel'
+	},
+	{
+		name: 'піаніно',
+		open: 'footer-piano-btn',
+		root: 'piano-modal'
+	}
+];
+
+test.describe('GATE-TOUCH-TARGET у станах на дотику', () => {
+	test.use({ hasTouch: true });
+
+	for (const overlay of OVERLAYS) {
+		test(`${overlay.name} — цілі не менші за ${TOUCH_MIN_COARSE}×${TOUCH_MIN_COARSE}`, async ({
+			page
+		}) => {
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+			await page.setViewportSize({ width: VIEWPORTS[0].w, height: VIEWPORTS[0].h });
+			await page.goto('/');
+			await waitForSettled(page);
+
+			await page.getByTestId(overlay.open).click();
+			await page.getByTestId(overlay.root).waitFor({ state: 'visible' });
+			await waitForSettled(page);
+
+			const { seen, small } = await measureWithin(page, overlay.root, TOUCH_MIN_COARSE);
+			expect(seen, `у стані «${overlay.name}» не знайдено жодної цілі`).toBeGreaterThan(0);
+
+			const unexpected = small.map((t) => `«${t.label}» ${t.w}×${t.h}`);
+			expect(
+				unexpected,
+				`ціль менша за ${TOUCH_MIN_COARSE}×${TOUCH_MIN_COARSE} CSS px у стані ` +
+					`«${overlay.name}»:\n${unexpected.join('\n')}`
+			).toEqual([]);
 		});
 	}
 });

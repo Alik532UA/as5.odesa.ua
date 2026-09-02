@@ -60,7 +60,7 @@
 >
 	<button
 		type="button"
-		class="mobile-menu__close"
+		class="mobile-menu__close touch-target"
 		class:scrolled
 		onclick={onClose}
 		aria-label={$t("a11y.closeMenu")}
@@ -74,7 +74,7 @@
 				<li>
 					<a
 						href={resolve(item.routeId)}
-						class="mobile-menu__link"
+						class="mobile-menu__link touch-target"
 						class:active={isActive(item.routeId)}
 						aria-current={isActive(item.routeId) ? "page" : undefined}
 						onclick={onClose}
@@ -163,11 +163,30 @@
 	}
 
 	.mobile-menu__link {
+		/* `inline` не приймає ні `min-height` утиліти `.touch-target`, ні вирівнювання. */
+		display: inline-flex;
+		align-items: center;
 		font-family: var(--font-heading);
 		font-size: 1.5rem;
 		font-weight: 700;
 		color: var(--color-deep-ocean);
 		transition: color var(--transition-fast);
+	}
+
+	/*
+	 * Проміжок стискається рівно на те, що виросли самі пункти: на дотику
+	 * кожен стає 44 px замість 29 (`.touch-target`), тобто пʼять пунктів
+	 * додають 75 px. Без цього меню на 667×375 — найкоротшому вікні, де
+	 * бургер узагалі показується, — поїхало б за екран, а батько центрує й
+	 * ріже з ОБОХ боків. Разом висота лишається тією самою: 44+16 проти 29+32.
+	 *
+	 * Блок стоїть НИЖЧЕ за базове правило навмисно: медіазапит специфічності не
+	 * додає, тож вище він програвав би порядком (`src/css-order.test.ts`).
+	 */
+	@media (pointer: coarse) {
+		.mobile-menu__list {
+			gap: var(--space-md);
+		}
 	}
 
 	.mobile-menu__link:hover {
