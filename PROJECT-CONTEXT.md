@@ -197,6 +197,7 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | Гейт                                      | Де                                    | Що ловить                                                                                                                                                                                                                 |
 | ----------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `npm run lint`                            | CI                                    | eslint, базовий набір за CODE-QUALITY-v8 § 6.4.1                                                                                                                                                                          |
+| `GATE-CSS-ORDER` (у складі `npm test`)    | CI                                    | правило в `@media`, перекрите пізнішим правилом ТІЄЇ Ж специфічності у тому самому файлі: медіазапит специфічності не додає, тож нічию розвʼязує порядок і правило не діє ніколи                                            |
 | `GATE-DOC-NUMBERS` (у складі `npm test`)  | CI                                    | число в `AGENTS.md` чи `PROJECT-CONTEXT.md`, що розійшлося з джерелом гейта, який ним володіє: переліки файлів інваріантів і E2E, `SIZE_DEBT`, `DEBT` ESLint, `ORPHAN_DEBT`, перелік `eslint-disable`                       |
 | `GATE-EOL` (у складі `npm test`)          | CI                                    | `.gitattributes` без `* text=auto eol=lf`; двійковий тип, лишений на евристиці git; розходження індексу з робочим деревом. Джерело — `git ls-files --eol`, тобто те, що бачить сам git, а не текст конфіга                  |
 | `npm run check`                           | CI                                    | `svelte-check`, 0 помилок. Кількість оброблених файлів тут не записана навмисно: вона міняється від кожного нового модуля й від версії SvelteKit, тобто застаріває швидше, ніж її читають (`PIT-NUMBER-UNDER-GATE`)                                                                                                                                                                                   |
@@ -207,10 +208,10 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **32**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **33**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
 `beta-checklist`, `ci`, `contrast`, `csp-hash`, `css-variables`, `dependencies`,
-`doc-numbers`, `dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`,
+`doc-numbers`, `css-order`, `dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`,
 `hooks.client`, `hotkeys`, `i18n-literals`, `lib/actions/anchoredPanel`,
 `lib/actions/focusTrap`, `lib/i18n/locale`, `lib/i18n/translations`,
 `lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
