@@ -186,9 +186,11 @@ class UIState {
 	private applyThemeToDocument(t: 'light' | 'dark') {
 		if (typeof document === 'undefined') return;
 		document.documentElement.setAttribute('data-theme', t);
-		// Tell browser we handle color schemes — prevents auto-dark-mode
+		// Tell browser we handle color schemes — prevents auto-dark-mode.
+		// `only light`, а не `light dark`: те саме, що в скрипті першого кадру
+		// (UI-UX-v9 `UIUX-ONLY-LIGHT`).
 		const csMeta = document.querySelector('meta[name="color-scheme"]');
-		if (csMeta) csMeta.setAttribute('content', t === 'dark' ? 'dark' : 'light dark');
+		if (csMeta) csMeta.setAttribute('content', t === 'dark' ? 'dark' : 'only light');
 		document.documentElement.classList.toggle('dark-theme', t === 'dark');
 	}
 

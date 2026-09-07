@@ -31,7 +31,11 @@
 				} else {
 					document.documentElement.setAttribute('data-theme', 'light');
 					document.documentElement.classList.remove('dark-theme');
-					document.querySelector('meta[name="color-scheme"]').content = 'light dark';
+					// `only light`, а не `light dark`: мета-тег мусить збігатися зі
+					// звуженням у `styles/global.css`, інакше сторінка оголошує себе
+					// світлою-без-темної й Android Chrome перемальовує її своєю Auto
+					// Dark Theme (UI-UX-v9 `UIUX-ONLY-LIGHT`).
+					document.querySelector('meta[name="color-scheme"]').content = 'only light';
 				}
 			} catch (e) {}
 		</script>

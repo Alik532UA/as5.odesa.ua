@@ -208,9 +208,10 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **33**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **34**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
-`beta-checklist`, `ci`, `contrast`, `csp-hash`, `css-variables`, `dependencies`,
+`beta-checklist`, `ci`, `color-scheme-canon`, `contrast`, `csp-hash`,
+`css-variables`, `dependencies`,
 `doc-numbers`, `css-order`, `dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`,
 `hooks.client`, `hotkeys`, `i18n-literals`, `lib/actions/anchoredPanel`,
 `lib/actions/focusTrap`, `lib/i18n/locale`, `lib/i18n/translations`,

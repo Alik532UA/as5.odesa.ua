@@ -53,13 +53,30 @@ html.dark-theme {
 	color-scheme: dark;
 }
 
+/*
+ * `only light`, А НЕ ПРОСТО `light` — і це не косметика.
+ *
+ * Android Chrome із темною темою САМОГО браузера перемальовує в темні кольори
+ * кожну сторінку, яку вважає світлою й без власної темної теми (Auto Dark
+ * Theme). Ознака, за якою він це вирішує, — використана схема документа, і
+ * голе `light` її й оголошує. Відмова називається `only`.
+ *
+ * Заміряно на пристрої в сусідньому `teatralo4ka.odesa.ua` 7 вересня 2026:
+ * автор надіслав знімок, де світлі теми сайту перефарбовані до невпізнання, а
+ * після заміни перемальовування зникло на тому самому телефоні. Для
+ * `light-dark()` `only` не міняє нічого: використана схема лишається світлою.
+ *
+ * Правило — UI-UX-v9 `UIUX-ONLY-LIGHT`.
+ */
 html[data-theme='light'] {
-	color-scheme: light;
+	color-scheme: only light;
 }
 
 /* --- CSS Custom Properties --- */
 :root {
-	/* Prevent mobile browsers from auto-darkening light theme */
+	/* База для `light-dark()` і стан «тему ще не обрано»: обидві схеми
+	   підтримані, тож Auto Dark Theme сюди не втручається. Саму відмову для
+	   ЯВНО світлої теми оголошує `only light` вище — розбір там. */
 	color-scheme: light dark;
 
 	/* Typography */
