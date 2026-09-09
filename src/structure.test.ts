@@ -184,6 +184,58 @@ describe('структура', () => {
 		);
 	});
 
+	/**
+	 * Те саме для `scripts/` (PROJECT-STRUCTURE-v9 § 4.3.1, `PS-REACHABILITY`).
+	 *
+	 * Обхід вище стартує з маршрутів SvelteKit і тому бачить лише `src/`.
+	 * `scripts/` — окремий світ із власними коренями: npm-скрипти в
+	 * `package.json`, кроки workflow і конфіги в корені. І сироти там дорожчі,
+	 * ніж у `src/`, бо скрипт читається як ІНСТРУКЦІЯ: він описує, як у проєкті
+	 * щось робиться.
+	 *
+	 * Так і сталося з `scripts/generate-sitemap.mjs`: він писав
+	 * `build/sitemap.xml`, розбираючи canonical із зібраного HTML, — і не
+	 * викликався звідки завгодно жодного разу. Справжній sitemap увесь цей час
+	 * будував пререндерений ендпоїнт `src/routes/sitemap.xml/+server.ts` за
+	 * власним переліком адрес. Тобто в репозиторії лежали дві різні відповіді
+	 * на питання «звідки береться sitemap», і чинною була та, яку в `scripts/`
+	 * не видно.
+	 *
+	 * `scripts/oneoff/` виключено: там кодмоди, які вже відпрацювали, і їхній
+	 * `README.md` каже це прямо — вони лишені історією, а не інструментом.
+	 */
+	it('кожен скрипт у scripts/ комусь потрібен (§ 4.3.1)', () => {
+		const scriptFiles = walk('scripts').filter(
+			(f) => /\.(mjs|cjs|js|ts)$/.test(f) && !f.startsWith('scripts/oneoff/')
+		);
+		expect(scriptFiles.length, 'у scripts/ немає файлів — обхід зламався').toBeGreaterThan(2);
+
+		// Корені: усе, що може ЗАПУСТИТИ скрипт, а не імпортувати його.
+		const roots = ['package.json', 'lighthouserc.cjs', 'svelte.config.js', 'vite.config.ts']
+			.concat(walk('.github').filter((f) => /\.ya?ml$/.test(f)))
+			.filter((f) => existsSync(join(ROOT, f)))
+			.map((f) => read(f));
+
+		// Плюс посилання одного скрипта на інший (`check-build` → `check-geo`).
+		const scriptText = scriptFiles.map((f) => read(f));
+
+		const orphans = scriptFiles.filter((file) => {
+			const name = file.slice('scripts/'.length);
+			const mentioned = (text: string) => text.includes(name) || text.includes(`./${name}`);
+			if (roots.some(mentioned)) return false;
+			// Згадка в ІНШОМУ скрипті рахується лише якщо той сам не сирота, —
+			// але ланцюжок сиріт тут неможливий: другий рівень вкладеності в
+			// `scripts/` дав би файл, який теж мусив би пройти цю саму перевірку.
+			return !scriptFiles.some((other, i) => other !== file && mentioned(scriptText[i]));
+		});
+
+		expect(
+			orphans,
+			'скрипт не запускає ніхто, а читається він як опис того, ' +
+				`як у проєкті щось робиться:\n${orphans.join('\n')}`
+		).toEqual([]);
+	});
+
 	it('псевдонім імпорту збігається з іменем файлу (§ 5.2)', () => {
 		const re = /import\s+([A-Z][A-Za-z0-9]*)\s+from\s+["'][^"']*\/([A-Z][A-Za-z0-9]*)\.svelte["']/g;
 		const bad: string[] = [];
