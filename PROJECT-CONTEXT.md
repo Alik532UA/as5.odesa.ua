@@ -142,6 +142,48 @@ npx vitest run src/i18n-literals.test.ts                                  # 4 в
 grep -rn 'grid-template-columns:' src --include="*.svelte" --include="*.css" | grep -vc 'minmax'    # 0
 ```
 
+### Lighthouse: що міряється й чому не всі сторінки
+
+Перелік адрес генерується з маршрутів (`scripts/lhci-urls.cjs`), а не вписаний
+рядком: доти в `lighthouserc.cjs` стояла ОДНА адреса — `index.html`, тобто
+шість сторінок із семи не міряв ніхто, і нова сторінка не потрапила б у замір
+ніколи (OBSERVABILITY-v9 § 2.2.1, `OBS-LHCI-REAL-PAGES`).
+
+Службові сторінки з `noindex` у замір НЕ входять, і це не підгонка порогів.
+Категорія SEO штрафує за `noindex` прямо, тож обидві дають 66 при порозі 90 на
+рівні `error` — увімкнути їх означало б зробити крок червоним від народження й
+заблокувати деплой за те, що зроблено навмисно (AI-AGENT-PITFALLS-v9 § 1.4).
+Перелік службових читається з `HIDDEN_ROUTES` у `src/lib/config/site.ts`, а
+`check:build` окремо доводить, що жодна ВИМІРЮВАНА сторінка `noindex` не несе:
+у джерелах цього не видно, бо мета-тег ставить макет за `isHiddenRoute`.
+
+Заміряно 2026-09-10 локально (`npx lighthouse` проти `npm run preview`,
+Windows, машина під навантаженням — числа орієнтовні, пороги за ними не
+змінювалися):
+
+| Сторінка                | perf | a11y | best-practices | seo |
+| ----------------------- | ---- | ---- | -------------- | --- |
+| `/`                     | 71   | 98   | 100            | 100 |
+| `/about`                | 97   | 100  | 100            | 100 |
+| `/history`              | 98   | 100  | 100            | 100 |
+| `/competitions`         | 96   | 100  | 100            | 100 |
+| `/admission`            | 96   | 100  | 100            | 100 |
+| `/beta-test-checklists` | 98   | 100  | 100            | 66  |
+| `/test`                 | 95   | 95   | 96             | 66  |
+
+Головна близько до порога `performance` (0.8, рівень `warn` — не блокує). Поріг
+не знижено свідомо: одне вимірювання на одній машині — не підстава послаблювати
+гейт, а раннер CI дає інші числа. Якщо попередження стане постійним, поріг
+опускається до балу, що протримався три прогони (§ 2.2.1), а не до першого
+поміченого.
+
+**Локально LHCI на Windows не завершується**: `chrome-launcher` падає з `EPERM`
+на прибиранні власного тимчасового каталогу вже ПІСЛЯ аудиту, тож звіт не
+записується й assert не виконується. Числа вище отримані прямим викликом
+`lighthouse` з `--output=json`. Тобто перевірити порогові твердження цілком
+можна лише в CI — це записано тут, щоб наступний читач не витрачав на це
+вечір удруге.
+
 JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build`, бюджет 150 КБ):
 `index` 77, `about` 76, `admission` 76, `competitions` 76, `history` 75,
 `beta-test-checklists` 84, `test` 97, `404` 75.
@@ -203,14 +245,14 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `GATE-DOC-NUMBERS` (у складі `npm test`)  | CI                                    | число в `AGENTS.md` чи `PROJECT-CONTEXT.md`, що розійшлося з джерелом гейта, який ним володіє: переліки файлів інваріантів і E2E, `SIZE_DEBT`, `DEBT` ESLint, `ORPHAN_DEBT`, перелік `eslint-disable`                       |
 | `GATE-EOL` (у складі `npm test`)          | CI                                    | `.gitattributes` без `* text=auto eol=lf`; двійковий тип, лишений на евристиці git; розходження індексу з робочим деревом. Джерело — `git ls-files --eol`, тобто те, що бачить сам git, а не текст конфіга                  |
 | `npm run check`                           | CI                                    | `svelte-check`, 0 помилок. Кількість оброблених файлів тут не записана навмисно: вона міняється від кожного нового модуля й від версії SvelteKit, тобто застаріває швидше, ніж її читають (`PIT-NUMBER-UNDER-GATE`)                                                                                                                                                                                   |
-| `npm test`                                | CI                                    | **31 файл** інваріантів; перелік і число — під `GATE-DOC-NUMBERS`. Кількість самих перевірок друкує прогін (`npx vitest run \| grep "Tests "`) і тут не дублюється: друга копія факту рветься саме тому, що вона друга                                                                                                                                                          |
-| `npm run test:e2e`                        | CI, до збірки                         | **5 файлів** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках і трьох відкритих оверлеях у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), і розмір сенсорних цілей у двох порогах — 24×24 мишею й 44×44 у контексті з `hasTouch` (`GATE-TOUCH-TARGET`). Кількість самих перевірок друкує `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
+| `npm test`                                | CI                                    | **35 файлів** інваріантів; перелік і число — під `GATE-DOC-NUMBERS`. Кількість самих перевірок друкує прогін (`npx vitest run \| grep "Tests "`) і тут не дублюється: друга копія факту рветься саме тому, що вона друга                                                                                                                                                          |
+| `npm run test:e2e`                        | CI, до збірки                         | **6 файлів** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках і трьох відкритих оверлеях у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), розмір сенсорних цілей у двох порогах — 24×24 мишею й 44×44 у контексті з `hasTouch` (`GATE-TOUCH-TARGET`), перекриття цілей парами (`GATE-TOUCH-OVERLAP`) і горизонтальна прокрутка на 320 px за WCAG 1.4.10 (`GATE-REFLOW`). Кількість самих перевірок друкує `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
 | `npm audit --omit=dev --audit-level=high` | CI                                    | вразливості **прод**-залежностей                                                                                                                                                                                          |
 | `git diff --exit-code`                    | CI, після `build`                     | збірка не бруднить робоче дерево                                                                                                                                                                                          |
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **34**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **35**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
 `beta-checklist`, `ci`, `color-scheme-canon`, `contrast`, `csp-hash`,
 `css-variables`, `dependencies`,
@@ -220,7 +262,8 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 `lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
 `lib/services/keySequence`, `lib/services/keyboard`, `lib/services/storage`,
 `lib/siblings`, `lib/states/ui.svelte`, `lib/utils/reducedMotion`,
-`static-assets`, `structure`, `test-runners`, `testid-conventions`.
+`lighthouse-urls`, `static-assets`, `structure`, `test-runners`,
+`testid-conventions`.
 
 E2E живуть у кореневому `tests/` — **6** файлів, теж під `GATE-DOC-NUMBERS`:
 `a11y.spec.ts`, `overlay-fit.spec.ts`, `panel-fit.spec.ts`, `reflow.spec.ts`,
