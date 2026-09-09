@@ -245,14 +245,14 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `GATE-DOC-NUMBERS` (у складі `npm test`)  | CI                                    | число в `AGENTS.md` чи `PROJECT-CONTEXT.md`, що розійшлося з джерелом гейта, який ним володіє: переліки файлів інваріантів і E2E, `SIZE_DEBT`, `DEBT` ESLint, `ORPHAN_DEBT`, перелік `eslint-disable`                       |
 | `GATE-EOL` (у складі `npm test`)          | CI                                    | `.gitattributes` без `* text=auto eol=lf`; двійковий тип, лишений на евристиці git; розходження індексу з робочим деревом. Джерело — `git ls-files --eol`, тобто те, що бачить сам git, а не текст конфіга                  |
 | `npm run check`                           | CI                                    | `svelte-check`, 0 помилок. Кількість оброблених файлів тут не записана навмисно: вона міняється від кожного нового модуля й від версії SvelteKit, тобто застаріває швидше, ніж її читають (`PIT-NUMBER-UNDER-GATE`)                                                                                                                                                                                   |
-| `npm test`                                | CI                                    | **35 файлів** інваріантів; перелік і число — під `GATE-DOC-NUMBERS`. Кількість самих перевірок друкує прогін (`npx vitest run \| grep "Tests "`) і тут не дублюється: друга копія факту рветься саме тому, що вона друга                                                                                                                                                          |
+| `npm test`                                | CI                                    | **36 файлів** інваріантів; перелік і число — під `GATE-DOC-NUMBERS`. Кількість самих перевірок друкує прогін (`npx vitest run \| grep "Tests "`) і тут не дублюється: друга копія факту рветься саме тому, що вона друга                                                                                                                                                          |
 | `npm run test:e2e`                        | CI, до збірки                         | **6 файлів** Playwright над ПРЕВʼЮ зібраного сайту: axe на всіх 7 сторінках і трьох відкритих оверлеях у двох схемах (`GATE-A11Y-AXE`) і дублікати `data-testid` у живому DOM, зокрема з відкритими оверлеями (`GATE-TESTID-RUNTIME`), геометрія центрованих оверлеїв на коротких вікнах (`GATE-OVERLAY-FIT`), досяжність панелей, прив’язаних до кнопки (`GATE-PANEL-FIT`), розмір сенсорних цілей у двох порогах — 24×24 мишею й 44×44 у контексті з `hasTouch` (`GATE-TOUCH-TARGET`), перекриття цілей парами (`GATE-TOUCH-OVERLAP`) і горизонтальна прокрутка на 320 px за WCAG 1.4.10 (`GATE-REFLOW`). Кількість самих перевірок друкує `npx playwright test --list \| tail -1`; дві перевірки `GATE-OVERLAY-FIT` мають статус `skipped` на широких вікнах, бо бургер там не показується — пропуск названий явно, а не мовчазний             |
 | `npm audit --omit=dev --audit-level=high` | CI                                    | вразливості **прод**-залежностей                                                                                                                                                                                          |
 | `git diff --exit-code`                    | CI, після `build`                     | збірка не бруднить робоче дерево                                                                                                                                                                                          |
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **35**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **36**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
 `beta-checklist`, `ci`, `color-scheme-canon`, `contrast`, `csp-hash`,
 `css-variables`, `dependencies`,
@@ -262,8 +262,8 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 `lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
 `lib/services/keySequence`, `lib/services/keyboard`, `lib/services/storage`,
 `lib/siblings`, `lib/states/ui.svelte`, `lib/utils/reducedMotion`,
-`lighthouse-urls`, `static-assets`, `structure`, `test-runners`,
-`testid-conventions`.
+`lighthouse-urls`, `static-assets`, `structure`, `svelte-sources`,
+`test-runners`, `testid-conventions`.
 
 E2E живуть у кореневому `tests/` — **6** файлів, теж під `GATE-DOC-NUMBERS`:
 `a11y.spec.ts`, `overlay-fit.spec.ts`, `panel-fit.spec.ts`, `reflow.spec.ts`,
