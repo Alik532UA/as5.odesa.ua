@@ -216,10 +216,83 @@ function checkInlineScripts(file, html) {
     fail(`${file}: жодного інлайн-скрипта не знайдено — перевірка CSP мертва`);
 }
 
+/**
+ * Перелік атрибутів-обробників, а НЕ `/\bon[a-z]+=/` (SECURITY-v9 § 6.3.2).
+ *
+ * Широка регулярка ловить `only=`, `data-once="…"` і кожен майбутній атрибут,
+ * у назві якого трапилося «on». Перелік натомість не ловить нічого зайвого й
+ * розширюється свідомо.
+ */
+const HANDLER_ATTRS = [
+  "onload",
+  "onerror",
+  "onclick",
+  "onchange",
+  "oninput",
+  "onsubmit",
+  "onfocus",
+  "onblur",
+  "ontoggle",
+  "onanimationend",
+];
+const HANDLER_ATTR_RE = new RegExp(
+  `\\s(?:${HANDLER_ATTRS.join("|")})\\s*=\\s*["'][^"']*["']`,
+  "gi",
+);
+
+let handlerScanned = 0;
+
+/**
+ * Інлайнових обробників у розмітці немає взагалі
+ * (SECURITY-v9 § 6.3.2, `SEC-CSP-SPREAD-HANDLER`, гейт `GATE-INLINE-HANDLERS`).
+ *
+ * Політика тут без `'unsafe-inline'` і без `'unsafe-hashes'`, а на
+ * атрибути-обробники **хеші не поширюються в принципі** — браузер каже це
+ * прямо: `hashes do not apply to event handlers`. Тобто механізм із § 6.3,
+ * яким покриті інлайн-скрипти, від цього класу не рятує, і покривати його
+ * нема чим: єдиний вихід — щоб таких атрибутів не було.
+ *
+ * ## Чому в джерелах цього не видно й `checkInlineScripts` не допомагає
+ *
+ * Таких атрибутів ніхто не пише — їх додає САМ Svelte 5 під час SSR.
+ * Механізм відтворення подій (`onload="this.__e=event"`) потрібен на випадок,
+ * коли зображення завантажилося до гідрації. Компілятор вставляє ці гачки в
+ * елемент, чиї атрибути задані РОЗГОРТАННЯМ (`{...obj}`): що лежить в
+ * обʼєкті, він не знає, тож припускає найгірше.
+ *
+ *     <img src={src} alt={alt} {...imageSize(src)} />   ❌ пара onload/onerror
+ *     <img src={src} alt={alt} width={w} height={h} />  ✅ атрибути названі
+ *
+ * На восьмому проєкті автора 2026-08-26 тринадцять таких `<img>` дали 15
+ * порушень CSP на головній: у джерелах жодного обробника, `svelte-check`
+ * чистий, 715 юніт-перевірок зелені — і лише рядок у консолі браузера.
+ * Тому перевірка живе тут, над `build/`: у `src/` цих атрибутів немає за
+ * визначенням.
+ *
+ * Тіла `<script>` вирізаються перед пошуком: `el.setAttribute("onload", …)`
+ * усередині бандла — це код, а не розмітка, і CSP його не стосується.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1): дописати
+ * `{...{ width: 16, height: 16 }}` до будь-якого `<img>` у `.svelte` і
+ * перезібрати — перевірка червоніє парою `onload`/`onerror`. Прогнано.
+ */
+function checkInlineHandlers(file, html) {
+  const markup = html.replace(/<script[\s\S]*?<\/script>/gi, "");
+  handlerScanned++;
+  for (const match of markup.matchAll(HANDLER_ATTR_RE)) {
+    fail(
+      `${file}: інлайновий обробник у розмітці —${match[0].trim()}. ` +
+        "Хеші CSP на атрибути-обробники не поширюються; найчастіша причина — " +
+        "атрибути елемента задані розгортанням {...obj} (SECURITY-v9 § 6.3.2)",
+    );
+  }
+}
+
 for (const file of files) {
   const html = readFileSync(file, "utf8");
 
   checkInlineScripts(file, html);
+  checkInlineHandlers(file, html);
 
   // 404.html — оболонка SPA для GitHub Pages: свідомо порожня, без canonical.
   const isShell = file.endsWith("/404.html");
@@ -529,6 +602,17 @@ for (const file of files) {
 // рахує вище, і з назвою сторінки. Другий рахунок дав би той самий дефект
 // двома рядками звіту.
 for (const msg of checkGeo(BUILD, { robotsMeta: false })) fail(msg);
+
+// Канарка сканера обробників (SECURITY-v9 § 6.3.2): нуль переглянутих сторінок
+// означав би «перевірка дивиться не туди», а не «порушень немає». Зелений нуль
+// знахідок має право називатися зеленим лише тоді, коли сторінки справді
+// прочитані.
+if (handlerScanned !== files.length) {
+  fail(
+    `сканер інлайнових обробників пройшов ${handlerScanned} сторінок із ${files.length} — ` +
+      "порожній результат недостовірний",
+  );
+}
 
 if (problems.length > 0) {
   console.error(
