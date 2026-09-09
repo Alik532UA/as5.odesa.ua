@@ -2,7 +2,14 @@ import { expect, test, type Page } from '@playwright/test';
 import { htmlRoutes } from './routes';
 import { OVERLAYS } from './overlays';
 import { waitForSettled } from './settled';
-import { TOUCH_DEBT, TOUCH_DEBT_COARSE, TOUCH_MIN, TOUCH_MIN_COARSE } from './touch-baseline';
+import {
+	OVERLAP_ALLOWED_PAIR,
+	TOUCH_DEBT,
+	TOUCH_DEBT_COARSE,
+	TOUCH_MIN,
+	TOUCH_MIN_COARSE,
+	TOUCH_OVERLAP_MAX
+} from './touch-baseline';
 
 /**
  * GATE-TOUCH-TARGET — розмір сенсорних цілей (WCAG 2.2 SC 2.5.8, рівень AA, і
@@ -256,6 +263,183 @@ test.describe('GATE-TOUCH-TARGET у станах на дотику', () => {
 				`ціль менша за ${TOUCH_MIN_COARSE}×${TOUCH_MIN_COARSE} CSS px у стані ` +
 					`«${overlay.name}»:\n${unexpected.join('\n')}`
 			).toEqual([]);
+		});
+	}
+});
+
+/**
+ * § 10.3.1 `A11Y-TOUCH-OVERLAP` — цілі перевіряються ПАРАМИ.
+ *
+ * Поелементна перевірка вище зелена й тоді, коли дві цілі по 44×44 лежать одна
+ * на одній: кожна окремо відповідає правилу. У `CV` саме так і сталося —
+ * збільшення бейджа до 44 px геометрично зʼїло сусідню кнопку закриття, і клік
+ * по її кутку почав відкривати бейдж. Тобто виправлення одного правила
+ * порушило інше, і жодна перевірка розміру цього не бачила.
+ *
+ * Клас особливий тим, що росте саме там, де щойно правили: `padding` розширює
+ * зону кліку НЕВИДИМО, і сусід програє в місці, де візуально не змінилося
+ * нічого. Тому пари міряються після поелементної перевірки, у тих самих вікнах
+ * і в тих самих станах.
+ *
+ * ## Що вважається порушенням
+ *
+ * Перетин прямокутників двох РІЗНИХ цілей більший за `TOUCH_OVERLAP_MAX` по
+ * обох осях. Вкладені пари (картка-посилання з кнопкою всередині) пропускаються
+ * за `contains`: там зовнішній елемент є ціллю навмисно, і перекриття — це
+ * вкладеність, а не сусідство.
+ *
+ * ## Чому виняток тут перевіряється, а не оголошується
+ *
+ * Дозволена пара (клавіші піаніно) не звільняється від заміру: гейт доводить,
+ * що нашарування ОДНОЗНАЧНЕ — у двох клавіш різний `z-index`, і
+ * `elementFromPoint` у центрі перетину віддає верхню. Запис у переліку без цієї
+ * умови означав би «ми колись на це подивилися», і першу ж помилку в `z-index`
+ * — коли біла клавіша спливе над чорною — він би сховав. Перевірка ж скаже про
+ * неї тим самим прогоном.
+ *
+ * Заміряно 2026-09-10: на всіх 7 сторінках у двох вікнах і в станах «мобільне
+ * меню» та «налаштування» — жодної пари; у стані «піаніно» — 14 пар по 129×23
+ * px, усі чорна(z3) над білою(z2), усі влучання у чорну.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1): дописати
+ * `padding-inline: 40px` кнопці шапки — гейт червоніє парою
+ * «header-settings-btn ✕ header-burger-btn» із числами перетину; поміняти
+ * `z-index` чорної клавіші на менший за білу — червоніє умова однозначності
+ * нашарування, хоча самі пари лишаються дозволеними. Прогнано.
+ */
+
+type Pair = {
+	a: string;
+	b: string;
+	overlap: string;
+	allowed: boolean;
+	layered: boolean;
+	hit: string;
+};
+
+/** Пари цілей, що перетинаються, у межах scope (або всієї сторінки). */
+async function overlappingPairs(page: Page, scopeTestId: string | null) {
+	return page.evaluate(
+		([selector, scopeId, maxOverlap, allowedSource]) => {
+			const scope: ParentNode | null = scopeId
+				? document.querySelector(`[data-testid="${scopeId as string}"]`)
+				: document;
+			if (!scope) return { seen: 0, pairs: [] as Pair[] };
+
+			const allowed = new RegExp(allowedSource as string);
+			const visible = (Array.from(scope.querySelectorAll(selector as string)) as HTMLElement[]).filter(
+				(el) => {
+					const box = el.getBoundingClientRect();
+					if (box.width === 0 || box.height === 0) return false;
+					const style = getComputedStyle(el);
+					return style.visibility !== 'hidden' && style.display !== 'none';
+				}
+			);
+			const label = (el: HTMLElement) =>
+				el.dataset.testid ||
+				(el.textContent ?? '').trim().slice(0, 30) ||
+				el.getAttribute('aria-label') ||
+				el.tagName.toLowerCase();
+
+			const pairs: Pair[] = [];
+			for (let i = 0; i < visible.length; i++) {
+				for (let j = i + 1; j < visible.length; j++) {
+					const a = visible[i];
+					const b = visible[j];
+					// Вкладеність — не сусідство: зовнішній елемент є ціллю навмисно.
+					if (a.contains(b) || b.contains(a)) continue;
+
+					const ra = a.getBoundingClientRect();
+					const rb = b.getBoundingClientRect();
+					const ox = Math.min(ra.right, rb.right) - Math.max(ra.left, rb.left);
+					const oy = Math.min(ra.bottom, rb.bottom) - Math.max(ra.top, rb.top);
+					if (ox <= (maxOverlap as number) || oy <= (maxOverlap as number)) continue;
+
+					const la = label(a);
+					const lb = label(b);
+					const za = getComputedStyle(a).zIndex;
+					const zb = getComputedStyle(b).zIndex;
+					const cx = (Math.max(ra.left, rb.left) + Math.min(ra.right, rb.right)) / 2;
+					const cy = (Math.max(ra.top, rb.top) + Math.min(ra.bottom, rb.bottom)) / 2;
+					const hitEl = document.elementFromPoint(cx, cy);
+					const hit = !hitEl
+						? 'нічого'
+						: a.contains(hitEl)
+							? la
+							: b.contains(hitEl)
+								? lb
+								: `сторонній: ${label(hitEl as HTMLElement)}`;
+
+					pairs.push({
+						a: la,
+						b: lb,
+						overlap: `${Math.round(ox)}×${Math.round(oy)}`,
+						allowed: allowed.test(la) && allowed.test(lb),
+						// Однозначне нашарування: різний z-index І влучання в одну з двох.
+						layered: za !== zb && (hit === la || hit === lb),
+						hit
+					});
+				}
+			}
+			return { seen: visible.length, pairs };
+		},
+		[INTERACTIVE, scopeTestId, TOUCH_OVERLAP_MAX, OVERLAP_ALLOWED_PAIR.source] as const
+	);
+}
+
+function reportPairs(where: string, seen: number, pairs: Pair[]) {
+	// Канарка: сторінка без цілей дала б «пар немає» (AI-AGENT-PITFALLS-v9 § 1).
+	expect(seen, `у «${where}» не знайдено жодної інтерактивної цілі`).toBeGreaterThan(1);
+
+	const stolen = pairs
+		.filter((p) => !p.allowed)
+		.map((p) => `«${p.a}» ✕ «${p.b}» — перетин ${p.overlap} px, клік бере «${p.hit}»`);
+	expect(
+		stolen,
+		`цілі перекривають одна одну більш ніж на ${TOUCH_OVERLAP_MAX} px у «${where}»:\n${stolen.join('\n')}`
+	).toEqual([]);
+
+	const ambiguous = pairs
+		.filter((p) => p.allowed && !p.layered)
+		.map((p) => `«${p.a}» ✕ «${p.b}» — перетин ${p.overlap} px, клік бере «${p.hit}»`);
+	expect(
+		ambiguous,
+		`перетин дозволений як навмисне нашарування, але воно неоднозначне ` +
+			`(однаковий z-index або клік іде повз обидві цілі) у «${where}»:\n${ambiguous.join('\n')}`
+	).toEqual([]);
+}
+
+test.describe('GATE-TOUCH-OVERLAP', () => {
+	test.use({ hasTouch: true });
+
+	for (const vp of VIEWPORTS) {
+		for (const route of htmlRoutes()) {
+			test(`${route} (${vp.name}) — цілі не крадуть одна в одної кліки`, async ({ page }) => {
+				await page.emulateMedia({ reducedMotion: 'reduce' });
+				await page.setViewportSize({ width: vp.w, height: vp.h });
+				await page.goto(route);
+				await expect(page.getByTestId('app-header')).toBeVisible();
+				await waitForSettled(page);
+
+				const { seen, pairs } = await overlappingPairs(page, null);
+				reportPairs(`${route} (${vp.name})`, seen, pairs);
+			});
+		}
+	}
+
+	for (const overlay of OVERLAYS) {
+		test(`${overlay.name} — цілі не крадуть одна в одної кліки`, async ({ page }) => {
+			await page.emulateMedia({ reducedMotion: 'reduce' });
+			await page.setViewportSize({ width: VIEWPORTS[0].w, height: VIEWPORTS[0].h });
+			await page.goto('/');
+			await waitForSettled(page);
+
+			await page.getByTestId(overlay.open).click({ force: true });
+			await page.getByTestId(overlay.root).waitFor({ state: 'visible' });
+			await waitForSettled(page);
+
+			const { seen, pairs } = await overlappingPairs(page, overlay.root);
+			reportPairs(`стан «${overlay.name}»`, seen, pairs);
 		});
 	}
 });
