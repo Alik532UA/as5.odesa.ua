@@ -1,11 +1,11 @@
+// @vitest-environment node
 import { describe, it, expect } from 'vitest';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import en from './locales/en.json';
-import uk from './locales/uk.json';
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES } from './locale';
 
 /**
- * Інваріант паритету ключів словників (I18N-v8 § 7.1).
+ * Інваріант паритету ключів словників (I18N-v9 § 7.1, § 7.1.1).
  *
  * Словники тут — JSON, тобто TypeScript їх не зіставляє: у CV і
  * DigitalWorkshop локалі оголошені як `const x: Translations`, і забутий ключ
@@ -16,6 +16,30 @@ import uk from './locales/uk.json';
  *
  * Наявність ключа перевіряється разом із непорожністю значення: `""` для
  * `svelte-i18n` — валідний переклад, а для читача — порожнє місце.
+ *
+ * ## Чому словники читаються з ДИСКА, а не імпортуються
+ *
+ * Доти файл починався з `import en from './locales/en.json'` і двох таких
+ * рядків — тобто паритет міряв РІВНО ті мови, які тут перелічені руками.
+ * Словники ж завантажуються ліниво: `register('uk', () => import(…))` в
+ * `index.ts`. Третій `locales/*.json` разом із третім `register` дав би мову,
+ * яку відвідувач бачить, а паритет — ні; розходження зʼявилося б мовчки й
+ * назавжди (I18N-v9 § 7.1.1, `I18N-LAZY-CHUNK-PARITY`: паритет міряється по
+ * файлах локалі на диску, а не по імпортованому модулі).
+ *
+ * Тому джерело тут одне — тека `locales/`, — а три переліки, які МОГЛИ б
+ * розійтися (файли на диску, `SUPPORTED_LOCALES`, виклики `register`),
+ * звіряються між собою окремим тестом нижче.
+ *
+ * `index.ts` читається як ТЕКСТ: він імпортує `$app/environment`, якого в
+ * юніт-тестах немає (у `vitest.config.ts` стоїть лише плагін `svelte`, не
+ * `sveltekit()`), тож імпорт упав би ще на розборі залежностей. Той самий
+ * висновок, що вже записаний у `locale.test.ts` і `siblings.test.ts`.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1): додати
+ * `locales/pl.json` з одним ключем — червоніє і звірка переліків, і паритет
+ * ключів; дописати до нього `register('pl', …)` без `SUPPORTED_LOCALES` —
+ * червоніє звірка переліків. Прогнано.
  */
 
 type Dict = Record<string, unknown>;
@@ -35,8 +59,60 @@ function leafValues(value: unknown, prefix = ''): [string, unknown][] {
 	);
 }
 
-const LOCALES = { en, uk } as Record<string, unknown>;
-const REFERENCE = 'uk';
+const LOCALES_DIR = resolve(__dirname, 'locales');
+
+/** Мови — з файлів на диску, а не з переліку імпортів. */
+const localeFiles = readdirSync(LOCALES_DIR).filter((f) => f.endsWith('.json'));
+const LOCALES: Record<string, unknown> = Object.fromEntries(
+	localeFiles.map((file) => [
+		file.replace(/\.json$/, ''),
+		JSON.parse(readFileSync(join(LOCALES_DIR, file), 'utf8')) as unknown
+	])
+);
+
+/** Еталон — типова мова проєкту, а не вписаний тут рядок: дублікат розійшовся б. */
+const REFERENCE: string = DEFAULT_LOCALE;
+
+/**
+ * Три переліки мов, які можуть розійтися незалежно один від одного, і жоден із
+ * них не є похідним від решти:
+ *
+ *   `locales/*.json`        — що є на диску;
+ *   `SUPPORTED_LOCALES`     — що код вважає доступним (перемикач, `<html lang>`,
+ *                             зведення тега браузера, рядок у `siblings.ts`);
+ *   `register(…)` в index.ts — що `svelte-i18n` справді вміє завантажити.
+ *
+ * Файл без `register` — мова, яку не показати; `register` без файлу — падіння
+ * `import()` у браузері; або те й те без `SUPPORTED_LOCALES` — мова, до якої
+ * немає кнопки. Усі три випадки з коду не видно.
+ */
+describe('перелік мов узгоджений між диском, кодом і реєстрацією', () => {
+	const registered = [
+		...readFileSync(resolve(__dirname, 'index.ts'), 'utf8').matchAll(
+			/register\(\s*['"]([a-z]{2}(?:-[A-Za-z]+)?)['"]/g
+		)
+	].map((m) => m[1]);
+
+	it('перевірка жива: словники на диску знайдено', () => {
+		expect(
+			localeFiles.length,
+			`у ${LOCALES_DIR} немає жодного .json — паритет міряти нічим`
+		).toBeGreaterThan(1);
+		expect(registered.length, 'жодного register() в index.ts — розбір зламався').toBeGreaterThan(1);
+	});
+
+	it('файли локалей і SUPPORTED_LOCALES — той самий перелік', () => {
+		expect(Object.keys(LOCALES).sort()).toEqual([...SUPPORTED_LOCALES].sort());
+	});
+
+	it('кожна мова з SUPPORTED_LOCALES зареєстрована в index.ts', () => {
+		expect(registered.sort()).toEqual([...SUPPORTED_LOCALES].sort());
+	});
+
+	it('еталонна мова є серед словників', () => {
+		expect(Object.keys(LOCALES)).toContain(REFERENCE);
+	});
+});
 
 describe('словники i18n', () => {
 	const referenceKeys = flatten(LOCALES[REFERENCE]).sort();
