@@ -313,3 +313,94 @@ describe('install у CI не глушить перевірку peer-залежн
 		expect(files.length, 'у .github/workflows немає жодного yml').toBeGreaterThan(0);
 	});
 });
+
+/**
+ * Рантайм дії береться з `runs.using`, а не з номера релізу
+ * (CI-CD-AND-TOOLS-v9 § 1.9, `CI-ACTION-RUNTIME`).
+ *
+ * ## Чому номер мажора нічого не каже
+ *
+ * Дія друкує в прогоні попередження «Node.js 20 actions are deprecated» — і
+ * підняття мажора його не знімає, бо мажор дії та її рантайм не повʼязані
+ * нічим. Канон називає конкретні приклади: `upload-artifact@v5` і
+ * `configure-pages@v5` вийшли ПІСЛЯ появи node24 і лишилися на node20.
+ * Прочитати це можна рівно в одному місці — `action.yml` того самого мажора.
+ *
+ * ## Що перевіряє інваріант, а що — людина
+ *
+ * Мережі в тесті немає й бути не мусить: гейт, який ходить у GitHub, червоніє
+ * від чужої недоступності. Тому інваріант стежить за іншим — щоб у workflow не
+ * зʼявилося дії, чий рантайм НІХТО НЕ ДИВИВСЯ. Кожен мажор мусить мати запис у
+ * таблиці нижче; новий або піднятий — це червоний прогін і рівно одна команда,
+ * якою його закрити:
+ *
+ *     curl -s https://raw.githubusercontent.com/actions/<дія>/<мажор>/action.yml | grep using:
+ *
+ * Так «перевірено» перестає означати «виглядало свіжим».
+ *
+ * ## Заміряно 2026-09-10 тією самою командою
+ *
+ * Усі сім дій пайплайна — на `node24`. `upload-pages-artifact@v5` —
+ * `composite`: власного рантайму він не має взагалі, тож попередження про
+ * node20 від нього прийти не може; його внутрішні кроки живуть під власними
+ * мажорами й оновлюються разом із дією.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1): підняти в `deploy.yml`
+ * `actions/checkout@v7` до `@v8` — перевірка червоніє з назвою дії й командою,
+ * якою дізнатися її рантайм. Прогнано.
+ */
+describe('рантайм дій CI перевірений, а не вгаданий (§ 1.9)', () => {
+	/** `дія@мажор` → `runs.using` на дату звірки. Тільки те, що справді читали. */
+	const VERIFIED_RUNTIME: Record<string, string> = {
+		'actions/checkout@v7': 'node24',
+		'actions/setup-node@v7': 'node24',
+		'actions/cache@v6': 'node24',
+		'actions/upload-artifact@v7': 'node24',
+		'actions/configure-pages@v6': 'node24',
+		'actions/upload-pages-artifact@v5': 'composite',
+		'actions/deploy-pages@v5': 'node24'
+	};
+
+	/** Рантайми, які ще не застаріли. `composite` не має власного. */
+	const CURRENT = new Set(['node24', 'composite']);
+
+	const used = [...new Set([...all.matchAll(/uses:\s*([\w.-]+\/[\w.-]+@[\w.-]+)/g)].map((m) => m[1]))];
+
+	it('перевірка жива: дії у workflow знайдено', () => {
+		expect(used.length, 'жодного `uses:` — розбір workflow зламався').toBeGreaterThan(3);
+	});
+
+	it('кожна дія має звірений рантайм', () => {
+		const unchecked = used.filter((action) => !(action in VERIFIED_RUNTIME));
+		expect(
+			unchecked,
+			'дію додано або піднято, а її `runs.using` ніхто не дивився. Номер мажора ' +
+				'про рантайм не каже нічого:\n' +
+				unchecked
+					.map(
+						(a) =>
+							`  ${a} — curl -s https://raw.githubusercontent.com/${a.split('@')[0]}/${a.split('@')[1]}/action.yml | grep using:`
+					)
+					.join('\n')
+		).toEqual([]);
+	});
+
+	it('жодна дія не стоїть на застарілому рантаймі', () => {
+		const stale = used
+			.filter((action) => action in VERIFIED_RUNTIME)
+			.filter((action) => !CURRENT.has(VERIFIED_RUNTIME[action]))
+			.map((action) => `${action} — ${VERIFIED_RUNTIME[action]}`);
+		expect(
+			stale,
+			`рантайм дії вийшов із підтримки, і прогін друкуватиме попередження:\n${stale.join('\n')}`
+		).toEqual([]);
+	});
+
+	it('у таблиці немає записів про дії, яких у workflow вже немає', () => {
+		const stale = Object.keys(VERIFIED_RUNTIME).filter((action) => !used.includes(action));
+		expect(
+			stale,
+			`запис звіряє рантайм дії, якої в пайплайні немає — прибрати:\n${stale.join('\n')}`
+		).toEqual([]);
+	});
+});
