@@ -191,7 +191,7 @@ describe('prerender як гейт', () => {
  * Перший гейт у job `if` не потребує: до нього ще ніщо не падало.
  */
 const INDEPENDENT_GATE =
-	/npm run check(?![:\w])|npm run check:(worker|i18n)\b|npm run lint(?![:\w])|npm (run )?test(?!:(e2e|watch))(:\w+)?(?!\S)|npm audit\b|npm run validate-content\b/;
+	/npm run check(?![:\w])|npm run check:(worker|i18n|test-discovery)\b|npm run lint(?![:\w])|npm (run )?test(?!:(e2e|watch))(:\w+)?(?!\S)|npm audit\b|npm run validate-content\b/;
 /** Виглядає гейтом, але залежить від збірки чи браузерів. */
 const BUILD_DEPENDENT = /check:build|check:bundle|check:rules|playwright|lhci|npm run build/;
 

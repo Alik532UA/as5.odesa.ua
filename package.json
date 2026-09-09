@@ -10,6 +10,7 @@
 		"dev": "vite dev",
 		"build": "vite build",
 		"check:build": "node scripts/check-build.mjs",
+		"check:test-discovery": "node scripts/check-test-discovery.mjs",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
