@@ -267,7 +267,12 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 
 E2E живуть у кореневому `tests/` — **6** файлів, теж під `GATE-DOC-NUMBERS`:
 `a11y.spec.ts`, `overlay-fit.spec.ts`, `panel-fit.spec.ts`, `reflow.spec.ts`,
-`testid-runtime.spec.ts`, `touch-targets.spec.ts`. Поруч — шість модулів даних:
+`testid-runtime.spec.ts`, `touch-targets.spec.ts`. Перед усіма ними йде
+сетап-проєкт `identity.setup.ts` (`GATE-E2E-IDENTITY`): він звіряє маркер
+`<meta name="application-name">` із `package.json` і штамп `_app/version.json`
+із тим, що лежить у `build/`, і через `dependencies: ['identity']` зупиняє ВЕСЬ
+прогін, якщо на порту чужий застосунок або попередня збірка. Поруч — шість
+модулів даних:
 `a11y-baseline.ts` (пара KNOWN/COUNT), `touch-baseline.ts` (перелік цілей нижче
 межі), `reflow-baseline.ts` (стеля ширини на маршрут), `routes.ts` (перелік
 сторінок, СПІЛЬНИЙ для всіх гейтів; два власні переліки розходяться на першій

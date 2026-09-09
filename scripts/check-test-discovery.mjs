@@ -69,7 +69,10 @@ function walk(dir, out = []) {
   for (const entry of readdirSync(dir)) {
     const full = join(dir, entry);
     if (statSync(full).isDirectory()) walk(full, out);
-    else if (/\.(test|spec)\.(ts|js|mjs)$/.test(entry)) out.push(rel(full));
+    // `.setup.ts` — теж файл, який виконує раннер: сетап-проєкт Playwright
+    // (`identity.setup.ts`) блокує весь прогін, тож випасти з нього він може
+    // так само тихо, як звичайна специфікація, і наслідок буде більшим.
+    else if (/\.(test|spec|setup)\.(ts|js|mjs)$/.test(entry)) out.push(rel(full));
   }
   return out;
 }

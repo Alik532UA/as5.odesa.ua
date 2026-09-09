@@ -3,6 +3,16 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--
+			Маркер ідентичності сайту (CI-CD-AND-TOOLS-v9 § 1.11,
+			`CI-E2E-TARGET-IDENTITY`). Playwright перевіряє порт ОДИН раз, перед
+			запуском своєї команди, а команда тут починається зі збірки — тобто
+			вікно, у яке сусідній проєкт встигає зайняти порт, відкрите на десятки
+			секунд. `tests/identity.setup.ts` читає цей рядок із сервера й звіряє з
+			`package.json`, щоб прогін проти чужого застосунку падав як помилка
+			середовища, а не як «element(s) not found».
+		-->
+		<meta name="application-name" content="as5.odesa.ua" />
 		<meta name="theme-color" content="#1B5E7B" />
 		<meta name="color-scheme" content="light dark" />
 		%sveltekit.head%

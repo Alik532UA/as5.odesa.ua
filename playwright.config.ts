@@ -59,7 +59,26 @@ export default defineConfig({
 		 */
 		reducedMotion: 'reduce'
 	},
-	projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+	/*
+	 * `identity` — сетап-проєкт, від якого залежить усе інше
+	 * (CI-CD-AND-TOOLS-v9 § 1.11, `CI-E2E-TARGET-IDENTITY`).
+	 *
+	 * `--strictPort` і `reuseExistingServer: false` дивляться на порт РАЗ, перед
+	 * запуском команди нижче, а та починається зі збірки на десятки секунд. У це
+	 * вікно сусідній проєкт встигає зайняти порт, і прогін іде на чужий
+	 * застосунок — з падінням, яке виглядає як «element(s) not found», тобто як
+	 * помилка коду. `dependencies` зупиняє ВЕСЬ прогін, а не одну специфікацію:
+	 * гейт, який дізнався, що міряє чужий сайт, і продовжив міряти, нічого не
+	 * вартий.
+	 */
+	projects: [
+		{ name: 'identity', testMatch: /identity\.setup\.ts/ },
+		{
+			name: 'chromium',
+			use: { ...devices['Desktop Chrome'] },
+			dependencies: ['identity']
+		}
+	],
 	webServer: {
 		/*
 		 * ПРЕВ'Ю ЗІБРАНОГО САЙТУ, а не dev-сервер (CODE-QUALITY-v8 § 5.7).
