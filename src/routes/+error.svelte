@@ -3,6 +3,7 @@
 	import { resolve } from '$app/paths';
 	import { t } from 'svelte-i18n';
 	import { safeT } from '$lib/i18n/translate';
+	import { errorMessage, errorTitle } from '$lib/i18n/errorText';
 
 	/**
 	 * ERROR-HANDLING-v8: `+error.svelte` — мінімум, який має бути завжди.
@@ -22,20 +23,14 @@
 	 * бути ще не готова — тоді `$t` повертає сам ключ. Показувати відвідувачу
 	 * `error.notFound.title` не можна, тому кожен рядок має запасний текст.
 	 * Сама функція — спільна, `$lib/i18n/translate`.
+	 *
+	 * Самі рядки живуть у `$lib/i18n/errorText`, а не тут: заголовок помилки
+	 * потрібен ще й макетові — він єдиний власник `<title>` (SEO-v9 § 4.4).
+	 * Дві копії тих самих ключів розійшлися б на першому ж перекладі.
 	 */
-	const isNotFound = $derived(page.status === 404);
+	const title = $derived(errorTitle($t, page.status));
 
-	const title = $derived(
-		isNotFound
-			? safeT($t, 'error.notFound.title', 'Сторінку не знайдено')
-			: safeT($t, 'error.generic.title', 'Щось пішло не так')
-	);
-
-	const message = $derived(
-		isNotFound
-			? safeT($t, 'error.notFound.message', 'Такої сторінки немає. Можливо, посилання застаріло.')
-			: safeT($t, 'error.generic.message', 'Сталася помилка під час завантаження сторінки.')
-	);
+	const message = $derived(errorMessage($t, page.status));
 
 	/**
 	 * Показується КОД помилки, а не її текст.
@@ -53,11 +48,21 @@
 	const errorId = $derived(page.error?.errorId ?? '');
 </script>
 
-<svelte:head>
-	<title>{page.status} — {title}</title>
-	<meta name="robots" content="noindex" />
-</svelte:head>
+<!--
+	`<svelte:head>` тут БІЛЬШЕ НЕМА, і це не спрощення розмітки.
 
+	`<svelte:head>` дописує в `<head>`, а не заміщує його. Макет ставить
+	`<meta name="robots" content="index, follow…">` на кожній сторінці, тож на
+	сторінці помилки в DOM опинялися ДВА `robots` із протилежними значеннями —
+	який із них візьме краулер, залежить від краулера (SEO-v9 § 4.4,
+	`SEO-HEAD-SINGLE-OWNER`). `<title>` дублювався так само, але тихіше: Svelte
+	лишає з двох рівно один, тобто в зібраному HTML дефекту не видно взагалі.
+
+	Тепер обидва теги ставить лише макет: `page.error` для нього — такий самий
+	стан адреси, як службовий маршрут, і рішення про `noindex` живе в одному
+	місці для обох. Заголовок він бере з `$lib/i18n/errorText` — тієї самої
+	функції, що й розмітка нижче.
+-->
 <!--
 	`div`, а не `main`. Цю сторінку рендерить `+layout.svelte` як `children`,
 	тобто ВСЕРЕДИНІ власного `<main id="main-content">`. Другий `main` тут давав

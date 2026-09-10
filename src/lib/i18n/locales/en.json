@@ -159,6 +159,14 @@
       "admission": {
         "title": "Admission",
         "description": "Admission information for Odesa School of Arts №5: documents, contacts, and study conditions."
+      },
+      "test": {
+        "title": "Draft",
+        "description": "Service page for manual comparisons. Out of the index."
+      },
+      "beta": {
+        "title": "Beta testing checklist",
+        "description": "Service checklist for a human pass over the site. Out of the index."
       }
     }
   },

@@ -15,6 +15,7 @@
 	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor, isHiddenRoute } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
 	import { safeT } from '$lib/i18n/translate';
+	import { errorTitle } from '$lib/i18n/errorText';
 	import { onMount } from 'svelte';
 	import { trackPageView } from '$lib/services/analytics';
 	import { webVitals } from '$lib/controllers/webVitals.svelte';
@@ -40,7 +41,22 @@
 		}
 	});
 
-	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission';
+	/**
+	 * Ключі SEO — по одному на КОЖЕН маршрут, службові теж.
+	 *
+	 * `test` і `beta` тут не для індексу: обидві сторінки віддають `noindex`.
+	 * Вони тут тому, що доти обидві падали в `default: 'home'` і оголошували
+	 * заголовок та опис ГОЛОВНОЇ. Чеклист це «виправляв» власним
+	 * `<svelte:head><title>`, і виходило гірше за початкову помилку: `<title>`
+	 * сторінки казав «Чеклист бета-тестування», а `og:title` того самого
+	 * документа — «Одеська школа мистецтв №5», бо його писав макет
+	 * (SEO-v9 § 4.4, `SEO-HEAD-SINGLE-OWNER`).
+	 *
+	 * Що всі маршрути мають ключ, стежить `src/seo-head-owner.test.ts`: новий
+	 * маршрут без запису тут червоніє замість того, щоб тихо успадкувати
+	 * головну.
+	 */
+	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission' | 'test' | 'beta';
 	type SeoLangKey = 'uk' | 'en';
 	const FALLBACK_LANG: SeoLangKey = 'uk';
 
@@ -74,6 +90,14 @@
 					title: 'Для вступу',
 					description:
 						'Інформація для вступу до Одеської школи мистецтв №5: документи, контакти та умови навчання.'
+				},
+				test: {
+					title: 'Чернетка',
+					description: 'Службова сторінка для ручних порівнянь. Поза індексом.'
+				},
+				beta: {
+					title: 'Чеклист бета-тестування',
+					description: 'Службовий чеклист для живої перевірки сайту. Поза індексом.'
 				}
 			}
 		},
@@ -106,6 +130,14 @@
 					title: 'Admission',
 					description:
 						'Admission information for Odesa School of Arts №5: documents, contacts, and study conditions.'
+				},
+				test: {
+					title: 'Draft',
+					description: 'Service page for manual comparisons. Out of the index.'
+				},
+				beta: {
+					title: 'Beta testing checklist',
+					description: 'Service checklist for a human pass over the site. Out of the index.'
 				}
 			}
 		}
@@ -133,6 +165,10 @@
 				return 'competitions';
 			case '/admission':
 				return 'admission';
+			case '/test':
+				return 'test';
+			case '/beta-test-checklists':
+				return 'beta';
 			default:
 				return 'home';
 		}
@@ -153,8 +189,20 @@
 	 * що краулер сторінку не завантажує — і `noindex` у ній не читає ніколи.
 	 */
 	const isHidden = $derived(isHiddenRoute(page.route.id));
+
+	/**
+	 * Сторінка помилки — теж адреса поза індексом, і рішення про це одне.
+	 *
+	 * Доти `noindex` для неї ставив сам `+error.svelte` своїм `<svelte:head>`, а
+	 * макет продовжував ставити `index, follow…` — тобто в `<head>` було два
+	 * `robots` із протилежними значеннями (SEO-v9 § 4.4). Тепер обидва стани
+	 * («службовий маршрут» і «помилка») сходяться в одне `noIndex`, а власником
+	 * тега лишається рівно макет.
+	 */
+	const isError = $derived(page.error !== null);
+	const noIndex = $derived(isHidden || isError);
 	const robotsContent = $derived(
-		isHidden
+		noIndex
 			? 'noindex, nofollow'
 			: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1'
 	);
@@ -175,6 +223,19 @@
 	const ogImageUrl = $derived(assetUrl('/og/og-default-1200x630.jpg'));
 	// The home page title is already the brand; appending it doubled the name.
 	const seoTitle = $derived(metaTitle === brandTitle ? brandTitle : `${metaTitle} | ${brandTitle}`);
+
+	/**
+	 * Заголовок документа — один на `<title>` і на `og:title`.
+	 *
+	 * На сторінці помилки він показує код і причину («404 — Сторінку не
+	 * знайдено»), а не заголовок маршруту, з якого прийшли: адреси такої
+	 * сторінки не існує, і назвати її ім'ям сусідньої означало б збрехати і
+	 * відвідувачу, і краулеру. Текст — із `$lib/i18n/errorText`, тієї самої
+	 * функції, що показує його в розмітці `+error.svelte`.
+	 */
+	const documentTitle = $derived(
+		isError ? `${page.status} — ${errorTitle($t, page.status)}` : seoTitle
+	);
 	const ogLocale = $derived(currentLocale === 'en' ? 'en_US' : 'uk_UA');
 	const schemaOrg = $derived({
 		'@context': 'https://schema.org',
@@ -200,15 +261,18 @@
 
 <svelte:head>
 	<link rel="icon" type="image/svg+xml" href={asset('/favicon.svg')} />
-	{#if !isHidden}
+	<!-- `noIndex`, а не `isHidden`: сторінка помилки теж не оголошує canonical.
+	     «Не індексуй» і «канонічна адреса ось ця» — суперечливі сигнали, а на
+	     404 canonical указував би на адресу, якої не існує. -->
+	{#if !noIndex}
 		<link rel="canonical" href={canonicalUrl} />
 	{/if}
 
-	<title>{seoTitle}</title>
+	<title>{documentTitle}</title>
 	<meta name="description" content={metaDescription} />
 	<meta name="robots" content={robotsContent} />
 
-	<meta property="og:title" content={seoTitle} />
+	<meta property="og:title" content={documentTitle} />
 	<meta property="og:description" content={metaDescription} />
 	<meta property="og:image" content={ogImageUrl} />
 	<meta property="og:type" content="website" />
@@ -217,7 +281,7 @@
 	<meta property="og:site_name" content={brandTitle} />
 
 	<meta name="twitter:card" content="summary_large_image" />
-	<meta name="twitter:title" content={seoTitle} />
+	<meta name="twitter:title" content={documentTitle} />
 	<meta name="twitter:description" content={metaDescription} />
 	<meta name="twitter:image" content={ogImageUrl} />
 

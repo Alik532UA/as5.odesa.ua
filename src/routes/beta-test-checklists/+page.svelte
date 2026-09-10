@@ -39,10 +39,17 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{$t('beta.title')}</title>
-</svelte:head>
+<!--
+	Власного `<svelte:head>` тут НЕМА, і саме тому заголовок цієї сторінки
+	перестав суперечити її ж `og:title`.
 
+	`<title>` тут стояв разом із тим, що ставить макет. Svelte із двох лишає
+	один — тобто в зібраному HTML дефекту не видно, а в мета-тегах сторінка
+	називалася двома різними іменами: `<title>` — «Чеклист бета-тестування»,
+	`og:title` — «Одеська школа мистецтв №5» (макет брав ключ `home`, бо
+	службові маршрути падали в `default`). Тепер у макета є власний ключ `beta`,
+	і обидва теги беруть один рядок (SEO-v9 § 4.4, `SEO-HEAD-SINGLE-OWNER`).
+-->
 <section class="beta" data-testid="beta-checklist-section">
 	<div class="container">
 		<h1 class="beta__title">{$t('beta.title')}</h1>

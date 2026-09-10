@@ -288,6 +288,63 @@ function checkInlineHandlers(file, html) {
   }
 }
 
+/**
+ * SEO-v9 § 4.4 (`SEO-HEAD-SINGLE-OWNER`, HIGH): у кожного мета-тега один власник.
+ *
+ * ## Чому не досить того, що вже перевірялося вище
+ *
+ * `<svelte:head>` ДОПИСУЄ в `<head>`, а не заміщує його. Доти тут стояли дві
+ * точкові перевірки — на кількість `robots` і `canonical`, — і кожна з'явилася
+ * після того, як дефект уже стрельнув. Решта тегів не перевірялася нічим: макет
+ * ставить `og:image` з логотипом, сторінка додає свій, у зібраному HTML їх два,
+ * і який візьме краулер — залежить від краулера. У сусідньому `adoptananimal`
+ * так і сталося на 200 сторінках: `og:image` показував логотип замість фото.
+ *
+ * Тому тут перелік, а не список випадків: кожен тег, який належить макетові,
+ * зустрічається РІВНО один раз. Новий тег дописується в цей перелік разом із
+ * появою в `+layout.svelte`.
+ *
+ * ## Межа перевірки, і вона названа чесно
+ *
+ * `<title>` цим гейтом НЕ ловиться, і не з недогляду: Svelte із двох `<title>`
+ * лишає в зібраному HTML рівно один. Тобто два власники заголовка — дефект,
+ * якого в `build/` не видно взагалі; його ловить інваріант по джерелах
+ * `src/seo-head-owner.test.ts`. Кількість `<title>` тут перевіряється все одно
+ * — на випадок, коли теги приїдуть не від Svelte.
+ *
+ * Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1): додати
+ * `<meta property="og:image" content="…">` у `+page.svelte` будь-якої сторінки
+ * й перезібрати — гейт червоніє саме на ній. Прогнано.
+ */
+const SINGLE_OWNER_TAGS = [
+  ["<title>", /<title>/g],
+  ['<meta name="description">', /<meta[^>]+name="description"/g],
+  ['<meta property="og:title">', /<meta[^>]+property="og:title"/g],
+  ['<meta property="og:description">', /<meta[^>]+property="og:description"/g],
+  ['<meta property="og:image">', /<meta[^>]+property="og:image"/g],
+  ['<meta property="og:url">', /<meta[^>]+property="og:url"/g],
+  ['<meta property="og:type">', /<meta[^>]+property="og:type"/g],
+  ['<meta name="twitter:title">', /<meta[^>]+name="twitter:title"/g],
+  ['<meta name="twitter:image">', /<meta[^>]+name="twitter:image"/g],
+  ['<script type="application/ld+json">', /<script[^>]+ld\+json/g],
+];
+
+/** Скільки сторінок пройшло перевірку власника — канарка проти зеленого нуля. */
+let ownerScanned = 0;
+
+function checkSingleOwner(file, html) {
+  ownerScanned++;
+  for (const [what, re] of SINGLE_OWNER_TAGS) {
+    const found = html.match(re)?.length ?? 0;
+    if (found === 1) continue;
+    fail(
+      `${file}: ${what} зустрічається ${found} раз(и), очікується 1 — ` +
+        "тег має рівно одного власника, і в цьому проєкті це `+layout.svelte` " +
+        "(SEO-v9 § 4.4)",
+    );
+  }
+}
+
 for (const file of files) {
   const html = readFileSync(file, "utf8");
 
@@ -419,6 +476,8 @@ for (const file of files) {
       if (!existsSync(asset))
         fail(`${file}: og:image вказує на ${ogImage}, а файлу немає`);
     }
+
+    checkSingleOwner(file, html);
   }
 }
 
@@ -673,6 +732,16 @@ for (const url of lighthouseUrls()) {
 if (handlerScanned !== files.length) {
   fail(
     `сканер інлайнових обробників пройшов ${handlerScanned} сторінок із ${files.length} — ` +
+      "порожній результат недостовірний",
+  );
+}
+
+// Та сама канарка для власника мета-тегів (SEO-v9 § 4.4). Сторінок тут на одну
+// менше за `files`: 404-оболонка мета-тегів не має за призначенням.
+const ownerExpected = files.filter((f) => !f.endsWith("/404.html")).length;
+if (ownerScanned !== ownerExpected) {
+  fail(
+    `перевірка власника мета-тегів пройшла ${ownerScanned} сторінок із ${ownerExpected} — ` +
       "порожній результат недостовірний",
   );
 }
