@@ -4,12 +4,18 @@
 node_modules/
 .svelte-kit/
 build/
-dist/
 coverage/
 package-lock.json
 .git/
 .env
 .env.local
+# Артефакти прогонів: великі, згенеровані, і жодного контексту в них немає
+# (CI-CD-AND-TOOLS-v9 § 2.2 називає їх прямо). Каталоги справді з'являються тут:
+# `test-results/` і `.lighthouseci/` лежать у корені після кожного прогону.
+playwright-report/
+test-results/
+blob-report/
+.lighthouseci/
 # Растрові каталоги: 6 МБ, з яких асистенту нічого не видно.
 static/photo/
 static/png/
