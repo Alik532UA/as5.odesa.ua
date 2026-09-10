@@ -95,6 +95,7 @@
 | `DBG-HARD-RESET` (CRITICAL) | `resetService.ts` написаний ретельно й не перевірявся нічим: жодного тесту на межі, за якими він стирає ЛИШЕ своє | `src/lib/services/resetService.test.ts` — підставні сховище, `caches` і `getRegistrations` із сусідськими записами |
 | `BETA-VERSION-STAMP`, `BETA-REPORT-FALLBACK` | обидва правила канон перевіряє «юніт-тестом сервісу прогресу», а `betaChecklist.svelte.ts` не мав тестів: перевірявся лише ВМІСТ чеклиста | `src/lib/states/betaChecklist.svelte.test.ts` — версія позначки, поступ, звіт і запасний шлях буфера обміну |
 | STORAGE-NAMESPACE § Крок 4 | міграція легасі-ключів не мала позначки «виконано» і запускалася на КОЖНОМУ завантаженні: ключ без префікса, який сусід по origin пише зараз, копіювався нам і видалявся в нього | позначка `__migrated` через фасад + `src/lib/utils/storageMigration.test.ts` |
+| OBSERVABILITY § 2.1 (RUM) | `webVitals.svelte.ts` збирав CLS/INP/LCP без жодного тесту, а неправильно порахована метрика лишається числом правильного порядку — тобто не падає й не викликає підозри | `src/lib/controllers/webVitals.svelte.test.ts` — означення CLS і INP, момент звіту, `durationThreshold` лише для `event`, зняття слухачів |
 
 ## Прийняті рішення
 
@@ -318,13 +319,13 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **41**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **42**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
 `a11y-static`, `beta-checklist`, `ci`, `color-scheme-canon`, `contrast`, `csp-hash`,
 `css-variables`, `dependencies`,
 `doc-numbers`, `css-order`, `dom-ids`, `eol`, `error-logger-reachable`, `eslint-baseline`, `fluid-sizing`,
 `hooks.client`, `hotkeys`, `i18n-literals`, `lib/actions/anchoredPanel`,
-`lib/actions/focusTrap`, `lib/i18n/locale`, `lib/i18n/translations`,
+`lib/actions/focusTrap`, `lib/controllers/webVitals.svelte`, `lib/i18n/locale`, `lib/i18n/translations`,
 `lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
 `lib/services/keySequence`, `lib/services/keyboard`, `lib/services/resetService`,
 `lib/services/storage`,
