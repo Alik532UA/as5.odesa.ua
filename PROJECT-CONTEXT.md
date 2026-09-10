@@ -89,6 +89,8 @@
 | `PS-REACHABILITY` для `scripts/` | обхід графа бачив лише `src/`; `generate-sitemap.mjs` був сиротою | друга досяжність у `src/structure.test.ts` |
 | `CI-ACTION-RUNTIME` | мажор дії вважався за її рантайм | таблиця звірених `runs.using` у `src/ci.test.ts` |
 | `CI-E2E-TARGET-IDENTITY` | доводом було «порт відповідає» | `tests/identity.setup.ts` як сетап-проєкт |
+| `SEO-HEAD-SINGLE-OWNER` | `<title>` писали макет і сторінка чеклиста, `robots` — макет і `+error.svelte`; службові маршрути брали ключ `home` | власником лишився макет; перелік тегів у `check:build` + інваріант джерел `src/seo-head-owner.test.ts` (`<title>` у `build/` не видно: Svelte лишає один) |
+| `CI-DEPLOY-ORDER` | порядок кроків тримався коментарем у `deploy.yml`; `playwright.config.ts` збирає в ту саму теку `build/` | інваріант «між збіркою і `upload-pages-artifact` ніщо не пише в `build/`» у `src/ci.test.ts`, разом із перевіркою, що Lighthouse читає готову теку |
 
 ## Прийняті рішення
 

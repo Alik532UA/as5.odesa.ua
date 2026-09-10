@@ -404,3 +404,95 @@ describe('рантайм дій CI перевірений, а не вгадан�
 		).toEqual([]);
 	});
 });
+
+/**
+ * Вивантажується та збірка, яку перевіряли (§ 1.10, `CI-DEPLOY-ORDER`, HIGH).
+ *
+ * ## Дефект живе в ПОРЯДКУ кроків, і тому його не бачить жоден гейт
+ *
+ * Кожен гейт міряє теку `build/`, яка на момент його погляду правильна.
+ * `playwright.config.ts` тут піднімає власний сервер командою
+ * `npm run build && npm run preview` — у ту саму теку. Досить переставити крок
+ * E2E під крок збірки, і порядок стає такий: правильна збірка → зелений
+ * `check:build` над нею → E2E ПЕРЕЗАПИСУЄ `build/` власною збіркою →
+ * `upload-pages-artifact` вивантажує саме її.
+ *
+ * Заміряно 2026-08-26 в `adoptananimal`: збірка E2E йшла без `BASE_PATH` і
+ * `SITE_ORIGIN`, і сайт відкривався (пререндер робить шляхи до ресурсів
+ * відносними), але `canonical` кожної з 229 сторінок і кожен `<loc>` у
+ * `sitemap.xml` вказували на корінь СУСІДНЬОГО сайту на спільному домені.
+ * Тут ціна така сама: запасна адреса `alik532ua.github.io` — спільний origin.
+ *
+ * Сьогодні порядок правильний — E2E стоїть вище збірки для деплою. Саме тому
+ * інваріант і додається зараз: він не лікує наявний дефект, а тримає стан, який
+ * тримався коментарем. Коментар не червоніє.
+ *
+ * ## Зворотний експеримент (AI-AGENT-PITFALLS-v9 § 1.1)
+ *
+ * Прогнано перед комітом: переставити крок `E2E — гейти над зібраним сайтом`
+ * під крок `Build` — перевірка червоніє й називає саме цей крок; замінити в
+ * `lighthouserc.cjs` `staticDistDir` на `startServerCommand: npm run build …` —
+ * червоніє друга перевірка.
+ */
+describe('деплой вивантажує перевірену збірку (§ 1.10)', () => {
+	/** Крок, що ПИШЕ в `build/`: власна збірка або прогін, який збирає сам. */
+	const WRITES_BUILD = /npm run build\b|npm run test:e2e\b|playwright test\b|preview\b/;
+	const UPLOAD = /upload-pages-artifact/;
+
+	const pipeline = files.flatMap((file) =>
+		stepsOf(readFileSync(`${DIR}/${file}`, 'utf8')).map((s) => ({ ...s, file }))
+	);
+
+	const uploadAt = pipeline.findIndex((s) => UPLOAD.test(s.body));
+	const buildAt = pipeline.reduce(
+		(last, step, i) => (i < uploadAt && /npm run build\b/.test(step.body) ? i : last),
+		-1
+	);
+
+	it('перевірка жива: кроки збірки й вивантаження знайдено', () => {
+		expect(uploadAt, 'у пайплайні немає кроку upload-pages-artifact — порядок міряти нічим').toBeGreaterThan(
+			-1
+		);
+		expect(buildAt, 'перед вивантаженням немає жодного `npm run build`').toBeGreaterThan(-1);
+	});
+
+	it('між збіркою для деплою і вивантаженням ніщо не пише в build/', () => {
+		const between = pipeline
+			.slice(buildAt + 1, uploadAt)
+			.filter((step) => WRITES_BUILD.test(step.body))
+			.map((step) => `${step.file} → ${step.name}`);
+		expect(
+			between,
+			'крок між збіркою і вивантаженням перезаписує `build/` — на Pages поїде ' +
+				'не та збірка, яку перевірив `check:build`:\n' + between.join('\n')
+		).toEqual([]);
+	});
+
+	it('вивантажується саме тека збірки', () => {
+		const path = pipeline[uploadAt]?.body.match(/path:\s*'?"?\.?\/?([\w./-]+?)'?"?\s*$/m)?.[1];
+		expect(path, 'у кроці upload немає `path:` — незрозуміло, що саме їде на хостинг').toBeDefined();
+		expect(path?.replace(/\/$/, ''), 'вивантажується не `build/`').toBe('build');
+	});
+
+	it('Lighthouse читає готову збірку, а не робить власну', () => {
+		// Крок lhci стоїть НИЖЧЕ збірки для деплою (перед вивантаженням), тож
+		// власна збірка в його конфізі — це рівно той самий перезапис, лише
+		// заведений не з workflow, а з файлу поруч. Умова перевіряється там, де
+		// вона записана: у конфізі.
+		const lhciBelowBuild = pipeline
+			.slice(buildAt + 1, uploadAt)
+			.some((step) => /lhci\b/.test(step.body));
+		if (!lhciBelowBuild) return;
+
+		const config = existsSync('lighthouserc.cjs') ? readFileSync('lighthouserc.cjs', 'utf8') : '';
+		expect(config, 'крок lhci є, а конфігу lighthouserc.cjs немає').not.toBe('');
+		expect(
+			/staticDistDir/.test(config),
+			'Lighthouse нижче збірки для деплою мусить читати готову теку (`staticDistDir`)'
+		).toBe(true);
+		expect(
+			/startServerCommand[\s\S]{0,80}(npm run build|vite build)/.test(config),
+			'конфіг Lighthouse збирає сайт сам — це перезапише `build/` після `check:build`'
+		).toBe(false);
+	});
+});
