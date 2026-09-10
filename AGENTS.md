@@ -83,12 +83,17 @@ prerendered повністю. Два з них службові й не в ін�
 | Ключ у словнику, якого не читає ніхто | паритет `uk`↔`en` такий ключ пропускає завжди. Гейт — `translations.test.ts` |
 | Медіафайл у корені `static/` | там лише службове (`favicon.*`, `robots.txt`, `llms.txt`, `CNAME`…). Решта — у підпапки. Гейт `src/static-assets.test.ts`; він же тримає борг сиріт: 1504 КБ статики не просить ніхто |
 | `@media` для вигляду компонента, що залежить від наявного місця | картка в сітці міряла ВІКНО: на 197 px діставала найбільший паддінг, на 200 px — найменший. `container-type` ставиться на ОБГОРТЦІ: на самому елементі паддінг залежав би від заміру, а замір — від паддінга |
+| `<svelte:head>` у сторінці чи в `+error.svelte` з тегом, який пише макет | власник кожного тега `<head>` тут — **рівно `+layout.svelte`**. `<svelte:head>` дописує, а не заміщує: з двох `robots` виходить суперечність, а з двох `<title>` Svelte лишає один — і в `build/` цього не видно взагалі. Нова сторінка отримує власний ключ у `routeToSeoKey`, а не власний `<title>` |
+| `<button>` чи `<a>` з однією іконкою всередині й без `aria-label` | читалка оголосить це як «button». axe такого не побачить, якщо гілка `{#if}` чи модалка закриті — тому скан статичний (`src/a11y-static.test.ts`), а ім'я береться зі словника виразом, а не літералом у лапках |
+| Крок у `deploy.yml`, що пише в `build/`, МІЖ збіркою і `upload-pages-artifact` | на Pages поїде не та збірка, яку перевірив `check:build`. `playwright.config.ts` збирає в ту саму теку, тож крок E2E стоїть **вище** збірки для деплою |
+| `caches.delete()` чи `registration.unregister()` без межі власного кореня | обидва API віддають усе, що є на ORIGIN, а за запасною адресою це разом із сусідніми проєктами. Межа — `siteRootFor()` із `$lib/config/site`, не `base` і не корінь origin |
 | Панель біля кнопки, прив’язана до її краю (`position: absolute; right: 0`) | позиція міряється при відкритті — `use:anchoredPanel` (`$lib/actions/anchoredPanel`). Ширина панелі й місце кнопки відомі лише в браузері. Випадайка налаштувань на вікні 320 px починалася в −4 px, а її перемикач «Гарячі клавіші» на 844×390 лежав на 219 px нижче краю — і доскролити до нього не можна, бо шапка `position: fixed`. Гейти — `src/fluid-sizing.test.ts` (клас) і `tests/panel-fit.spec.ts` (пікселі) |
 
 Рядки до `console.log` включно тримає ESLint. Далі йдуть ті, що під `npm test`
 і `npm run test:e2e`: `structure`, `hotkeys`, `fluid-sizing`, `i18n-literals`,
-`static-assets`, `translations`, `check:build` через `REQUIRED_CONTENT`,
-`GATE-OVERLAY-FIT`, `GATE-PANEL-FIT` і `GATE-TOUCH-TARGET`.
+`static-assets`, `translations`, `seo-head-owner`, `a11y-static`, `ci`,
+`resetService`, `check:build` через `REQUIRED_CONTENT` і перелік власників
+мета-тегів, `GATE-OVERLAY-FIT`, `GATE-PANEL-FIT` і `GATE-TOUCH-TARGET`.
 
 Числа в цьому файлі й у `PROJECT-CONTEXT.md` теж під гейтом: `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`) звіряє кожне з джерелом того гейта, який ним
@@ -149,7 +154,12 @@ npm run test:e2e     # Playwright над ПРЕВ'Ю зібраного сайт
                      # data-testid. Сам робить build і піднімає сервер на 5499
 npm run build        # збірка
 npm run check:build  # гейт над build/: canonical, og:image, title, JSON-LD,
-                     # robots/sitemap, подвоєна база, позиція й хеш інлайн-скриптів
+                     # robots/sitemap, подвоєна база, позиція й хеш інлайн-скриптів,
+                     # один власник на кожен мета-тег
+npm run check:test-discovery
+                     # окремий ПРОЦЕС: питає раннерів, що вони зібрали, і
+                     # звіряє з файлами на диску. Стоїть після `npm test`, бо
+                     # доводить не «тести зелені», а «запущені — це всі»
 ```
 
 **Результат треба побачити, а не припустити.** Твердження «правило виконано»
