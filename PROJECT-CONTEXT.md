@@ -118,11 +118,37 @@
 ## Обрані optional-файли пакету
 
 `I18N`, `ANALYTICS`, `DEPENDENCIES`, `VERSIONING`, `DEPLOY-ENVIRONMENTS`,
-`CUSTOM-DOMAIN`, `BETA-CHECKLIST` (з 2026-08-19).
+`CUSTOM-DOMAIN`, `BETA-CHECKLIST` (з 2026-08-19), `DEBUGGING` і `OBSERVABILITY`
+(перекласифіковані 2026-09-11, див. нижче).
 Не застосовуються: `AUTH-FORM` (немає входу), `SCROLLBAR` і `MINIMAP`
 (нативної смуги вистачає), `HOLD-SCROLL` (є доповненням до власної смуги),
-`AI-PROVIDERS` (немає LLM), `FORM-INPUTS` і `INPUT-TOOLS` (немає форм),
-`DEBUGGING`, `OBSERVABILITY` (`errorLogger` покриває потребу).
+`AI-PROVIDERS` (немає LLM), `FORM-INPUTS` і `INPUT-TOOLS` (немає форм).
+
+`DEBUGGING` і `OBSERVABILITY` доти стояли в переліку НЕзастосовних, і це
+розходилося з кодом — тобто саме той клас, від якого стереже `PIT-DOC-FACTS`:
+запис виглядав рішенням, а був застарілим фактом.
+
+- `DEBUGGING` застосовний: службові жести `V` і `R` (`keySequence.ts`,
+  `debugMode.svelte.ts`), аварійне скидання (`resetService.ts`). § 3.4
+  (`DBG-HARD-RESET`) — **CRITICAL**, і доки файл вважався незастосовним, ця
+  функція не мала жодного тесту при тому, що стирає дані на спільному origin.
+  Закрито 2026-09-11.
+- `OBSERVABILITY` застосовний частково й саме тими розділами, які тут вже
+  зроблені: § 2.1 — RUM Core Web Vitals (`controllers/webVitals.svelte.ts`),
+  § 2.2 — Lighthouse CI (`lighthouserc.cjs`, `scripts/lhci-urls.cjs`,
+  `OBS-LHCI-REAL-PAGES` закрито 2026-09-10). Незастосовне лише те, що вимагає
+  серверного рантайму (`[server]`-розділи) і зовнішній трекер помилок: замість
+  нього — `errorLogger` і кнопка копіювання звіту на службовому таблі.
+
+`VER-OPEN-TAB-SURVIVES` (VERSIONING § 4.5, HIGH) **не застосовується**
+(класифіковано 2026-09-11). Правило про застосунки, що живуть у вкладці довше за
+інтервал між деплоями; канон сам виносить сайт-візитівку за межу — вона
+обходиться § 4.4. Плюс SvelteKit 2 уже має саме той запасний шар, якого вимагає
+§ 4.5: коли клієнтський роутер не може завантажити потрібний модуль, він
+переходить на повне завантаження (`native_navigation` у
+`node_modules/@sveltejs/kit/src/runtime/client/client.js` — звірено з джерелом,
+а не припущено). Service worker у проєкті немає, тож заборони `skipWaiting()`
+теж нічого стерегти.
 
 `CLOUD-DATABASE` **не застосовується** (класифіковано 2026-08-28). Це не
 рішення смаку, а факт, який перевіряється командою: жодного BaaS SDK у
