@@ -92,6 +92,7 @@
 | `SEO-HEAD-SINGLE-OWNER` | `<title>` писали макет і сторінка чеклиста, `robots` — макет і `+error.svelte`; службові маршрути брали ключ `home` | власником лишився макет; перелік тегів у `check:build` + інваріант джерел `src/seo-head-owner.test.ts` (`<title>` у `build/` не видно: Svelte лишає один) |
 | `CI-DEPLOY-ORDER` | порядок кроків тримався коментарем у `deploy.yml`; `playwright.config.ts` збирає в ту саму теку `build/` | інваріант «між збіркою і `upload-pages-artifact` ніщо не пише в `build/`» у `src/ci.test.ts`, разом із перевіркою, що Lighthouse читає готову теку |
 | `A11Y-STATIC-ICON-LABEL` | ім'я кнопки-іконки міряв лише axe, тобто лише те, що на екрані після `goto()`; гілок `{#if}` і закритих модалок він не бачить | `src/a11y-static.test.ts` — скан усіх `.svelte`: елемент без тексту має ім'я, і ім'я приходить виразом, а не літералом |
+| `DBG-HARD-RESET` (CRITICAL) | `resetService.ts` написаний ретельно й не перевірявся нічим: жодного тесту на межі, за якими він стирає ЛИШЕ своє | `src/lib/services/resetService.test.ts` — підставні сховище, `caches` і `getRegistrations` із сусідськими записами |
 
 ## Прийняті рішення
 
@@ -289,7 +290,7 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 | `npm run check:build`                     | CI, **після** `build` і **до** деплою | canonical, og:image, `<title>`, JSON-LD, robots/sitemap **в обидва боки** (адреса з sitemap не мусить бути noindex, і навпаки — індексована сторінка мусить бути в sitemap), подвоєна база, позиція й хеш інлайн-скриптів |
 | Бюджет JS                                 | у складі `check:build`                | сторінка, яка перевищила **150 КБ gzip**. Міряються всі `_app/immutable/*.js`, згадані в її HTML, — не `entry/`, де в SvelteKit лежать два завантажувачі на 2 КБ і гейт не спрацював би ніколи                            |
 
-Файли інваріантів під `src/` — **38**, і перелік стоїть під `GATE-DOC-NUMBERS`
+Файли інваріантів під `src/` — **39**, і перелік стоїть під `GATE-DOC-NUMBERS`
 (`src/doc-numbers.test.ts`), тобто новий файл сюди дописується не з доброї волі:
 `a11y-static`, `beta-checklist`, `ci`, `color-scheme-canon`, `contrast`, `csp-hash`,
 `css-variables`, `dependencies`,
@@ -297,7 +298,8 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 `hooks.client`, `hotkeys`, `i18n-literals`, `lib/actions/anchoredPanel`,
 `lib/actions/focusTrap`, `lib/i18n/locale`, `lib/i18n/translations`,
 `lib/schemas/news`, `lib/services/analytics`, `lib/services/errorLogger.svelte`,
-`lib/services/keySequence`, `lib/services/keyboard`, `lib/services/storage`,
+`lib/services/keySequence`, `lib/services/keyboard`, `lib/services/resetService`,
+`lib/services/storage`,
 `lib/siblings`, `lib/states/ui.svelte`, `lib/utils/reducedMotion`,
 `lighthouse-urls`, `seo-head-owner`, `static-assets`, `structure`, `svelte-sources`,
 `test-runners`, `testid-conventions`.
