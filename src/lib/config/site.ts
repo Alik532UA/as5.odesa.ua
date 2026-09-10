@@ -44,6 +44,37 @@ export const SITE_ORIGIN = 'https://as5.odesa.ua';
 export const SITE_ROOT = `${SITE_ORIGIN}${base}`;
 
 /**
+ * Запасна адреса — та сама збірка на спільному origin акаунта.
+ *
+ * Записана рядком, а не виведена з `base`: `base` тут порожній (власний домен),
+ * тобто ЗА ЦІЄЮ адресою він бреше — шлях `/as5.odesa.ua/` у ньому не
+ * відображений ніяк. Це не дрібниця форматування: усе, що на спільному origin
+ * відділяє своє від чужого — межа кешів, scope service worker, — виводиться з
+ * кореня САЙТУ, а не з кореня origin.
+ *
+ * В індексі ця адреса не згадується (canonical, `og:url`, sitemap і robots
+ * ведуть на основну), але вона робоча, і скидання даних із неї виконується.
+ */
+export const SITE_FALLBACK_ROOT = 'https://alik532ua.github.io/as5.odesa.ua/';
+
+/**
+ * Корінь сайту на ТІЙ адресі, з якої його зараз відкрито.
+ *
+ * Потрібен там, де межа «своє / чуже» вимірюється префіксом адреси:
+ * `caches.keys()` і `getRegistrations()` віддають усе, що є на origin, і на
+ * запасній адресі це разом із сімома сусідніми проєктами.
+ *
+ * Невідомий хост (dev-сервер, `npm run preview`, порт E2E) — це або локальна
+ * машина, або прогін, і там origin наш цілком: межею стає його корінь.
+ */
+export function siteRootFor(href: string): string {
+	for (const root of [`${SITE_ORIGIN}/`, SITE_FALLBACK_ROOT]) {
+		if (href.startsWith(root)) return root;
+	}
+	return new URL('/', href).href;
+}
+
+/**
  * Канонічна адреса сторінки з її `url.pathname`.
  *
  * `pathname` уже містить базу — саме тому тут `SITE_ORIGIN`, а не `SITE_ROOT`.

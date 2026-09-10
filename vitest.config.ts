@@ -41,7 +41,11 @@ export default defineConfig({
 		conditions: ['browser'],
 		alias: {
 			$lib: path.resolve(__dirname, './src/lib'),
-			'$app/environment': path.resolve(__dirname, './src/test-mocks/app-environment.ts')
+			'$app/environment': path.resolve(__dirname, './src/test-mocks/app-environment.ts'),
+			// `$app/paths` генерує `svelte-kit sync`, і без цієї підстави будь-який
+			// тест, що транзитивно тягне `$lib/config/site`, падав на імпорті ще до
+			// першого `it` — тобто модуль політики адрес не міг бути покритий узагалі.
+			'$app/paths': path.resolve(__dirname, './src/test-mocks/app-paths.ts')
 		}
 	}
 });

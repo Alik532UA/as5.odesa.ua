@@ -1,4 +1,5 @@
 import { STORAGE_PREFIX } from '$lib/config/storage';
+import { siteRootFor } from '$lib/config/site';
 import { storage } from './storage';
 
 /**
@@ -106,7 +107,7 @@ async function clearOwnCaches(): Promise<void> {
 }
 
 /**
- * Реєстрації service worker — лише ті, що керують ЦІЄЮ сторінкою.
+ * Реєстрації service worker — лише ті, що лежать УСЕРЕДИНІ нашого сайту.
  *
  * **Чому не за `base`, як у сусідніх проєктах.** У них `base` — це `/VetCrewGames`
  * чи `/MindStep`, тобто сама назва відрізняє свій scope від чужого. Тут `base`
@@ -114,10 +115,18 @@ async function clearOwnCaches(): Promise<void> {
  * `alik532ua.github.io/as5.odesa.ua/` пропустив би ВСІ реєстрації origin — тобто
  * рівно те, що фільтр мав спинити.
  *
- * Тому умова інша й не залежить від `base` взагалі: scope service worker завжди є
- * префіксом адрес, якими він керує. Отже «керує цією сторінкою» = адреса сторінки
- * починається зі scope. Сусідній `/MindStep/` цієї перевірки не проходить, а
- * власний — проходить на обох адресах.
+ * **Чому не «керує цією сторінкою», як тут стояло доти.** Умова
+ * `here.startsWith(registration.scope)` виглядає точною й ловить сусіда
+ * `/MindStep/` правильно — саме тому помилка й не була видна. Але вона проходить
+ * і для КОРЕНЕВОГО scope `https://alik532ua.github.io/`: такий scope має
+ * user-site акаунта, і за запасною адресою він керує нашою сторінкою теж, тобто
+ * скидання зняло б реєстрацію чужого застосунку. Це рівно та помилка, яку канон
+ * описує на `Slovko` (DEBUGGING-v9 § 3.4, CRITICAL): одне натискання вбивало SW
+ * сусідів, а половина функції поводилася при цьому правильно.
+ *
+ * Тому межа — корінь САЙТУ на тій адресі, з якої його відкрито (`siteRootFor`),
+ * а не корінь origin і не `base`. Своя реєстрація лежить у ньому за
+ * визначенням: scope не може бути вище за каталог власного скрипта.
  *
  * Service worker у проєкті ще немає (ні `vite-plugin-pwa`, ні свого файла), тож
  * сьогодні ця половина не робить нічого. Написати її ПІСЛЯ появи PWA означало б
@@ -127,10 +136,10 @@ async function unregisterControllingWorkers(): Promise<void> {
 	if (!('serviceWorker' in navigator)) return;
 	try {
 		const registrations = await navigator.serviceWorker.getRegistrations();
-		const here = window.location.href;
+		const ownRoot = siteRootFor(window.location.href);
 		await Promise.all(
 			registrations
-				.filter((registration) => here.startsWith(registration.scope))
+				.filter((registration) => registration.scope.startsWith(ownRoot))
 				.map((registration) => registration.unregister())
 		);
 	} catch {

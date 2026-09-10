@@ -54,10 +54,25 @@ function makeMemoryStorage(overrides: Partial<Storage> = {}): Storage {
 const OWN_CACHES = [`${STORAGE_PREFIX}assets-v1`, `${STORAGE_PREFIX}pages`];
 const NEIGHBOUR_CACHES = ['mindstep_assets', 'workbox-precache-v2', 'slovko_words'];
 
+/**
+ * Прогін іде з ЗАПАСНОЇ адреси, і це не деталь оформлення.
+ *
+ * На власному домені origin ексклюзивний, тобто там будь-який фільтр виглядає
+ * правильним. Уся межа «своє / чуже» перевіряється лише за адресою на спільному
+ * origin — саме там її можна помилитися й не побачити цього ніколи.
+ */
 const HERE = 'https://alik532ua.github.io/as5.odesa.ua/about';
-/** Реєстрації service worker: своя й сусідська, обидві на одному origin. */
+/** Реєстрації service worker: своя й дві чужі, усі на одному origin. */
 const OWN_SCOPE = 'https://alik532ua.github.io/as5.odesa.ua/';
 const NEIGHBOUR_SCOPE = 'https://alik532ua.github.io/MindStep/';
+/**
+ * Кореневий scope сусіда — user-site акаунта.
+ *
+ * Він керує і НАШОЮ сторінкою за запасною адресою, тож умова «керує цією
+ * сторінкою» його не відсіює. Саме через це в `Slovko` скидання знімало
+ * реєстрації сусідів (DEBUGGING-v9 § 3.4).
+ */
+const ROOT_SCOPE = 'https://alik532ua.github.io/';
 
 type Deleted = { caches: string[]; unregistered: string[] };
 
@@ -74,11 +89,15 @@ function setupEnvironment(
 		storage?: Partial<Storage>;
 		cachesThrows?: boolean;
 		registrationsThrow?: boolean;
+		here?: string;
+		scopes?: string[];
 	} = {}
 ) {
 	const deleted: Deleted = { caches: [], unregistered: [] };
 	const reload = vi.fn();
 	const confirmed = options.confirm ?? true;
+	const here = options.here ?? HERE;
+	const scopes = options.scopes ?? [OWN_SCOPE, NEIGHBOUR_SCOPE, ROOT_SCOPE];
 
 	const localStorageStub = makeMemoryStorage(options.storage);
 	localStorageStub.setItem(`${STORAGE_PREFIX}theme`, 'dark');
@@ -86,7 +105,7 @@ function setupEnvironment(
 
 	vi.stubGlobal('localStorage', localStorageStub);
 	vi.stubGlobal('confirm', vi.fn(() => confirmed));
-	vi.stubGlobal('location', { href: HERE, reload });
+	vi.stubGlobal('location', { href: here, reload });
 	vi.stubGlobal('caches', {
 		keys: vi.fn(async () => {
 			if (options.cachesThrows) throw new Error('Cache API заблокований');
@@ -101,7 +120,7 @@ function setupEnvironment(
 		serviceWorker: {
 			getRegistrations: vi.fn(async () => {
 				if (options.registrationsThrow) throw new Error('реєстрації недоступні');
-				return [OWN_SCOPE, NEIGHBOUR_SCOPE].map((scope) => ({
+				return scopes.map((scope) => ({
 					scope,
 					unregister: vi.fn(async () => {
 						deleted.unregistered.push(scope);
@@ -154,6 +173,27 @@ describe('аварійне скидання стирає лише своє (DEBU
 			deleted.unregistered,
 			'знято реєстрацію сусіднього проєкту — саме так помилявся Slovko'
 		).not.toContain(NEIGHBOUR_SCOPE);
+	});
+
+	it('кореневий scope сусіда лишається, хоч і керує цією сторінкою', async () => {
+		const { deleted } = setupEnvironment();
+		await hardReset(false);
+		expect(
+			deleted.unregistered,
+			'user-site акаунта реєструє SW із scope на весь origin, і за запасною ' +
+				'адресою він керує нашою сторінкою теж — але він не наш'
+		).not.toContain(ROOT_SCOPE);
+	});
+
+	it('на власному домені своя реєстрація знімається', async () => {
+		// Дзеркальна половина: фільтр, який відсіює кореневий scope, не має
+		// відсіювати ВЛАСНИЙ корінь на ексклюзивному origin.
+		const { deleted } = setupEnvironment({
+			here: 'https://as5.odesa.ua/about',
+			scopes: ['https://as5.odesa.ua/']
+		});
+		await hardReset(false);
+		expect(deleted.unregistered).toEqual(['https://as5.odesa.ua/']);
 	});
 
 	it('відмова від підтвердження не стирає нічого й не перезавантажує', async () => {
