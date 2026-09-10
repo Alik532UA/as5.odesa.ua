@@ -21,8 +21,33 @@ const GA_ID: string = 'G-HE5RR7253Y';
 // X's: real measurement IDs can contain them.
 const isConfigured = /^G-[A-Z0-9]{6,}$/.test(GA_ID) && GA_ID !== GA_ID_PLACEHOLDER;
 
+/**
+ * Do Not Track / Global Privacy Control (ANALYTICS-v9 § 4.2).
+ *
+ * Вимога чинна НЕЗАЛЕЖНО від того, чи є банер згоди: сигнал уже надіслано
+ * браузером, тобто відповідь на питання «чи можна відстежувати» вже є, і
+ * ігнорувати її — просто ігнорувати.
+ *
+ * Тут це нічого не ламає: аналітика в цьому проєкті не впливає ні на вигляд, ні
+ * на роботу сайту — жодного A/B, жодної персоналізації. Відвідувач із сигналом
+ * отримує той самий сайт, лише без маяків.
+ *
+ * `globalPrivacyControl` — чинний сигнал (Firefox, Brave, розширення);
+ * `doNotTrack` — старіший, і значення бувають `'1'` та `'yes'` залежно від
+ * браузера. Перевіряються обидва: з Chrome `doNotTrack` прибрали, з Firefox і
+ * Safari — ні. `'0'` і `'unspecified'` відмовою НЕ вважаються: читати будь-яке
+ * значення як відмову означало б вимкнути аналітику всюди, і виглядало б це як
+ * робочий гард.
+ */
+function optedOut(): boolean {
+	if (typeof navigator === 'undefined') return false;
+	const signals = navigator as Navigator & { globalPrivacyControl?: boolean };
+	if (signals.globalPrivacyControl === true) return true;
+	return signals.doNotTrack === '1' || signals.doNotTrack === 'yes';
+}
+
 // `dev` keeps local work from landing in the same property as real traffic.
-const enabled = () => browser && !dev && isConfigured;
+const enabled = () => browser && !dev && isConfigured && !optedOut();
 
 export type AnalyticsEvent =
 	| 'section_view'
