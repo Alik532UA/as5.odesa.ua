@@ -3,7 +3,7 @@
 	import { t } from 'svelte-i18n';
 	import { focusTrap } from '$lib/actions/focusTrap';
 	import { galleryGestures } from '$lib/actions/galleryGestures';
-	import PhotoLightboxThumbs from './PhotoLightboxThumbs.svelte';
+	import GalleryThumbRail from './GalleryThumbRail.svelte';
 	import { acceptsShortcut } from '$lib/services/keyboard';
 	import { browser } from '$app/environment';
 
@@ -130,7 +130,7 @@
 			зараз» — а саме його й ставлять, дивлячись на таку стрічку.
 		-->
 		{#if images.length > 1}
-			<PhotoLightboxThumbs {images} {index} onpick={(i) => (index = i)} />
+			<GalleryThumbRail {images} {index} onpick={(i) => (index = i)} />
 		{/if}
 
 		<!-- Prev button -->
