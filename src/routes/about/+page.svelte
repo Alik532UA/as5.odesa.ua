@@ -1,6 +1,23 @@
 <script lang="ts">
 	import { t } from 'svelte-i18n';
 	import { asset } from '$app/paths';
+	import PhotoLightbox from '$lib/components/PhotoLightbox.svelte';
+
+	/**
+	 * Світлина розгортається на весь екран (як у сусідньому teatralo4ka).
+	 *
+	 * Доти плитка мала `cursor: pointer` і не робила НІЧОГО: вигляд обіцяв
+	 * натискання, якого не існувало. Тепер плитка — справжня кнопка, тож
+	 * клавіатура й читалка отримують її задарма; `div` із `onclick` потребував
+	 * би ролі, `tabindex` і власного обробника клавіш.
+	 */
+	let lightboxOpen = $state(false);
+	let lightboxIndex = $state(0);
+
+	function openAt(index: number) {
+		lightboxIndex = index;
+		lightboxOpen = true;
+	}
 
 	const galleryImages = $derived([
 		{ src: asset('/photo/photoForAboutPage-01.jpg'), alt: 'School Photo 1', title: $t('about.gallery.edu') },
@@ -25,12 +42,25 @@
 
 	<div class="g-bento">
 		{#each galleryImages as img, i (img.src)}
-			<div class="g-bento__item g-bento__item--{i}">
+			<button
+				type="button"
+				class="g-bento__item g-bento__item--{i}"
+				onclick={() => openAt(i)}
+				aria-label="{img.title} — {$t('common.gallery')}"
+				data-testid="about-gallery-{i}-btn"
+			>
 				<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
-			</div>
+			</button>
 		{/each}
 	</div>
 </section>
+
+<PhotoLightbox
+	images={galleryImages}
+	currentIndex={lightboxIndex}
+	isOpen={lightboxOpen}
+	onclose={() => (lightboxOpen = false)}
+/>
 
 <style>
 	.g-bento {
@@ -39,13 +69,37 @@
 		grid-auto-rows: 240px;
 		gap: 24px;
 	}
+	/*
+	 * Плитка стала `button`, тож тут скидаються його типові стилі: браузер дає
+	 * кнопці власні рамку, тло, падінг і шрифт, і без скидання сітка поїхала б.
+	 * `display: block` обов'язковий — типове `inline-block` у кнопки ламає
+	 * `grid-row: span`.
+	 */
 	.g-bento__item {
 		position: relative;
+		display: block;
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		color: inherit;
 		border-radius: 40px;
 		overflow: hidden;
 		box-shadow: 0 15px 35px rgba(0,0,0,0.05);
 		transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
 		cursor: pointer;
+	}
+
+	/* Фокус видно: до цього плитка була `div` і фокуса не мала взагалі. */
+	.g-bento__item:focus-visible {
+		outline: 3px solid var(--color-golden);
+		outline-offset: 3px;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.g-bento__item {
+			transition: none;
+		}
 	}
 	.g-bento__item:hover {
 		transform: translateY(-8px);

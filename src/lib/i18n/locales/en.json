@@ -1,4 +1,10 @@
 {
+  "common": {
+    "close": "Close",
+    "gallery": "Gallery",
+    "next": "Next",
+    "prev": "Previous"
+  },
   "hero": {
     "title": "Odesa School of Arts №5",
     "subtitle": "Your Path to Musical Mastery",

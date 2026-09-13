@@ -1,0 +1,329 @@
+<script lang="ts">
+	import { ChevronLeft, ChevronRight, X } from 'lucide-svelte';
+	import { t } from 'svelte-i18n';
+	import { focusTrap } from '$lib/actions/focusTrap';
+	import { acceptsShortcut } from '$lib/services/keyboard';
+	import { browser } from '$app/environment';
+
+	/**
+	 * Портал: переміщує елемент у `document.body`, щоб він вийшов з будь-якого
+	 * stacking context предків. Без цього `position: fixed; z-index: 99999` не
+	 * допомагає, бо хедер зі `z-index: 100` лежить в іншому контексті.
+	 */
+	function portal(node: HTMLElement) {
+		const target = document.body;
+		target.appendChild(node);
+		return {
+			destroy() {
+				if (node.parentNode === target) {
+					target.removeChild(node);
+				}
+			}
+		};
+	}
+
+	export interface LightboxImage {
+		src: string;
+		alt?: string;
+		title?: string;
+	}
+
+	interface Props {
+		images: LightboxImage[];
+		currentIndex?: number;
+		isOpen: boolean;
+		onclose: () => void;
+	}
+
+	let { images, currentIndex = 0, isOpen, onclose }: Props = $props();
+
+	let index = $state(0);
+	let touchStartX = $state(0);
+	let touchEndX = $state(0);
+
+	$effect(() => {
+		if (isOpen) {
+			index = currentIndex;
+		}
+	});
+
+	// Lock body scroll when open
+	$effect(() => {
+		if (!browser) return;
+		if (isOpen) {
+			const originalOverflow = document.body.style.overflow;
+			document.body.style.overflow = 'hidden';
+			return () => {
+				document.body.style.overflow = originalOverflow;
+			};
+		}
+	});
+
+	function prev() {
+		if (images.length <= 1) return;
+		index = (index - 1 + images.length) % images.length;
+	}
+
+	function next() {
+		if (images.length <= 1) return;
+		index = (index + 1) % images.length;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		if (!isOpen) return;
+		// Конвенція проєкту (HK-TEXT-ENTRY-GUARD): слухач на вікні мусить
+		// вийти, коли людина друкує. Усередині лайтбокса полів немає, але
+		// правило глобальне, і гейт `hotkeys.test.ts` звіряє саме його.
+		if (!acceptsShortcut(e)) return;
+		if (e.key === 'Escape') {
+			e.preventDefault();
+			onclose();
+		} else if (e.key === 'ArrowLeft') {
+			e.preventDefault();
+			prev();
+		} else if (e.key === 'ArrowRight') {
+			e.preventDefault();
+			next();
+		}
+	}
+
+	function handleTouchStart(e: TouchEvent) {
+		touchStartX = e.touches[0].clientX;
+		touchEndX = e.touches[0].clientX;
+	}
+
+	function handleTouchMove(e: TouchEvent) {
+		touchEndX = e.touches[0].clientX;
+	}
+
+	function handleTouchEnd() {
+		const diff = touchStartX - touchEndX;
+		if (Math.abs(diff) > 40) {
+			if (diff > 0) next();
+			else prev();
+		}
+	}
+</script>
+
+<svelte:window onkeydown={handleKeydown} />
+
+{#if isOpen && images.length > 0}
+	{@const currentImg = images[index] || images[0]}
+	<div
+		class="lightbox-backdrop"
+		role="dialog"
+		aria-modal="true"
+		aria-label={$t('common.gallery')}
+		tabindex="-1"
+		onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
+		onkeydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) onclose(); }}
+		ontouchstart={handleTouchStart}
+		ontouchmove={handleTouchMove}
+		ontouchend={handleTouchEnd}
+		data-testid="photo-lightbox-backdrop"
+		use:portal
+		use:focusTrap
+	>
+		<!-- Close button -->
+		<button
+			type="button"
+			class="lightbox-close"
+			onclick={onclose}
+			aria-label={$t('common.close')}
+			data-testid="photo-lightbox-close-btn"
+		>
+			<X size={28} />
+		</button>
+
+		<!-- Prev button -->
+		{#if images.length > 1}
+			<button
+				type="button"
+				class="lightbox-nav lightbox-nav--prev"
+				onclick={prev}
+				aria-label={$t('common.prev')}
+				data-testid="photo-lightbox-prev-btn"
+			>
+				<ChevronLeft size={36} />
+			</button>
+		{/if}
+
+		<!-- Main Image container -->
+		<div class="lightbox-content">
+			<img
+				src={currentImg.src}
+				alt={currentImg.alt || currentImg.title || ''}
+				class="lightbox-img"
+				data-testid="photo-lightbox-img"
+			/>
+
+			<!-- Caption and Counter -->
+			<div class="lightbox-footer">
+				{#if currentImg.title || currentImg.alt}
+					<p class="lightbox-caption">{currentImg.title || currentImg.alt}</p>
+				{/if}
+				{#if images.length > 1}
+					<span class="lightbox-counter">{index + 1} / {images.length}</span>
+				{/if}
+			</div>
+		</div>
+
+		<!-- Next button -->
+		{#if images.length > 1}
+			<button
+				type="button"
+				class="lightbox-nav lightbox-nav--next"
+				onclick={next}
+				aria-label={$t('common.next')}
+				data-testid="photo-lightbox-next-btn"
+			>
+				<ChevronRight size={36} />
+			</button>
+		{/if}
+	</div>
+{/if}
+
+<style>
+	.lightbox-backdrop {
+		position: fixed;
+		inset: 0;
+		z-index: 99999;
+		background: rgba(0, 0, 0, 0.92);
+		backdrop-filter: blur(16px);
+		-webkit-backdrop-filter: blur(16px);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		animation: lightboxFadeIn 0.25s ease-out;
+		user-select: none;
+	}
+
+	@keyframes lightboxFadeIn {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.lightbox-close {
+		position: absolute;
+		top: 1.5rem;
+		right: 1.5rem;
+		z-index: 100001;
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #ffffff;
+		width: 48px;
+		height: 48px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+	}
+
+	.lightbox-close:hover {
+		background: rgba(255, 255, 255, 0.3);
+		/* Оберт і масштаб — спільне правило в global.css (UI-ELEMENTS-v9 § 1.1).
+		   Власний `transform` тут переважував би його через scoping Svelte. */
+	}
+
+	.lightbox-nav {
+		position: absolute;
+		top: 50%;
+		transform: translateY(-50%);
+		z-index: 100001;
+		background: rgba(255, 255, 255, 0.15);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: #ffffff;
+		width: 56px;
+		height: 56px;
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		transition: all 0.2s ease;
+	}
+
+	.lightbox-nav:hover {
+		background: rgba(255, 255, 255, 0.3);
+		transform: translateY(-50%) scale(1.1);
+	}
+
+	.lightbox-nav--prev { left: 1.5rem; }
+	.lightbox-nav--next { right: 1.5rem; }
+
+	.lightbox-content {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		max-width: 90vw;
+		max-height: 85dvh;
+		position: relative;
+		pointer-events: none;
+	}
+
+	.lightbox-img {
+		max-width: 90vw;
+		max-height: 78dvh;
+		object-fit: contain;
+		border-radius: 12px;
+		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+		pointer-events: auto;
+		animation: imgZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+	}
+
+	@keyframes imgZoomIn {
+		from { transform: scale(0.95); opacity: 0.8; }
+		to { transform: scale(1); opacity: 1; }
+	}
+
+	.lightbox-footer {
+		margin-top: 1rem;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		color: #ffffff;
+		text-align: center;
+		pointer-events: auto;
+	}
+
+	.lightbox-caption {
+		font-family: var(--font-heading, sans-serif);
+		font-size: 1.1rem;
+		font-weight: 600;
+		margin: 0;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+	}
+
+	.lightbox-counter {
+		font-size: 0.85rem;
+		opacity: 0.75;
+		background: rgba(255, 255, 255, 0.15);
+		padding: 0.2rem 0.8rem;
+		border-radius: 12px;
+	}
+
+	@media (max-width: 768px) {
+		.lightbox-close {
+			top: 1rem;
+			right: 1rem;
+			width: 40px;
+			height: 40px;
+		}
+
+		.lightbox-nav {
+			width: 44px;
+			height: 44px;
+		}
+
+		.lightbox-nav--prev { left: 0.5rem; }
+		.lightbox-nav--next { right: 0.5rem; }
+
+		.lightbox-img {
+			max-width: 95vw;
+			max-height: 70dvh;
+		}
+	}
+</style>

@@ -5,6 +5,7 @@
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import { t } from 'svelte-i18n';
 	import { asset } from '$app/paths';
+	import PhotoLightbox from '$lib/components/PhotoLightbox.svelte';
 
 	const galleryImages = $derived([
 		{ src: asset('/photo/photoForMainPage-01.jpg'), alt: 'School Life 1', title: $t('gallery.items.process') },
@@ -14,6 +15,21 @@
 		{ src: asset('/photo/photoForMainPage-07.jpg'), alt: 'School Life 5', title: $t('gallery.items.virtuosos') },
 		{ src: asset('/photo/photoForMainPage-02.jpg'), alt: 'School Life 6', title: $t('gallery.items.harmony') },
 	]);
+
+	/**
+	 * Світлина розгортається на весь екран (як у сусідньому teatralo4ka).
+	 *
+	 * Доти плитка мала `cursor: pointer` і не робила НІЧОГО: вигляд обіцяв
+	 * натискання, якого не існувало. Тепер плитка — справжня кнопка, тож
+	 * клавіатура й читалка отримують її задарма.
+	 */
+	let lightboxOpen = $state(false);
+	let lightboxIndex = $state(0);
+
+	function openAt(index: number) {
+		lightboxIndex = index;
+		lightboxOpen = true;
+	}
 </script>
 
 <ErrorBoundary name="hero">
@@ -62,14 +78,27 @@
 		</div>
 
 		<div class="g-bento-4x3">
-			{#each galleryImages as img (img.src)}
-				<div class="g-bento-4x3__item">
+			{#each galleryImages as img, i (img.src)}
+				<button
+					type="button"
+					class="g-bento-4x3__item"
+					onclick={() => openAt(i)}
+					aria-label="{img.title} — {$t('common.gallery')}"
+					data-testid="home-gallery-{i}-btn"
+				>
 					<img src={img.src} alt={img.alt} width="1200" height="900" loading="lazy" decoding="async" />
-				</div>
+				</button>
 			{/each}
 		</div>
 	</div>
 </section>
+
+<PhotoLightbox
+	images={galleryImages}
+	currentIndex={lightboxIndex}
+	isOpen={lightboxOpen}
+	onclose={() => (lightboxOpen = false)}
+/>
 
 <style>
 	.section-divider {
@@ -143,13 +172,30 @@
 		gap: 24px;
 	}
 
+	/*
+	 * Плитка стала `button`, тож тут скидаються його типові стилі: браузер дає
+	 * кнопці власні рамку, тло, падінг і шрифт. `display: block` обов'язковий —
+	 * типове `inline-block` у кнопки ламає `aspect-ratio` нижче.
+	 */
 	.g-bento-4x3__item {
 		position: relative;
+		display: block;
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
+		color: inherit;
 		border-radius: 40px;
 		overflow: hidden;
 		box-shadow: 0 15px 30px rgba(0,0,0,0.08);
 		cursor: pointer;
 		aspect-ratio: 4 / 3;
+	}
+
+	/* Фокус видно: до цього плитка була `div` і фокуса не мала взагалі. */
+	.g-bento-4x3__item:focus-visible {
+		outline: 3px solid var(--color-golden);
+		outline-offset: 3px;
 	}
 
 	.g-bento-4x3__item img {
