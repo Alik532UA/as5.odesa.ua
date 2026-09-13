@@ -38,6 +38,30 @@
 		const newTheme = ui.theme === "light" ? "dark" : "light";
 		ui.setTheme(newTheme);
 	}
+
+	/**
+	 * Наведення на кнопку теми ПОКАЗУЄ цю тему на всій сторінці, поки курсор там
+	 * (THEME-SWITCHER § 3). Підпис каже назву, сторінка — усі кольори; вибір
+	 * стає видимим до кліку.
+	 *
+	 * ТІЛЬКИ МИША. `pointerenter` приходить і від тапу, а `pointerleave` на
+	 * дотику — ні: тема застрягла б показаною, доки людина не торкнеться чогось
+	 * іншого. Клавіатура має свій шлях — `T` перемикає тему по-справжньому.
+	 */
+	function previewOn(t: "light" | "dark", e: PointerEvent) {
+		if (e.pointerType === "mouse") ui.previewTheme(t);
+	}
+
+	function previewOff(e: PointerEvent) {
+		if (e.pointerType === "mouse") ui.previewTheme(null);
+	}
+
+	/*
+	 * Панель зникає разом із курсором на ній — її закривають клавішею або кліком
+	 * поза нею. `pointerleave` тоді не приходить, і сторінка лишилася б у
+	 * показаній темі назавжди.
+	 */
+	$effect(() => () => ui.previewTheme(null));
 </script>
 
 <div
@@ -75,21 +99,27 @@
 			<span class="settings-panel__label">{$t("settings.theme")}</span>
 			<div class="settings-panel__options">
 				<button
-					class="settings-panel__opt touch-target"
+					class="settings-panel__opt settings-panel__theme touch-target"
 					class:active={ui.theme === "light"}
 					aria-pressed={ui.theme === "light"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
+					data-theme-key="light"
 					data-testid="settings-theme-light-btn"
+					onpointerenter={(e) => previewOn("light", e)}
+					onpointerleave={previewOff}
 					onclick={() => {
 						if (ui.theme === "dark") toggleTheme();
 					}}>{$t("settings.light")}</button
 				>
 				<button
-					class="settings-panel__opt touch-target"
+					class="settings-panel__opt settings-panel__theme touch-target"
 					class:active={ui.theme === "dark"}
 					aria-pressed={ui.theme === "dark"}
 					aria-keyshortcuts={ui.hotkeysEnabled ? "T" : undefined}
+					data-theme-key="dark"
 					data-testid="settings-theme-dark-btn"
+					onpointerenter={(e) => previewOn("dark", e)}
+					onpointerleave={previewOff}
 					onclick={() => {
 						if (ui.theme === "light") toggleTheme();
 					}}>{$t("settings.dark")}</button
@@ -204,5 +234,52 @@
 		background: var(--color-white);
 		box-shadow: var(--shadow-sm);
 		color: var(--color-golden);
+	}
+
+	/*
+	 * КНОПКА ТЕМИ ПОКАЗУЄ СВОЮ ТЕМУ, а не поточну (THEME-SWITCHER § 4).
+	 *
+	 * Значення взяті з `styles/themes/light.css`: перший аргумент `light-dark()`
+	 * — світле, другий — темне. Стоять ЛІТЕРАЛАМИ навмисно: кнопка теми `dark`
+	 * мусить лишатися темною й у світлій темі, тобто саме тут токени не діють —
+	 * інакше обидві кнопки знову були б однакові.
+	 *
+	 * Подвійний клас (`__opt.__theme`, вага 0,2,0) — щоб `__opt:hover` і
+	 * `__opt.active` вище не перефарбовували кнопку акцентом ПОТОЧНОЇ теми
+	 * (§ 4.2). За рівної ваги виграло б те правило, що стоїть пізніше.
+	 *
+	 * Контраст (WCAG AA): спокій 11,9:1 і 15,4:1; наведення 5,8:1 (#1a3a4a на
+	 * #f5a623) і 8,9:1 (#0a1622 на #f5a623).
+	 */
+	.settings-panel__opt.settings-panel__theme {
+		border: 1px solid var(--color-golden);
+	}
+
+	/* Обрана лишається СВОЇХ кольорів — інакше обрана тема єдина перестала б
+	   показувати себе. Вибір позначає обведення, а не заливка. */
+	.settings-panel__opt.settings-panel__theme.active {
+		box-shadow: 0 0 0 2px var(--color-golden);
+	}
+
+	.settings-panel__opt.settings-panel__theme[data-theme-key="light"] {
+		background: #f5fafd;
+		color: #1a3a4a;
+	}
+
+	.settings-panel__opt.settings-panel__theme[data-theme-key="light"]:hover,
+	.settings-panel__opt.settings-panel__theme[data-theme-key="light"]:focus-visible {
+		background: #f5a623;
+		color: #1a3a4a;
+	}
+
+	.settings-panel__opt.settings-panel__theme[data-theme-key="dark"] {
+		background: #0a1622;
+		color: #eaf6fb;
+	}
+
+	.settings-panel__opt.settings-panel__theme[data-theme-key="dark"]:hover,
+	.settings-panel__opt.settings-panel__theme[data-theme-key="dark"]:focus-visible {
+		background: #f5a623;
+		color: #0a1622;
 	}
 </style>

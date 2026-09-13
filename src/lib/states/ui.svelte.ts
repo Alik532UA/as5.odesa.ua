@@ -200,11 +200,61 @@ class UIState {
 	 * завантаження; запис зробив би її «вибором» і назавжди відрізав стеження
 	 * за системною темою (див. конструктор).
 	 */
+	/**
+	 * Показує тему «на пробу», поки курсор на її кнопці; `null` — вертає обрану
+	 * (THEME-SWITCHER § 2.2).
+	 *
+	 * НЕ чіпає `theme` і нічого не зберігає: малює документ напряму. Інакше
+	 * підсвітка `.active` їхала б за курсором, а після відведення сторінка
+	 * лишалася б у тій темі, на якій мишу востаннє тримали — тобто випадковий
+	 * рух через панель мовчки міняв би настройку.
+	 *
+	 * `isThemeChanging` гасить прев'ю: `setTheme` тримає завісу, і за цей час
+	 * курсор зазвичай іде з кнопки — `previewTheme(null)` повернув би СТАРУ
+	 * тему поверх щойно обраної.
+	 */
+	previewedTheme = $state<'light' | 'dark' | null>(null);
+
+	previewTheme = (t: 'light' | 'dark' | null) => {
+		if (typeof document === 'undefined' || this.isThemeChanging) return;
+		this.previewedTheme = t;
+		this.startThemeShift();
+		this.applyThemeToDocument(t ?? this.theme);
+	};
+
+	/** Знімає клас плавного переходу, коли той доїхав (§ 5). */
+	private shiftTimer: ReturnType<typeof setTimeout> | null = null;
+
+	/**
+	 * Вмикає плавний перехід кольорів на час зміни теми.
+	 *
+	 * Тривалість із ЗАПАСОМ над 0,56 с із `global.css`, а не те саме число —
+	 * щоб не тримати копію тривалості у двох місцях. Знімає клас ЛИШЕ таймер:
+	 * зняття в обробнику обривало б перехід на половині, бо вибір теми ховає
+	 * панель, а її прибирання кличе `previewTheme(null)`.
+	 */
+	private startThemeShift() {
+		if (typeof document === 'undefined') return;
+		document.documentElement.classList.add('theme-shifting');
+		if (this.shiftTimer) clearTimeout(this.shiftTimer);
+		this.shiftTimer = setTimeout(() => {
+			document.documentElement.classList.remove('theme-shifting');
+			this.shiftTimer = null;
+		}, 900);
+	}
+
 	setTheme = async (
 		t: 'light' | 'dark',
 		options: { withBlur?: boolean; persist?: boolean } = {}
 	) => {
-		if (this.theme === t) return;
+		// Прев'ю могло вже намалювати цю тему в документі, а `theme` лишається
+		// обраною — тож порівнюємо саме її, і клік по кнопці під курсором працює.
+		if (this.theme === t) {
+			this.previewTheme(null);
+			return;
+		}
+		this.previewedTheme = null;
+		this.startThemeShift();
 
 		const persist = options.persist ?? true;
 		const apply = () => {

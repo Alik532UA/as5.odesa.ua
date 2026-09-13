@@ -72,6 +72,45 @@ html[data-theme='light'] {
 	color-scheme: only light;
 }
 
+/*
+ * ПЛАВНА ЗМІНА ТЕМИ — і під курсором, і по-справжньому (THEME-SWITCHER § 5).
+ *
+ * Клас вішає контролер (`states/ui.svelte.ts`): `previewTheme` — поки курсор на
+ * кнопці теми, `setTheme` — на час самої зміни. Тут лише плавність: без
+ * переходу тема мінялася б стрибком, і на прев'ю це помітно одразу.
+ *
+ * ## Чому `*`, а не перелік поверхонь
+ *
+ * Тему тримають ТОКЕНИ, і їх читають сотні правил у десятках компонентів.
+ * Перелічити «головні поверхні» означало б плавно міняти тло сторінки й
+ * стрибком — усе, що на ній лежить.
+ *
+ * Ціна обмежена свідомо: правило живе лише поки курсор на кнопці теми або доки
+ * триває зміна (контролер знімає клас таймером), перелічує рівно п'ять
+ * властивостей кольору й виключає `canvas` — його малює скрипт, і CSS-перехід
+ * там нічого не дає, крім роботи композитору.
+ */
+html.theme-shifting,
+html.theme-shifting body,
+html.theme-shifting *:not(canvas) {
+	transition:
+		background-color 0.56s ease,
+		color 0.56s ease,
+		border-color 0.56s ease,
+		fill 0.56s ease,
+		stroke 0.56s ease;
+}
+
+/* Вимикає перехід, але НЕ саму зміну теми: побачити тему — це інформація, а не
+   рух (ACCESSIBILITY-v9 § 7). */
+@media (prefers-reduced-motion: reduce) {
+	html.theme-shifting,
+	html.theme-shifting body,
+	html.theme-shifting *:not(canvas) {
+		transition: none;
+	}
+}
+
 /* --- CSS Custom Properties --- */
 :root {
 	/* База для `light-dark()` і стан «тему ще не обрано»: обидві схеми
