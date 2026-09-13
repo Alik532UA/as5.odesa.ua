@@ -1,5 +1,9 @@
 import { locale } from 'svelte-i18n';
 import { storage } from '$lib/services/storage';
+import { isScrollbarMode, type ScrollbarMode } from '$lib/config/scrollbarModes';
+
+/** Реекспорт для наявних імпортерів: тип живе в конфігу. */
+export type { ScrollbarMode };
 
 class UIState {
 	isMenuOpen = $state(false);
@@ -10,6 +14,20 @@ class UIState {
 	// Debug toggles
 	enableDynamicBackground = $state(true);
 	enableBlurEffect = $state(true);
+
+	/**
+	 * Чим показувати положення на сторінці (SCROLLBAR).
+	 *
+	 * `custom` типово: файл канону застосовано саме тому, що нативна смуга
+	 * забирає ширину сторінки — а тут вона помітна, бо сторінки вузькі, з
+	 * великими полями, і поява смуги зсуває вміст. Відкриватися нативною після
+	 * цього було б дивно.
+	 *
+	 * SYNC: значення продубльоване в скрипті першого кадру `src/app.html`, який
+	 * не може імпортувати цей модуль. Розходження видно як мигання смуги під час
+	 * гідрації — тобто рівно те, заради чого той скрипт і є.
+	 */
+	scrollbarMode = $state<ScrollbarMode>('custom');
 
 	/**
 	 * Чи діють одиночні літерні скорочення сайту (`T`, `L`, `B`).
@@ -85,6 +103,12 @@ class UIState {
 			if (hotkeys !== null) {
 				this.hotkeysEnabled = hotkeys === 'true';
 			}
+
+			// Валідується при читанні: у сховищі вже може лежати режим, якого в
+			// проєкті немає (стара збірка, чужий запис на спільному origin), і
+			// присвоєння без перевірки дало б смугу, що не малює нічого.
+			const mode = storage.get('scrollbarMode');
+			if (isScrollbarMode(mode)) this.scrollbarMode = mode;
 			
 			// Стеження за системною темою. `persist: false` — з тієї ж причини,
 			// що й вище: системна зміна не є вибором користувача, і записати її
@@ -271,6 +295,11 @@ class UIState {
 		}
 
 		await this.underBlur((on) => (this.isThemeChanging = on), apply);
+	};
+
+	setScrollbarMode = (mode: ScrollbarMode) => {
+		this.scrollbarMode = mode;
+		storage.set('scrollbarMode', mode);
 	};
 
 	setBackgroundType = (type: 0 | 1 | 2 | 3) => {

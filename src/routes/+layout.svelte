@@ -11,7 +11,10 @@
 	import { t, locale } from 'svelte-i18n';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
 	import ServiceLayer from '$lib/components/ui/ServiceLayer.svelte';
+	import PageScrollbar from '$lib/components/PageScrollbar.svelte';
+	import ScrollbarContextMenu from '$lib/components/ScrollbarContextMenu.svelte';
 	import { ui } from '$lib/states/ui.svelte';
+	import { scrollbar } from '$lib/states/scrollbar.svelte';
 	import { SITE_ROOT, assetUrl, canonicalUrl as canonicalFor, isHiddenRoute } from '$lib/config/site';
 	import { migrateStorageKeys } from '$lib/utils/storageMigration';
 	import { safeT } from '$lib/i18n/translate';
@@ -257,6 +260,14 @@
 			'https://www.instagram.com/odesa_art_school_5'
 		]
 	});
+
+	/**
+	 * Клас, що ховає нативну смугу. Єдиний власник у застосунку (SCROLLBAR § 2.3).
+	 */
+	$effect(() => {
+		if (!browser) return;
+		document.documentElement.classList.toggle('has-custom-scrollbar', scrollbar.hidesNative);
+	});
 </script>
 
 <svelte:head>
@@ -308,6 +319,22 @@
 <!-- Клавіші й табло версії. ПОЗА `ErrorBoundary`: межа при падінні замінює дітей
      своєю сторінкою, тобто забрала б і те, чим збирають звіт про це падіння. -->
 <ServiceLayer />
+
+<!--
+	Клас, що ховає нативну смугу, має РІВНО ОДНОГО власника — цей ефект
+	(SCROLLBAR § 2.3). Якби його ставили й знімали самі малювальники,
+	перемикання режиму давало б гонку: новий компонент клас додає, а
+	прибиральник старого спрацьовує ПІСЛЯ нього й одразу знімає — на екрані
+	видно дві смуги, власну й системну.
+
+	Другий і останній дотик до цього класу — скрипт першого кадру в `app.html`;
+	інваріант `src/scrollbar-canon.test.ts` стежить, щоб їх лишалося два.
+-->
+<PageScrollbar />
+
+<!-- Меню живе в корені: смуга зникає разом зі зміною режиму, і меню зникло б
+     із нею — просто в мить, коли по ньому клікнули. -->
+<ScrollbarContextMenu />
 
 <div class="app" class:with-dynamic-bg={ui.enableDynamicBackground} class:page-home={page.route.id === '/'}>
 	<div class="app__base-bg" aria-hidden="true"></div>

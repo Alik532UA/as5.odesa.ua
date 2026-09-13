@@ -38,6 +38,9 @@
     "bgShapes": "Shapes",
     "blur": "Blur effect when changing language or theme",
     "hotkeys": "Keyboard shortcuts",
+    "scrollbar": "Scrollbar",
+    "scrollbarStandard": "Standard",
+    "scrollbarCustom": "Author's",
     "off": "Off",
     "on": "On"
   },

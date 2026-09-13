@@ -33,6 +33,23 @@
 		<script>
 			try {
 				var prefix = 'as5.odesa.ua_';
+
+				/*
+				 * Клас, що ховає нативну смугу, СТАВИТЬСЯ ДО ПЕРШОГО КАДРУ
+				 * (SCROLLBAR § 8.2). Інакше сторінка малюється з нативною смугою,
+				 * а за мить її ховає гідрація — видимий стрибок ширини.
+				 *
+				 * SYNC: типове значення `custom` і умова `(hover: hover) and
+				 * (pointer: fine)` продубльовані в `states/ui.svelte.ts` і
+				 * `states/scrollbar.svelte.ts` — цей скрипт не може їх імпортувати.
+				 * Розходження ловить `src/scrollbar-canon.test.ts`.
+				 */
+				var sb = localStorage.getItem(prefix + 'scrollbarMode') || 'custom';
+				var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+				if (fine && sb === 'custom') {
+					document.documentElement.classList.add('has-custom-scrollbar');
+				}
+
 				var t = localStorage.getItem(prefix + 'theme') || localStorage.getItem('theme');
 				if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
 					document.documentElement.setAttribute('data-theme', 'dark');
@@ -49,6 +66,22 @@
 				}
 			} catch (e) {}
 		</script>
+		<!--
+			Правило приховування — ТУТ, а не в `global.css` (SCROLLBAR § 8.3).
+
+			Клас на першому кадрі без правила на першому кадрі не робить нічого: на
+			dev-сервері стилі проєкту приїжджають через JS і запізнюються, тож
+			сторінка встигає намалюватися з нативною смугою. Два рядки в `head`
+			коштують дешевше за стрибок ширини на кожному завантаженні.
+		-->
+		<style>
+			html.has-custom-scrollbar {
+				scrollbar-width: none;
+			}
+			html.has-custom-scrollbar::-webkit-scrollbar {
+				display: none;
+			}
+		</style>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>
