@@ -48,7 +48,16 @@ const GLOBAL_STYLE_FILES = [
  * caught too: if the declaration disappears, the check fails on the list
  * itself.
  */
-const CROSS_COMPONENT: Record<string, { declaredIn: string; why: string }> = {};
+const CROSS_COMPONENT: Record<string, { declaredIn: string; why: string }> = {
+	"--lightbox-rail": {
+		declaredIn: "src/lib/components/PhotoLightbox.svelte",
+		why:
+			"Ширину стрічки прев'ю читають троє: сама стрічка (у PhotoLightboxThumbs) " +
+			"плюс відступ стрілки «назад» і межа зображення — обидва в лайтбоксі. " +
+			"Проп замість успадкування дав би два написання того самого числа, і " +
+			"стрілка налізла б на стрічку від першої ж правки одного з них."
+	}
+};
 
 function walk(dir: string, keep: (name: string) => boolean, out: string[] = []): string[] {
 	for (const entry of readdirSync(dir)) {

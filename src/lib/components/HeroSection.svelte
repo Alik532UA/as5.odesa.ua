@@ -1,7 +1,24 @@
+<script module lang="ts">
+	/**
+	 * Файл світлини шапки. Сторінка бере шлях ЗВІДСИ, коли складає список для
+	 * перегляду на весь екран: два написання того самого імені розійшлися б за
+	 * першої ж заміни фото, і лайтбокс відкривав би старе — мовчки, бо обидва
+	 * шляхи лишалися б дійсними.
+	 */
+	export const HERO_PHOTO = "/photo/photoForMainPage-08.jpg";
+</script>
+
 <script lang="ts">
 	import WaveBackground from "./WaveBackground.svelte";
 	import { t } from "svelte-i18n";
 	import { asset } from "$app/paths";
+
+	interface Props {
+		/** Натиск на світлину — розгорнути її на весь екран. */
+		onphotoclick: () => void;
+	}
+
+	let { onphotoclick }: Props = $props();
 </script>
 
 <section class="hero" id="hero-section" aria-label={$t("a11y.heroSection")}>
@@ -18,9 +35,21 @@
 		</div>
 
 		<div class="hero__image-wrap">
-			<div class="hero__image" id="hero-image">
+			<!--
+				Кнопка, а не `div`: `cursor: pointer` стояв тут від початку й
+				обіцяв натискання, якого не існувало. Справжня кнопка додає до
+				цього клавіатуру й читалку задарма.
+			-->
+			<button
+				type="button"
+				class="hero__image"
+				id="hero-image"
+				onclick={onphotoclick}
+				aria-label={$t("hero.photo")}
+				data-testid="hero-photo-btn"
+			>
 				<img
-					src={asset('/photo/photoForMainPage-08.jpg')}
+					src={asset(HERO_PHOTO)}
 					alt=""
 					width="1200"
 					height="900"
@@ -28,7 +57,7 @@
 					fetchpriority="high"
 					decoding="async"
 				/>
-			</div>
+			</button>
 			<!-- Decorative blue cloud shapes -->
 			<div class="hero__cloud hero__cloud--1" aria-hidden="true"></div>
 			<div class="hero__cloud hero__cloud--2" aria-hidden="true"></div>
@@ -128,6 +157,12 @@
 	}
 
 	.hero__image {
+		/* Скидання кнопки: вигляд лишається той самий, що був у `div`. */
+		display: block;
+		padding: 0;
+		border: none;
+		background: none;
+		font: inherit;
 		width: 100%;
 		aspect-ratio: 4 / 3;
 		min-height: 300px;
@@ -135,6 +170,11 @@
 		overflow: hidden;
 		box-shadow: var(--theme-image-shadow);
 		cursor: pointer;
+	}
+
+	.hero__image:focus-visible {
+		outline: 3px solid var(--color-golden);
+		outline-offset: 4px;
 	}
 
 	.hero__image img {

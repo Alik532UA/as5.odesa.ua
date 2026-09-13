@@ -1,5 +1,5 @@
 <script lang="ts">
-	import HeroSection from '$lib/components/HeroSection.svelte';
+	import HeroSection, { HERO_PHOTO } from '$lib/components/HeroSection.svelte';
 	import DepartmentsSection from '$lib/components/DepartmentsSection.svelte';
 	import WaveBackground from '$lib/components/WaveBackground.svelte';
 	import ErrorBoundary from '$lib/components/ui/ErrorBoundary.svelte';
@@ -23,6 +23,19 @@
 	 * натискання, якого не існувало. Тепер плитка — справжня кнопка, тож
 	 * клавіатура й читалка отримують її задарма.
 	 */
+	/**
+	 * Світлина шапки в сітці не показана, але на весь екран відкривається разом
+	 * із нею — це світлини однієї сторінки, і гортати їх окремими стосами дивно.
+	 *
+	 * Стоїть В КІНЦІ навмисно: попереду вона зсунула б усі індекси сітки на
+	 * одиницю, і кожна плитка відкривала б сусідню. Так номер плитки в сітці й
+	 * у списку — те саме число, і розійтися їм нема як.
+	 */
+	const lightboxImages = $derived([
+		...galleryImages,
+		{ src: asset(HERO_PHOTO), alt: '', title: $t('hero.photo') }
+	]);
+
 	let lightboxOpen = $state(false);
 	let lightboxIndex = $state(0);
 
@@ -33,7 +46,7 @@
 </script>
 
 <ErrorBoundary name="hero">
-	<HeroSection />
+	<HeroSection onphotoclick={() => openAt(galleryImages.length)} />
 </ErrorBoundary>
 
 <!--
@@ -94,7 +107,7 @@
 </section>
 
 <PhotoLightbox
-	images={galleryImages}
+	images={lightboxImages}
 	currentIndex={lightboxIndex}
 	isOpen={lightboxOpen}
 	onclose={() => (lightboxOpen = false)}

@@ -2,12 +2,14 @@
   "common": {
     "close": "Close",
     "gallery": "Gallery",
+    "goToPhoto": "Photo {number}",
     "next": "Next",
     "prev": "Previous"
   },
   "hero": {
     "title": "Odesa School of Arts №5",
     "subtitle": "Your Path to Musical Mastery",
+    "photo": "School photo",
     "story": "I come from the year 1938. Or maybe even earlier... I don't even remember anymore. Decades pass, generations change, but there is one thing that remains unchanged — I am always friends with bright, creative people!"
   },
   "nav": {

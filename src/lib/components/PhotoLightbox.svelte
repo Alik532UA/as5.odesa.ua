@@ -2,6 +2,8 @@
 	import { ChevronLeft, ChevronRight, X } from 'lucide-svelte';
 	import { t } from 'svelte-i18n';
 	import { focusTrap } from '$lib/actions/focusTrap';
+	import { galleryGestures } from '$lib/actions/galleryGestures';
+	import PhotoLightboxThumbs from './PhotoLightboxThumbs.svelte';
 	import { acceptsShortcut } from '$lib/services/keyboard';
 	import { browser } from '$app/environment';
 
@@ -38,8 +40,6 @@
 	let { images, currentIndex = 0, isOpen, onclose }: Props = $props();
 
 	let index = $state(0);
-	let touchStartX = $state(0);
-	let touchEndX = $state(0);
 
 	$effect(() => {
 		if (isOpen) {
@@ -87,22 +87,6 @@
 		}
 	}
 
-	function handleTouchStart(e: TouchEvent) {
-		touchStartX = e.touches[0].clientX;
-		touchEndX = e.touches[0].clientX;
-	}
-
-	function handleTouchMove(e: TouchEvent) {
-		touchEndX = e.touches[0].clientX;
-	}
-
-	function handleTouchEnd() {
-		const diff = touchStartX - touchEndX;
-		if (Math.abs(diff) > 40) {
-			if (diff > 0) next();
-			else prev();
-		}
-	}
 </script>
 
 <svelte:window onkeydown={handleKeydown} />
@@ -111,18 +95,23 @@
 	{@const currentImg = images[index] || images[0]}
 	<div
 		class="lightbox-backdrop"
+		class:has-rail={images.length > 1}
 		role="dialog"
 		aria-modal="true"
 		aria-label={$t('common.gallery')}
 		tabindex="-1"
 		onclick={(e) => { if (e.target === e.currentTarget) onclose(); }}
 		onkeydown={(e) => { if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) onclose(); }}
-		ontouchstart={handleTouchStart}
-		ontouchmove={handleTouchMove}
-		ontouchend={handleTouchEnd}
 		data-testid="photo-lightbox-backdrop"
 		use:portal
 		use:focusTrap
+		use:galleryGestures={{
+			count: images.length,
+			next,
+			prev,
+			// Над стрічкою колесо прокручує саму стрічку: там воно потрібніше.
+			ignore: '.lightbox-rail'
+		}}
 	>
 		<!-- Close button -->
 		<button
@@ -134,6 +123,15 @@
 		>
 			<X size={28} />
 		</button>
+
+		<!--
+			Стрічка прев'ю. Показані ВСІ світлини галереї, а поточна підсвічена:
+			перелік «решти» без поточної не давав би відповіді на питання «де я
+			зараз» — а саме його й ставлять, дивлячись на таку стрічку.
+		-->
+		{#if images.length > 1}
+			<PhotoLightboxThumbs {images} {index} onpick={(i) => (index = i)} />
+		{/if}
 
 		<!-- Prev button -->
 		{#if images.length > 1}
@@ -150,18 +148,40 @@
 
 		<!-- Main Image container -->
 		<div class="lightbox-content">
-			<img
-				src={currentImg.src}
-				alt={currentImg.alt || currentImg.title || ''}
-				class="lightbox-img"
-				data-testid="photo-lightbox-img"
-			/>
+			<!--
+				`{#key}` — щоб зміна кадру була видимою.
+
+				Без нього при гортанні мінявся лише `src` того самого вузла:
+				анімація з'яви вже відіграла при відкритті й удруге не
+				запускається, тож нова світлина просто підмінялася в тому ж
+				місці. Ключ змушує вузол народитися заново — разом з анімацією.
+
+				Порожнього кадру між ними не буває: стрічка прев'ю тягне ТІ САМІ
+				файли, тож усі вони вже в кеші браузера.
+			-->
+			{#key index}
+				<img
+					src={currentImg.src}
+					alt={currentImg.alt || currentImg.title || ''}
+					class="lightbox-img"
+					data-testid="photo-lightbox-img"
+				/>
+			{/key}
 
 			<!-- Caption and Counter -->
 			<div class="lightbox-footer">
+				<!--
+					Підпис прибрано на прохання автора — лишається тут, а не
+					видаляється, бо може повернутися. Разом із ним закоментовано
+					й правило `.lightbox-caption` нижче: `svelte-check` вважає
+					селектор без розмітки невикористаним і зробив би з цього
+					попередження, а гейт проєкту тримає їх на нулі.
+				-->
+				<!--
 				{#if currentImg.title || currentImg.alt}
 					<p class="lightbox-caption">{currentImg.title || currentImg.alt}</p>
 				{/if}
+				-->
 				{#if images.length > 1}
 					<span class="lightbox-counter">{index + 1} / {images.length}</span>
 				{/if}
@@ -185,6 +205,13 @@
 
 <style>
 	.lightbox-backdrop {
+		/*
+		 * Ширина стрічки прев'ю живе змінною, бо її віднімають одразу троє:
+		 * сама стрічка, відступ стрілки «назад» і межа зображення. Без однієї
+		 * назви на всіх ці три числа розійшлися б — стрілка налізла б на
+		 * стрічку або зависла в порожнечі.
+		 */
+		--lightbox-rail: 0px;
 		position: fixed;
 		inset: 0;
 		z-index: 99999;
@@ -194,8 +221,15 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		/* Місце під стрічку прев'ю: вона виведена з потоку й притиснута до краю,
+		   тож центрування нижче рахується вже від її правого боку. */
+		padding-left: var(--lightbox-rail);
 		animation: lightboxFadeIn 0.25s ease-out;
 		user-select: none;
+	}
+
+	.lightbox-backdrop.has-rail {
+		--lightbox-rail: 104px;
 	}
 
 	@keyframes lightboxFadeIn {
@@ -249,32 +283,39 @@
 		transform: translateY(-50%) scale(1.1);
 	}
 
-	.lightbox-nav--prev { left: 1.5rem; }
+	.lightbox-nav--prev { left: calc(var(--lightbox-rail) + 1.5rem); }
 	.lightbox-nav--next { right: 1.5rem; }
 
 	.lightbox-content {
+		/* Займає все, що лишила стрічка, і центрує зображення САМЕ в цьому
+		   залишку — інакше воно стояло б по центру екрана, тобто зсунутим
+		   праворуч відносно власного вільного місця. */
+		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		max-width: 90vw;
+		max-width: calc(90vw - var(--lightbox-rail));
 		max-height: 85dvh;
 		position: relative;
 		pointer-events: none;
 	}
 
 	.lightbox-img {
-		max-width: 90vw;
+		max-width: 100%;
 		max-height: 78dvh;
 		object-fit: contain;
 		border-radius: 12px;
 		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 		pointer-events: auto;
-		animation: imgZoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+		animation: imgZoomIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 	}
 
+	/* Починається з нуля, а не з 0.8: попереднє значення давало ледь помітний
+	   зсув, і перемикання читалося як різка підміна. */
 	@keyframes imgZoomIn {
-		from { transform: scale(0.95); opacity: 0.8; }
+		from { transform: scale(0.96); opacity: 0; }
 		to { transform: scale(1); opacity: 1; }
 	}
 
@@ -289,6 +330,7 @@
 		pointer-events: auto;
 	}
 
+	/* Підпис прибрано разом із розміткою вище; правило чекає на повернення.
 	.lightbox-caption {
 		font-family: var(--font-heading, sans-serif);
 		font-size: 1.1rem;
@@ -296,6 +338,7 @@
 		margin: 0;
 		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
 	}
+	*/
 
 	.lightbox-counter {
 		font-size: 0.85rem;
@@ -318,11 +361,17 @@
 			height: 44px;
 		}
 
-		.lightbox-nav--prev { left: 0.5rem; }
+		.lightbox-nav--prev { left: calc(var(--lightbox-rail) + 0.5rem); }
 		.lightbox-nav--next { right: 0.5rem; }
 
+		/* Стрічка лишається ліворуч, але вужча: на телефоні кожен її піксель
+		   забирається просто із зображення. */
+		.lightbox-backdrop.has-rail {
+			--lightbox-rail: 72px;
+		}
+
 		.lightbox-img {
-			max-width: 95vw;
+			max-width: 100%;
 			max-height: 70dvh;
 		}
 	}
