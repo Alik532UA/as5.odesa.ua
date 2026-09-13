@@ -213,5 +213,35 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 			uk: 'Пройдіть Tab-ом по головній і подивіться, чи фокус НЕ потрапляє на декоративні елементи: тло, розділювачі, іконки без дії. Кожна зупинка фокуса мусить щось робити — інакше на шляху до вмісту з’являються порожні кроки.',
 			en: 'Tab through the home page and check that focus does NOT land on decorative elements: background, dividers, icons without an action. Every focus stop must do something — otherwise there are empty steps on the way to the content.'
 		}
+	},
+	{
+		id: 'common_19',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'settings-theme-dark-btn',
+		text: {
+			uk: 'На комп’ютері відкрийте шестерню й наведіть курсор на кнопку теми, якою ЗАРАЗ не користуєтесь, не натискаючи. Сторінка мусить показати цю тему цілком, а щойно курсор піде — повернутися до попередньої. Самі кнопки тем мусять бути пофарбовані кожна під СВОЮ тему, а не всі під поточну.',
+			en: 'On a desktop, open the gear and hover the button of a theme you are NOT using, without clicking. The page must show that theme in full and return to the previous one as soon as the pointer leaves. The theme buttons themselves must each be coloured in THEIR OWN theme, not all in the current one.'
+		}
+	},
+	{
+		id: 'common_20',
+		tab: 'common',
+		coverage: 'manual',
+		testid: 'scrollbar-context-menu',
+		text: {
+			uk: 'На комп’ютері подивіться на смугу прокрутки праворуч: у спокої вона бліда й вузька, під курсором товщає й наливається кольором. Потягніть її — сторінка мусить іти за нею без ривків. Клацніть по ній правою кнопкою: мусить відкритися меню з двома режимами, і вибір «Стандартна» мусить повернути звичайну системну смугу.',
+			en: 'On a desktop, look at the scrollbar on the right: at rest it is pale and thin, under the pointer it thickens and fills with colour. Drag it — the page must follow without stutter. Right-click it: a menu with two modes must open, and picking “Standard” must bring back the normal system scrollbar.'
+		}
+	},
+	{
+		id: 'common_21',
+		tab: 'common',
+		coverage: 'manual',
+		negative: true,
+		text: {
+			uk: 'Оберіть «Стандартна» в тому меню й перезавантажте сторінку. Смуга мусить лишитися системною — власна НЕ мусить повернутися сама. Потім поверніть «Авторська» й перезавантажте ще раз: тепер на першому кадрі не мусить бути видно системної смуги, яка зникає за мить.',
+			en: 'Pick “Standard” in that menu and reload the page. The scrollbar must stay the system one — the custom one must NOT come back on its own. Then switch back to “Author’s” and reload again: on the first frame there must be no system scrollbar that disappears a moment later.'
+		}
 	}
 ];
