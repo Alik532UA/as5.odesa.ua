@@ -25,6 +25,15 @@ const VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'unknown
  * як звіт про теперішнє. Стара позначка не зникає — вона все ще щось означає, —
  * але підписується й НЕ рахується в поступі.
  */
+const VOTES: readonly Vote[] = ['fail', 'weird', 'ok'];
+
+/** Позначка — це саме позначка, а не будь-що зі сховища (§ 8.6). */
+function isMark(value: unknown): value is Mark {
+	if (typeof value !== 'object' || value === null) return false;
+	const m = value as Record<string, unknown>;
+	return VOTES.includes(m.vote as Vote) && typeof m.version === 'string';
+}
+
 class BetaChecklistState {
 	/** `SvelteMap`, а не `$state(new Map())`: `$state` проксює лише звичайні обʼєкти й масиви. */
 	private readonly marks = new SvelteMap<string, Mark>();
@@ -34,9 +43,25 @@ class BetaChecklistState {
 	/** Текст звіту, показаний у полі, коли буфер обміну відмовив. */
 	reportFallback = $state('');
 
+	/**
+	 * Чи зведена кнопка стирання (§ 6.3, `BETA-CLEAR-TWO-STEP`).
+	 *
+	 * «Стерти позначки» — ЄДИНА незворотна дія на сторінці, і стоїть вона в тому
+	 * самому рядку, що й «Скопіювати звіт», до якого тягнуться щоразу. Ціна
+	 * помилки несиметрична: година роботи проти одного зайвого кліка.
+	 *
+	 * Не `confirm()`: нативний діалог блокує потік, виглядає чужим у будь-якій
+	 * темі, не перекладається разом зі сторінкою й у headless вимагає окремого
+	 * обробника — тобто дорожчає e2e § 5.7 на рівному місці.
+	 */
+	clearArmed = $state(false);
+
 	constructor() {
+		// Склад ЗВІРЯЄТЬСЯ зі списком, а ФОРМА — з типом (§ 8.6). Перше було тут
+		// із самого початку; другого — ні, а позначка старого формату проходила б
+		// і рахувалася в поступі нарівні зі справжньою.
 		for (const [id, mark] of Object.entries(this.read())) {
-			if (BETA_CHECKS.some((c) => c.id === id)) this.marks.set(id, mark);
+			if (BETA_CHECKS.some((c) => c.id === id) && isMark(mark)) this.marks.set(id, mark);
 		}
 	}
 
@@ -78,10 +103,42 @@ class BetaChecklistState {
 		this.persist();
 	}
 
+	/**
+	 * Стирання у два кроки (§ 6.3): перший виклик лише зводить кнопку, другий
+	 * стирає. Повертає `true`, коли позначки справді зникли.
+	 */
+	requestClear(): boolean {
+		if (!this.clearArmed) {
+			this.clearArmed = true;
+			return false;
+		}
+		this.clear();
+		return true;
+	}
+
+	/** Знімає зведення, нічого не стираючи: кнопка не лишається зарядженою. */
+	disarmClear() {
+		this.clearArmed = false;
+	}
+
 	clear() {
 		this.marks.clear();
 		this.persist();
 		this.reportFallback = '';
+		this.clearArmed = false;
+	}
+
+	/**
+	 * Поступ ОКРЕМОЇ вкладки (§ 8.1).
+	 *
+	 * Вкладок тут три, тобто § 8.1 лічильника не ВИМАГАЄ. Він усе одно стоїть:
+	 * коштує рядок, а відповідає на питання, яке тестувальник собі ставить у
+	 * будь-якому разі — чи закінчена ця вкладка.
+	 */
+	progressOf(tab: string): { done: number; total: number } {
+		const own = BETA_CHECKS.filter((c) => c.tab === tab);
+		const done = own.filter((c) => this.marks.get(c.id)?.version === VERSION).length;
+		return { done, total: own.length };
 	}
 
 	/** Скільки пунктів позначено САМЕ на цій версії збірки. */

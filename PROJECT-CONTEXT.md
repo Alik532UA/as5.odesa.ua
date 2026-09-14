@@ -398,9 +398,14 @@ JS gzip на сторінку на 2026-08-27 (друкує `npm run check:build
 `lighthouse-urls`, `scrollbar-canon`, `seo-head-owner`, `static-assets`, `structure`, `svelte-sources`,
 `test-runners`, `testid-conventions`.
 
-E2E живуть у кореневому `tests/` — **6** файлів, теж під `GATE-DOC-NUMBERS`:
-`a11y.spec.ts`, `overlay-fit.spec.ts`, `panel-fit.spec.ts`, `reflow.spec.ts`,
-`testid-runtime.spec.ts`, `touch-targets.spec.ts`. Перед усіма ними йде
+E2E живуть у кореневому `tests/` — **7** файлів, теж під `GATE-DOC-NUMBERS`:
+`a11y.spec.ts`, `beta-checklist.spec.ts`, `overlay-fit.spec.ts`,
+`panel-fit.spec.ts`, `reflow.spec.ts`, `testid-runtime.spec.ts`,
+`touch-targets.spec.ts`. Перевірку самого чеклиста додано 2026-09-14 разом із
+переходом на BETA-CHECKLIST-v9.3 (§ 5.7, `BETA-PAGE-E2E`): доти сторінку
+чеклиста чіпали лише аудит доступності й гейт локаторів по дорозі, тобто
+перевірялося, що вона намальована, а не що вона працює — позначки, поступ, звіт
+і стирання не дивився ніхто. Перед усіма ними йде
 сетап-проєкт `identity.setup.ts` (`GATE-E2E-IDENTITY`): він звіряє маркер
 `<meta name="application-name">` із `package.json` і штамп `_app/version.json`
 із тим, що лежить у `build/`, і через `dependencies: ['identity']` зупиняє ВЕСЬ

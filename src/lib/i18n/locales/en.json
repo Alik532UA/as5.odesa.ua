@@ -217,6 +217,7 @@
     "staleMark": "Marked on version {version} — the site has changed since then, worth checking again.",
     "copyReport": "Copy the report",
     "clearMarks": "Clear all marks",
+    "clearConfirm": "Really clear? Press again",
     "copied": "The report is in your clipboard — paste it into an email or a message.",
     "copyFailed": "The browser refused to copy. The report is below — select it and copy by hand.",
     "reportLabel": "Report text",

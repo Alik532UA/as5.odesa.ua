@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onDestroy } from 'svelte';
 	import { t, locale } from 'svelte-i18n';
 	import BetaCheckItem from '$lib/components/beta/BetaCheckItem.svelte';
 	import { betaChecklist } from '$lib/states/betaChecklist.svelte';
@@ -32,10 +33,26 @@
 
 	let copied = $state(false);
 
+	/**
+	 * Таймер підпису «скопійовано» — з дескриптором (§ 7.5).
+	 *
+	 * Дві причини, і жодна не теоретична. Натиснути вдруге, не помітивши
+	 * реакції, — звичайна поведінка: перший таймер лишався б живим і гасив
+	 * підпис, який щойно поставив ДРУГИЙ клік. І піти з чеклиста одразу після
+	 * копіювання — теж звичайний шлях, тобто таймер стріляв би в знищену
+	 * сторінку.
+	 */
+	let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
+	onDestroy(() => clearTimeout(copiedTimer));
+
 	async function copyReport() {
 		const result = await betaChecklist.copyReport();
 		copied = result === 'copied';
-		if (copied) setTimeout(() => (copied = false), 2500);
+		if (copied) {
+			clearTimeout(copiedTimer);
+			copiedTimer = setTimeout(() => (copied = false), 2500);
+		}
 	}
 </script>
 
@@ -60,29 +77,56 @@
 			<strong data-testid="beta-progress-value">{progress.done} / {progress.total}</strong>
 		</p>
 
-		<div class="beta__tabs" role="tablist" aria-label={$t('beta.tabsLabel')}>
+		<!--
+			ЗВИЧАЙНІ КНОПКИ, А НЕ ARIA-ТАБИ (§ 8.2, `BETA-TABS-NOT-ARIA`).
+
+			Доти тут стояли `role="tablist"` і `role="tab"` — і це було гірше за
+			відсутність ролі. Роль `tab` — обіцянка цілого віджета: `role="tabpanel"`
+			на вмісті, `aria-controls` на кожній вкладці, і СТРІЛКИ ← → замість
+			`Tab` для переходу між ними (`Tab` мусить виводити зі смужки одразу до
+			вмісту). Тут не було нічого з цього: читалка оголошувала віджет, якого
+			немає, і людина, яка слухає, тиснула стрілки, а нічого не відбувалося.
+
+			Смужка вкладок чеклиста — набір перемикачів, і `aria-pressed` описує її
+			чесно. Реалізувати повний патерн теж можна було б, але тоді повністю,
+			разом зі стрілками й roving tabindex — заради трьох кнопок це не
+			окупається.
+		-->
+		<nav class="beta__tabs" aria-label={$t('beta.tabsLabel')}>
 			{#each BETA_TABS as tab (tab.id)}
+				{@const tabDone = betaChecklist.progressOf(tab.id)}
 				<button
 					type="button"
-					role="tab"
 					class="beta__tab"
 					class:active={betaChecklist.activeTab === tab.id}
-					aria-selected={betaChecklist.activeTab === tab.id}
+					aria-pressed={betaChecklist.activeTab === tab.id}
 					onclick={() => (betaChecklist.activeTab = tab.id)}
 					data-testid="beta-tab-{tab.id}-btn"
 				>
 					{$locale === 'uk' ? tab.title.uk : tab.title.en}
+					<span class="beta__tab-count" data-testid="beta-tab-{tab.id}-progress-text">
+						{tabDone.done}/{tabDone.total}
+					</span>
 				</button>
 			{/each}
-		</div>
+		</nav>
 
-		{#each groups as group (group.coverage)}
+		{#each groups as group, levelIndex (group.coverage)}
+			<!--
+				Нумерація НАСКРІЗНА по вкладці (§ 2.2), а не з одиниці в кожному рівні.
+				Рівнів на екрані до трьох, і три пункти «1.» роблять номер марним саме
+				тоді, коли він потрібен: людина каже «зламалося на третьому».
+			-->
+			{@const offset = groups.slice(0, levelIndex).reduce((n, g) => n + g.checks.length, 0)}
 			<section class="beta__level" data-testid="beta-level-{group.coverage}-section">
-				<h2 class="beta__level-title">{$t(`beta.level.${group.coverage}.title`)}</h2>
+				<h2 class="beta__level-title">
+					{$t(`beta.level.${group.coverage}.title`)}
+					<span class="beta__level-count">{group.checks.length}</span>
+				</h2>
 				<p class="beta__level-hint">{$t(`beta.level.${group.coverage}.hint`)}</p>
 				<ul class="beta__list">
 					{#each group.checks as check, i (check.id)}
-						<BetaCheckItem {check} position={i + 1} />
+						<BetaCheckItem {check} position={offset + i + 1} />
 					{/each}
 				</ul>
 			</section>
@@ -92,13 +136,19 @@
 			<button type="button" class="beta__btn" onclick={copyReport} data-testid="beta-report-btn">
 				{$t('beta.copyReport')}
 			</button>
+			<!--
+				Стирання у ДВА кроки (§ 6.3): це єдина незворотна дія на сторінці, і
+				стоїть вона в тому самому рядку, що й кнопка звіту, до якої тягнуться
+				щоразу. Ціна помилки несиметрична — година роботи проти зайвого кліка.
+			-->
 			<button
 				type="button"
 				class="beta__btn beta__btn--quiet"
-				onclick={() => betaChecklist.clear()}
+				class:beta__btn--armed={betaChecklist.clearArmed}
+				onclick={() => betaChecklist.requestClear()}
 				data-testid="beta-clear-btn"
 			>
-				{$t('beta.clearMarks')}
+				{betaChecklist.clearArmed ? $t('beta.clearConfirm') : $t('beta.clearMarks')}
 			</button>
 		</div>
 
@@ -160,6 +210,33 @@
 		font-weight: 600;
 		cursor: pointer;
 		transition: all var(--transition-fast);
+	}
+
+	/* Рівна ширина цифр: лічильники в ряду вкладок не мусять стрибати. */
+	.beta__tab-count {
+		margin-inline-start: 0.4rem;
+		font-size: 0.8rem;
+		font-weight: 600;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.beta__level-count {
+		margin-inline-start: 0.4rem;
+		padding: 0.05rem 0.45rem;
+		border: 2px solid var(--color-border);
+		border-radius: 999px;
+		font-size: 0.75rem;
+		color: var(--color-muted-text);
+		font-variant-numeric: tabular-nums;
+	}
+
+	/*
+	 * Зведена кнопка стирання (§ 6.3). Стан НЕ лише кольором: рамка з'являється,
+	 * напис стає жирнішим, і сам текст кнопки міняється на питання.
+	 */
+	.beta__btn--armed {
+		border: 2px solid var(--color-deep-ocean);
+		font-weight: 800;
 	}
 
 	.beta__tab.active {
