@@ -30,10 +30,23 @@ type Env = { browser: boolean; dev: boolean };
  * Прапорець `started` живе в модулі, тож без `resetModules()` другий сценарій
  * бачив би вже проініціалізований сервіс.
  */
-async function freshAnalytics(env: Env, navigatorStub: Record<string, unknown> = {}) {
+async function freshAnalytics(
+	env: Env,
+	navigatorStub: Record<string, unknown> = {},
+	locationStub: { hostname?: string; origin?: string; pathname?: string } = {
+		hostname: 'as5.odesa.ua',
+		origin: 'https://as5.odesa.ua',
+		pathname: '/'
+	}
+) {
 	vi.resetModules();
 	vi.doMock('$app/environment', () => env);
-	vi.stubGlobal('navigator', { userAgent: 'test', ...navigatorStub });
+	vi.stubGlobal('navigator', { userAgent: 'test', webdriver: false, ...navigatorStub });
+	Object.defineProperty(window, 'location', {
+		value: { ...locationStub },
+		writable: true,
+		configurable: true
+	});
 	// `dataLayer`, а не шпигун на `gtag`: сервіс СТАВИТЬ власний `window.gtag`
 	// (gtag.js читає з черги сирий `arguments`, тому інакше не можна), тобто
 	// шпигун був би затертий і кожна перевірка «нічого не надіслано» проходила
@@ -62,6 +75,30 @@ describe('аналітика мовчить там, де мусить (§ 2.1, �
 		module.track('contact_click', { channel: 'phone' });
 		module.trackPageView();
 		expect(sent(), 'локальні кліки не мають потрапляти в ту саму властивість').toEqual([]);
+	});
+
+	it('мовчить на localhost навіть якщо dev: false (захист від превʼю та локальних тестів)', async () => {
+		const { module, sent } = await freshAnalytics(
+			{ browser: true, dev: false },
+			{},
+			{ hostname: 'localhost', origin: 'http://localhost:5499', pathname: '/' }
+		);
+		module.initAnalytics();
+		module.track('contact_click', { channel: 'phone' });
+		module.trackPageView();
+		expect(sent(), 'події з localhost не мають потрапляти в GA4').toEqual([]);
+	});
+
+	it('мовчить у Playwright/WebDriver (navigator.webdriver = true) навіть на реальному домені', async () => {
+		const { module, sent } = await freshAnalytics(
+			{ browser: true, dev: false },
+			{ webdriver: true },
+			{ hostname: 'as5.odesa.ua', origin: 'https://as5.odesa.ua', pathname: '/' }
+		);
+		module.initAnalytics();
+		module.track('contact_click', { channel: 'phone' });
+		module.trackPageView();
+		expect(sent(), 'події під час автотестів не мають потрапляти в GA4').toEqual([]);
 	});
 
 	it('поза браузером не надсилає нічого', async () => {

@@ -46,8 +46,20 @@ function optedOut(): boolean {
 	return signals.doNotTrack === '1' || signals.doNotTrack === 'yes';
 }
 
-// `dev` keeps local work from landing in the same property as real traffic.
-const enabled = () => browser && !dev && isConfigured && !optedOut();
+/**
+ * Локальне середовище або автоматизований тест (Playwright, Puppeteer тощо).
+ * Запобігає засміченню аналітики під час розробки, локального прев'ю та E2E-тестів.
+ */
+const isTestOrLocal = () => {
+	if (!browser || typeof window === 'undefined') return false;
+	const hostname = window.location?.hostname ?? '';
+	const isLocal = hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+	const isWebDriver = typeof navigator !== 'undefined' && Boolean(navigator.webdriver);
+	return isLocal || isWebDriver;
+};
+
+// `dev`, `localhost` та автотести відключають аналітику, щоб тестовий трафік не потрапляв у продакшн.
+const enabled = () => browser && !dev && !isTestOrLocal() && isConfigured && !optedOut();
 
 export type AnalyticsEvent =
 	| 'section_view'

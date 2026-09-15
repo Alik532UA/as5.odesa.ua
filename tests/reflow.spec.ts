@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { htmlRoutes } from './routes';
 import { OVERLAYS } from './overlays';
 import { waitForSettled } from './settled';
