@@ -98,14 +98,26 @@ describe('CI', () => {
 	 * клас, проти якого цей файл і написаний.
 	 */
 	it('npm audit обмежений прод-залежностями (§ 9)', () => {
-		const audits = [...all.matchAll(/run:\s*(npm audit[^\n]*)/g)].map((m) => m[1]);
-		expect(audits.length, 'кроку з npm audit у workflow немає').toBeGreaterThan(0);
+		// З ревізії 9.5 канону крок кличе ОБГОРТКУ, а не `npm audit` напряму
+		// (CI-CD-AND-TOOLS-v9 § 1.15, `CI-THIRD-PARTY-OUTAGE`): голий крок падає й
+		// тоді, коли ліг реєстр npm, і 2026-09-04 у сусідньому проєкті саме так і
+		// сталося. Команда тепер одна й живе в скрипті — там її й перевіряємо.
+		expect(/run:\s*npm run audit:ci/.test(all), 'у workflow немає кроку audit:ci').toBe(true);
+		expect(
+			/run:\s*npm audit\b/.test(all),
+			'голий `npm audit` у workflow: збій реєстру заблокує деплой'
+		).toBe(false);
+
+		const wrapper = readFileSync('scripts/check-audit.mjs', 'utf8');
+		const audits = [...wrapper.matchAll(/'(npm audit[^']*)'/g)].map((m) => m[1]);
+		expect(audits.length, 'в обгортці немає команди npm audit').toBeGreaterThan(0);
 		const wrong = audits.filter((cmd) => !cmd.includes('--omit=dev'));
 		expect(wrong, `аудит рахує й devDependencies: ${wrong.join(', ')}`).toEqual([]);
 		const deprecated = audits.filter((cmd) => cmd.includes('--production'));
 		expect(deprecated, `--production застарів із npm 9 і мовчки ігнорується: ${deprecated.join(', ')}`).toEqual(
 			[]
 		);
+		expect(wrapper, 'поріг high, а не moderate').toMatch(/'high', 'critical'/);
 	});
 
 	/**
@@ -176,14 +188,26 @@ describe('prerender як гейт', () => {
  * разу. Червоне при цьому стало звичним фоном — тобто гірше за зелену галочку
  * без прогону, бо виглядає як чесне падіння.
  *
- * ## Межа правила
+ * ## Три класи кроків (ревізія 9.5 канону)
  *
- * Під нього підпадають лише НЕЗАЛЕЖНІ СТАТИЧНІ гейти — ті, яким потрібні самі
- * `node_modules`: типи, lint, юніт-тести, аудит, валідація вмісту, паритет мов.
- * Кроки з побічним ефектом (`build`, `deploy`, `upload-pages-artifact`) і кроки,
- * що залежать від `build/` або від браузерів (`check:build`, `check:bundle`,
- * Playwright, Lighthouse), `!cancelled()` НЕ отримують: запускати їх після
- * впалої збірки означає не звіт, а шум.
+ * Раніше тут було два класи, і другий формулювався як бланкетне виключення:
+ * усе, що залежить від `build/` або від браузерів, умови не отримувало зовсім.
+ * Причина була слушна — запускати такий крок після впалої збірки означає не
+ * звіт, а шум, — але наслідок неправильний: під цим виключенням ті самі гейти
+ * мовчали й тоді, коли збірка ціла, а впав, скажімо, лінтер. Прохід по
+ * дев'ятьох проєктах 2026-09-16 показав, що так зробили сім із них.
+ *
+ *   НЕЗАЛЕЖНИЙ ГЕЙТ ....... `!cancelled()`
+ *     типи, lint, юніт-тести, аудит, валідація вмісту, паритет мов — і E2E:
+ *     Playwright піднімає ВЛАСНИЙ preview, а не читає теку для деплою.
+ *
+ *   ПІСЛЯЗБІРКОВИЙ ГЕЙТ ... `!cancelled() && steps.<build>.outcome == 'success'`
+ *     `check:build`, `check:bundle`, `git diff --exit-code`, Lighthouse.
+ *     Дає звіт щоразу, коли є що міряти, і мовчить лише тоді, коли нема.
+ *
+ *   ПОБІЧНИЙ ЕФЕКТ ........ умови немає
+ *     `build`, `deploy`, `upload-pages-artifact`. Деплой після впалого гейта —
+ *     це і є те, від чого гейт захищає.
  *
  * Гейт визначається за КОМАНДОЮ, а не за назвою кроку: назви в проєктах різні
  * («Lint» / «Linting», «Unit Tests» / «Run unit tests»), команди однакові.
@@ -191,9 +215,22 @@ describe('prerender як гейт', () => {
  * Перший гейт у job `if` не потребує: до нього ще ніщо не падало.
  */
 const INDEPENDENT_GATE =
-	/npm run check(?![:\w])|npm run check:(worker|i18n|test-discovery)\b|npm run lint(?![:\w])|npm (run )?test(?!:(e2e|watch))(:\w+)?(?!\S)|npm audit\b|npm run validate-content\b/;
+	/npm run check(?![:\w])|npm run check:(worker|i18n|test-discovery)\b|npm run lint(?![:\w])|npm (run )?test(?!:(e2e|watch))(:\w+)?(?!\S)|npm run audit:ci\b|npm run test:e2e\b|npx playwright test|npm run validate-content\b/;
 /** Виглядає гейтом, але залежить від збірки чи браузерів. */
-const BUILD_DEPENDENT = /check:build|check:bundle|check:rules|playwright|lhci|npm run build/;
+/**
+ * Гейти, яким потрібна ЗІБРАНА тека, — третій клас із ревізії 9.5 канону.
+ *
+ * Раніше цей перелік був ширший (сюди входили Playwright і `check:rules`), і
+ * кроки з нього виводилися з-під правила зовсім. Прохід по дев'ятьох проєктах
+ * 2026-09-16 показав, чим це коштувало: під бланкетним виключенням вони мовчать
+ * і тоді, коли збірка ціла, а впав, скажімо, лінтер. Тепер вони не виключені, а
+ * мають ВЛАСНУ умову — `steps.<build>.outcome == 'success'` (§ 1.8).
+ *
+ * Playwright звідси прибрано свідомо: він піднімає власний `preview`, а не
+ * читає теку для деплою, тобто це незалежний гейт. Під старим прочитанням його
+ * забирав будь-який попередній червоний крок — включно з `npm audit`.
+ */
+const BUILD_DEPENDENT = /check:build|check:bundle|git diff --exit-code|lhci/;
 
 /**
  * Кроки одного workflow у порядку появи, з розбиттям на job.
@@ -264,6 +301,37 @@ describe('гейти не ховають один одного (CI-CD-AND-TOOLS-
 		expect(
 			offenders,
 			`перший червоний гейт забере звіт у цих кроків:\n${offenders.join('\n')}`
+		).toEqual([]);
+	});
+
+	/**
+	 * Післязбіркові гейти: `!cancelled() && steps.<build>.outcome == 'success'`
+	 * (CI-CD-AND-TOOLS-v9 § 1.8, третій клас).
+	 *
+	 * Голе `!cancelled()` тут було б гірше за відсутність умови: крок побіг би й
+	 * після впалої збірки й дав вторинне падіння «теки немає», яке ховає справжню
+	 * причину. А без умови взагалі — мовчить і тоді, коли міряти є що.
+	 */
+	it('післязбірковий гейт несе умову на результат збірки', () => {
+		const afterBuild = files.flatMap((file) =>
+			stepsOf(readFileSync(`${DIR}/${file}`, 'utf8'))
+				.filter((s) => BUILD_DEPENDENT.test(s.body))
+				.map((s) => ({ ...s, file }))
+		);
+		const seenBuild = new Set<string>();
+		const offenders: string[] = [];
+		for (const gate of afterBuild) {
+			const key = `${gate.file}::${gate.job}`;
+			const isFirst = !seenBuild.has(key);
+			seenBuild.add(key);
+			if (isFirst) continue;
+			if (!/!cancelled\(\)\s*&&\s*steps\.\w+\.outcome\s*==\s*'success'/.test(gate.body)) {
+				offenders.push(`${gate.file} → ${gate.job} → «${gate.name}»`);
+			}
+		}
+		expect(
+			offenders,
+			`післязбірковий гейт без умови на збірку:\n${offenders.join('\n')}`
 		).toEqual([]);
 	});
 
