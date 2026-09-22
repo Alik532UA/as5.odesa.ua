@@ -1,8 +1,9 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { collectTestIds, testIdExists } from '../vitest/support/testids';
 import { BETA_CHECKS, BETA_TABS, BETA_UNCOVERED_ROUTES, checksByCoverage } from '$lib/config/beta';
+import { HIDDEN_ROUTES } from '$lib/config/site';
 
 /**
  * Інваріанти чеклиста бета-тестування (BETA-CHECKLIST-v8 § 5).
@@ -27,6 +28,15 @@ import { BETA_CHECKS, BETA_TABS, BETA_UNCOVERED_ROUTES, checksByCoverage } from 
 
 const TAB_IDS = BETA_TABS.map((t) => t.id);
 const KNOWN_TESTIDS = collectTestIds('src');
+
+/**
+ * Джерела САМОЇ сторінки й рядка пункта — окремо від решти проєкту.
+ *
+ * Правила § 8 говорять про те, що є на цій сторінці: `beta-version-text`,
+ * знайдений у чужому компоненті, нічого не довів би.
+ */
+const PAGE_SOURCE = readFileSync('src/routes/beta-test-checklists/+page.svelte', 'utf8');
+const ROW_SOURCE = readFileSync('src/lib/components/beta/BetaCheckItem.svelte', 'utf8');
 
 /** Маршрути з файлової системи, а не другий список «на око». */
 function realRoutes(): string[] {
@@ -192,5 +202,119 @@ describe('чеклист бета-тестування', () => {
 				expect(group.checks.map((c) => c.id), `${tab.id}/${group.coverage}`).toEqual(declared.map((c) => c.id));
 			}
 		}
+	});
+
+	/**
+	 * § 3.4 `BETA-LEVEL-BALANCE`.
+	 *
+	 * Контрольна група корисна рівно доти, доки вона лишається групою, а не
+	 * списком: `covered` дописують тому, що «тест же є», а не тому, що людині
+	 * варто це перевіряти, — і тоді пів години її часу йде туди, де автотест уже
+	 * дивиться. Інваріанта тут не було зовсім; зараз перекосу немає, і саме тому
+	 * його варто закріпити, доки він не з'явився.
+	 */
+	it('у вкладці covered не переважає manual (§ 3.4)', () => {
+		const skewed = BETA_TABS.map((tab) => {
+			const n = (coverage: string) =>
+				BETA_CHECKS.filter((c) => c.tab === tab.id && c.coverage === coverage).length;
+			return { id: tab.id, manual: n('manual'), covered: n('covered') };
+		}).filter((row) => row.covered > row.manual);
+
+		expect(
+			skewed.map((r) => `${r.id}: covered ${r.covered} > manual ${r.manual}`),
+			'контрольна група більша за роботу — людина витрачається там, де машина вже дивиться'
+		).toEqual([]);
+	});
+
+	/**
+	 * § 2.4: категорія непорожня двома мовами.
+	 *
+	 * Поля не було зовсім, і вкладка «Спільне для сайту» показувала двадцять
+	 * один пункт суцільним стовпцем: тема, клавіатура, шрифт, смуга прокрутки й
+	 * читалка — усе поряд, без жодного шва. Категорія не мусить бути
+	 * унікальною: вкладка каже, ЩО перевіряти (маршрут), категорія — з якого
+	 * боку, тож одна законно повторюється в кількох пунктах.
+	 */
+	it('категорія непорожня двома мовами, і переклад зроблено (§ 2.4)', () => {
+		const bad: string[] = [];
+		for (const check of BETA_CHECKS) {
+			if (!check.category?.uk.trim() || !check.category?.en.trim()) {
+				bad.push(`${check.id}: порожня категорія`);
+				continue;
+			}
+			// Кирилиця в англійському полі — забутий переклад, якого ТИП не бачить.
+			if (/[а-яїєґі]/i.test(check.category.en)) bad.push(`${check.id}: en-категорія кирилицею`);
+			if (!/[а-яїєґі]/i.test(check.category.uk)) bad.push(`${check.id}: uk-категорія без кирилиці`);
+		}
+		expect(bad, bad.join('\n')).toEqual([]);
+	});
+
+	/**
+	 * § 5.6 `BETA-LOCATOR-PER-CHECK` + TESTID-AND-NAMING § 1.2.
+	 *
+	 * Обидва правила стояли в каноні, і не падало жодне: за форму `id`
+	 * (`{вкладка}_{номер}`) і за форму локатора (без підкреслень) відповідали
+	 * різні перевірки, а місце, де одне переходить у друге, не дивився ніхто.
+	 */
+	it('локатор пункта виходить із id чистим, без підкреслень (§ 5.6)', () => {
+		const inRow = [...ROW_SOURCE.matchAll(/data-testid="(beta-[^"]*)"/g)].map((m) => m[1]);
+		expect(inRow.length, 'перевірка мертва: локаторів у рядку не знайдено').toBeGreaterThan(0);
+
+		expect(
+			inRow.filter((id) => /\{\s*check\.id\s*\}/.test(id)),
+			'локатор бере check.id без переведення в kebab-case'
+		).toEqual([]);
+		expect(inRow.filter((id) => id.includes('_')), 'підкреслення в локаторі').toEqual([]);
+	});
+
+	/**
+	 * § 8.5.1 `BETA-VERSION-VISIBLE` і § 8.4 `BETA-SCREEN-LINKS`.
+	 *
+	 * Підказка «позначено на версії X» на пункті стояла з самого початку, а якої
+	 * версії ЦЯ сторінка — не було написано ніде: число, з яким нема чого
+	 * порівняти. Перелік маршрутів вкладки так само лежав у даних і читався лише
+	 * інваріантом § 5.1 вище.
+	 */
+	it('на сторінці видно версію, екрани вкладки й вихід (§ 8.4, § 8.5.1)', () => {
+		expect(PAGE_SOURCE, 'підказці про чужу версію нема з чим порівнятися').toContain(
+			'data-testid="beta-version-text"'
+		);
+		expect(PAGE_SOURCE, 'перелік екранів лишився лише для перевірок').toContain(
+			'data-testid="beta-screen-'
+		);
+		expect(PAGE_SOURCE, 'тестувальник приходить за прямим посиланням і лишається в пастці').toContain(
+			'data-testid="beta-home-link"'
+		);
+	});
+
+	/** § 6.2.1 `BETA-REPORT-HINT-SPLIT`: у відмови буфера власний локатор. */
+	it('успіх копіювання й відмова буфера мають різні локатори (§ 6.2.1)', () => {
+		expect(PAGE_SOURCE).toContain('data-testid="beta-report-hint"');
+		expect(PAGE_SOURCE).toContain('data-testid="beta-report-failed-hint"');
+	});
+
+	/**
+	 * § 4.0 `BETA-NOINDEX-OVER-DISALLOW` — перевірка ПРОТИЛЕЖНОГО.
+	 *
+	 * Цей проєкт дійшов до правила раніше за канон і тримав його як «записане
+	 * відхилення». Канон 9.16 визнав, що помилявся він, а не проєкт: `Disallow`
+	 * забороняє ЗАВАНТАЖЕННЯ, тож краулер не читає `noindex` ніколи, і адреса,
+	 * на яку хтось послався ззовні, потрапляє в індекс голим URL — назавжди, бо
+	 * прибирає його рівно той тег, до якого краулер не дійшов.
+	 *
+	 * Тепер це вибір за правилом, і в нього є сторож: рядок `Disallow` на
+	 * приховану сторінку не має з'явитися «для надійності».
+	 */
+	it('прихована сторінка НЕ закрита Disallow — інакше noindex не читають (§ 4.0)', () => {
+		const robots = readFileSync('static/robots.txt', 'utf8');
+		const disallowed = [...robots.matchAll(/^\s*Disallow:\s*(\S+)/gm)].map((m) => m[1]);
+
+		const wrong = HIDDEN_ROUTES.filter((route) =>
+			disallowed.some((rule) => rule !== '/' && route.startsWith(rule))
+		);
+		expect(
+			wrong,
+			'Disallow забирає в краулера саме той запит, у відповіді на який лежить noindex'
+		).toEqual([]);
 	});
 });

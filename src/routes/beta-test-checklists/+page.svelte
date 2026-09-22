@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
+	import { resolve } from '$app/paths';
 	import { t, locale } from 'svelte-i18n';
 	import BetaCheckItem from '$lib/components/beta/BetaCheckItem.svelte';
 	import { betaChecklist } from '$lib/states/betaChecklist.svelte';
@@ -30,6 +31,18 @@
 	 */
 	const groups = $derived(checksByCoverage(betaChecklist.activeTab));
 	const progress = $derived(betaChecklist.progress);
+
+	/** Маршрути активної вкладки — той самий перелік, що читає інваріант § 5.1. */
+	const activeRoutes = $derived(
+		BETA_TABS.find((tab) => tab.id === betaChecklist.activeTab)?.routes ?? []
+	);
+
+	/**
+	 * Адреса → дискримінатор локатора: `/about` → `about`, корінь → `root`.
+	 * Косих рисок у локаторах немає (TESTID-AND-NAMING § 1.2), а значення
+	 * однозначно виходить із самої адреси, тож другим іменем це не стає.
+	 */
+	const screenTid = (route: string) => route.replace(/^\/|\/$/g, '').replace(/\//g, '-') || 'root';
 
 	let copied = $state(false);
 
@@ -75,7 +88,53 @@
 		<p class="beta__progress">
 			{$t('beta.progress')}
 			<strong data-testid="beta-progress-value">{progress.done} / {progress.total}</strong>
+
+			<!--
+				ВЕРСІЯ ЗБІРКИ ВИДИМА (§ 8.5.1, `BETA-VERSION-VISIBLE`).
+
+				Підказка «позначено на версії X — з того часу код міг змінитися»
+				на пункті стояла з самого початку, а якої версії ЦЯ сторінка, не
+				було написано ніде. Тобто підказка називала число, з яким нема
+				чого порівняти: людина не могла вирішити, перепоставити позначку
+				чи вона вже на поточній збірці.
+			-->
+			<span class="beta__version" data-testid="beta-version-text">{betaChecklist.version}</span>
+
+			<!--
+				ВИХІД ЗІ СТОРІНКИ (§ 8.4). Тестувальник приходить сюди за ПРЯМИМ
+				посиланням: сторінка навмисно поза меню (§ 4), тож ні пункта меню,
+				ні історії вкладки в нього немає.
+			-->
+			<a class="beta__home" href={resolve('/')} data-testid="beta-home-link">
+				{$t('beta.home')}
+			</a>
 		</p>
+
+		<!--
+			КУДИ ЙТИ ПО ЦЮ ВКЛАДКУ (§ 8.4, `BETA-SCREEN-LINKS`).
+
+			Перелік маршрутів вкладки лежав у даних невикористаним: його читав лише
+			інваріант § 5.1. Показаний той САМИЙ перелік, тож розійтися з дійсністю
+			непоміченим він не може — на відміну від окремого списку «корисних
+			посилань», який поповнити забувають.
+
+			У вкладки «Спільне для сайту» маршрутів немає навмисно (шапка, підвал і
+			теми живуть на КОЖНІЙ сторінці), і тоді рядка просто немає.
+		-->
+		{#if activeRoutes.length > 0}
+			<p class="beta__screens">
+				<span class="beta__screens-label">{$t('beta.screens')}</span>
+				{#each activeRoutes as route (route)}
+					<a
+						class="beta__screen"
+						href={resolve(route)}
+						data-testid="beta-screen-{screenTid(route)}-link"
+					>
+						{route}
+					</a>
+				{/each}
+			</p>
+		{/if}
 
 		<!--
 			ЗВИЧАЙНІ КНОПКИ, А НЕ ARIA-ТАБИ (§ 8.2, `BETA-TABS-NOT-ARIA`).
@@ -161,7 +220,17 @@
 			     у фокусі, сторінка не через https, немає дозволу. Без цього поля
 			     кнопка виглядала б натиснутою, а звіту не було б НІДЕ, тобто вся
 			     робота тестувальника зникала б на останньому кроці. -->
-			<p class="beta__hint" role="alert">{$t('beta.copyFailed')}</p>
+			<!--
+				ВЛАСНИЙ ЛОКАТОР У ВІДМОВИ (§ 6.2.1, `BETA-REPORT-HINT-SPLIT`).
+
+				`beta-report-hint` висить на УСПІХУ вище, а тут доти не було
+				локатора зовсім: e2e міг довести, що копіювання спрацювало, і ніяк
+				не міг довести, що працює ЗАПАСНИЙ шлях, заради якого весь цей
+				блок і написаний.
+			-->
+			<p class="beta__hint" role="alert" data-testid="beta-report-failed-hint">
+				{$t('beta.copyFailed')}
+			</p>
 			<textarea
 				class="beta__report"
 				readonly

@@ -29,7 +29,21 @@
 	const stale = $derived(betaChecklist.isStale(check.id));
 	// Тексти пунктів живуть у даних, а не у словнику інтерфейсу: їх десятки, і
 	// вони змінюються іншим циклом. Решта мов бачить англійський.
-	const text = $derived($locale === 'uk' ? check.text.uk : check.text.en);
+	const uk = $derived($locale === 'uk');
+	const text = $derived(uk ? check.text.uk : check.text.en);
+	const category = $derived(uk ? check.category.uk : check.category.en);
+
+	/**
+	 * Локатор бере `id` пункта в kebab-case (§ 5.6, `BETA-LOCATOR-PER-CHECK`).
+	 *
+	 * Доти `check.id` підставлявся ЯК Є, і `common_1` давав
+	 * `beta-check-common_1-item` — назву, яку TESTID-AND-NAMING § 1.2 забороняє.
+	 * Обидва правила стояли в каноні, і не падало жодне: за форму `id` і за
+	 * форму локатора відповідали різні перевірки, а перехід одного в друге не
+	 * дивився ніхто. Заміна `_` → `-` однозначна в обидва боки, тож локатор
+	 * лишається ПОХІДНИМ від `id`, а не другим іменем, яке треба узгоджувати.
+	 */
+	const tid = $derived(check.id.replace(/_/g, '-'));
 </script>
 
 <li
@@ -38,9 +52,18 @@
 	class:beta-item--weird={mark?.vote === 'weird'}
 	class:beta-item--ok={mark?.vote === 'ok'}
 	class:beta-item--stale={stale}
-	data-testid="beta-check-{check.id}-item"
+	data-testid="beta-check-{tid}-item"
 >
-	<p class="beta-item__text" data-testid="beta-check-{check.id}-text">
+	<!--
+		РОЗДІЛ УСЕРЕДИНІ ВКЛАДКИ (§ 2.4).
+
+		Доти категорії не було зовсім, і вкладка «Спільне для сайту» показувала
+		двадцять один пункт суцільним стовпцем: тема, клавіатура, шрифт, смуга
+		прокрутки й читалка — усе поряд, без жодного шва.
+	-->
+	<p class="beta-item__category" data-testid="beta-check-{tid}-category-text">{category}</p>
+
+	<p class="beta-item__text" data-testid="beta-check-{tid}-text">
 		<span class="beta-item__num">{position}.</span>
 		{text}
 		{#if check.negative}
@@ -48,8 +71,17 @@
 		{/if}
 	</p>
 
+	<!--
+		Назва тесту під покритим пунктом (§ 8.7): коли тут щось ламається, видно,
+		ЯКИЙ САМЕ тест збрехав, — і це важливіше за звичайний баг, бо знецінює
+		всі зелені прогони.
+	-->
+	{#if check.test}
+		<p class="beta-item__test">{check.test}</p>
+	{/if}
+
 	{#if stale}
-		<p class="beta-item__stale" data-testid="beta-check-{check.id}-stale-hint">
+		<p class="beta-item__stale" data-testid="beta-check-{tid}-stale-hint">
 			{$t('beta.staleMark', { values: { version: mark?.version } })}
 		</p>
 	{/if}
@@ -62,7 +94,7 @@
 				class:active={mark?.vote === option.vote}
 				aria-pressed={mark?.vote === option.vote}
 				onclick={() => betaChecklist.vote(check.id, option.vote)}
-				data-testid="beta-vote-{check.id}-{option.vote}-btn"
+				data-testid="beta-vote-{tid}-{option.vote}-btn"
 			>
 				{$t(option.key)}
 			</button>
@@ -132,11 +164,29 @@
 		white-space: nowrap;
 	}
 
+	.beta-item__category {
+		margin: 0 0 0.2em;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--color-muted-text);
+	}
+
+	.beta-item__test,
 	.beta-item__stale {
 		margin: 0 0 var(--space-sm);
 		font-size: 0.8rem;
 		font-style: italic;
 		color: var(--color-muted-text);
+	}
+
+	.beta-item__test {
+		font-style: normal;
+		/* Моноширинний шрифт літералом: змінної на нього в палітрі немає, а
+		   посилання на неоголошену назву ловить `src/css-variables.test.ts`. */
+		font-family: monospace;
+		word-break: break-all;
 	}
 
 	.beta-item__votes {

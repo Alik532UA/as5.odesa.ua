@@ -221,6 +221,8 @@
     "copied": "The report is in your clipboard — paste it into an email or a message.",
     "copyFailed": "The browser refused to copy. The report is below — select it and copy by hand.",
     "reportLabel": "Report text",
+    "home": "Home",
+    "screens": "Where to look:",
     "vote": {
       "fail": "Does not work",
       "weird": "Works, but oddly",

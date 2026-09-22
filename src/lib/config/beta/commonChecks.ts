@@ -16,6 +16,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_1',
 		tab: 'common',
+		category: { uk: 'Шрифт', en: 'Typeface' },
 		coverage: 'manual',
 		text: {
 			uk: 'Подивіться на заголовок «Одеська школа мистецтв №5» у шапці. Літери мусять бути вузькі й рівні (шрифт e-Ukraine), а не звичайні системні як у Word.',
@@ -25,6 +26,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_2',
 		tab: 'common',
+		category: { uk: 'Консоль браузера', en: 'Browser console' },
 		coverage: 'manual',
 		negative: true,
 		text: {
@@ -35,6 +37,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_3',
 		tab: 'common',
+		category: { uk: 'Вибір теми', en: 'Picking a theme' },
 		coverage: 'manual',
 		testid: 'header-settings-btn',
 		text: {
@@ -45,6 +48,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_4',
 		tab: 'common',
+		category: { uk: 'Системна тема', en: 'System theme' },
 		coverage: 'covered',
 		test: 'src/lib/states/ui.svelte.test.ts',
 		text: {
@@ -55,6 +59,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_5',
 		tab: 'common',
+		category: { uk: 'Системна тема', en: 'System theme' },
 		coverage: 'covered',
 		test: 'src/lib/states/ui.svelte.test.ts',
 		negative: true,
@@ -67,6 +72,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_6',
 		tab: 'common',
+		category: { uk: 'Меню на телефоні', en: 'Mobile menu' },
 		coverage: 'manual',
 		testid: 'header-burger-btn',
 		text: {
@@ -77,6 +83,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_7',
 		tab: 'common',
+		category: { uk: 'Клавіатура в меню', en: 'Keyboard in the menu' },
 		coverage: 'manual',
 		negative: true,
 		testid: 'header-burger-btn',
@@ -88,6 +95,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_8',
 		tab: 'common',
+		category: { uk: 'Розмір під палець', en: 'Touch targets' },
 		coverage: 'manual',
 		negative: true,
 		// Пункт питає про три елементи, а локатор називає один — той, з якого
@@ -103,6 +111,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_9',
 		tab: 'common',
+		category: { uk: 'Мова', en: 'Language' },
 		coverage: 'testable',
 		text: {
 			uk: 'Перемкніть мову на English у шестерні. Написи мусять стати англійськими, і сторінка не мусить смикнутися чи втратити прокрутку.',
@@ -112,6 +121,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_10',
 		tab: 'common',
+		category: { uk: 'Перехід до вмісту', en: 'Skip to content' },
 		coverage: 'testable',
 		testid: 'skip-to-content-link',
 		text: {
@@ -122,6 +132,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_11',
 		tab: 'common',
+		category: { uk: 'Контраст', en: 'Contrast' },
 		coverage: 'testable',
 		text: {
 			uk: 'Пройдіть сторінку очима в темній темі. Жоден напис не мусить зникати, зливаючись із тлом, і жодна кнопка не мусить ставати нечитною.',
@@ -136,6 +147,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_12',
 		tab: 'common',
+		category: { uk: 'Гарячі клавіші', en: 'Keyboard shortcuts' },
 		coverage: 'manual',
 		testid: 'settings-hotkeys-on-btn',
 		text: {
@@ -146,6 +158,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_14',
 		tab: 'common',
+		category: { uk: 'Зменшений рух', en: 'Reduced motion' },
 		coverage: 'manual',
 		testid: 'debug-background-2-btn',
 		text: {
@@ -156,6 +169,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_13',
 		tab: 'common',
+		category: { uk: 'Гарячі клавіші', en: 'Keyboard shortcuts' },
 		coverage: 'manual',
 		negative: true,
 		testid: 'settings-hotkeys-off-btn',
@@ -180,6 +194,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_15',
 		tab: 'common',
+		category: { uk: 'Прохід клавіатурою', en: 'Keyboard pass' },
 		coverage: 'manual',
 		text: {
 			uk: 'Не торкаючись мишки, пройдіть головну лише клавішею Tab від початку до кінця. Рамка фокуса мусить бути видною на КОЖНОМУ кроці, а порядок — іти зверху вниз, як читається сторінка, без стрибків назад.',
@@ -189,6 +204,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_16',
 		tab: 'common',
+		category: { uk: 'Прохід клавіатурою', en: 'Keyboard pass' },
 		coverage: 'manual',
 		text: {
 			uk: 'Відкрийте меню шестерні й пройдіть Tab-ом п’ять-шість кроків. Фокус мусить лишатися ВСЕРЕДИНІ меню й не виходити на сторінку під ним; Esc мусить закривати меню й повертати фокус на саму шестерню.',
@@ -198,6 +214,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_17',
 		tab: 'common',
+		category: { uk: 'Екранний читач', en: 'Screen reader' },
 		coverage: 'manual',
 		text: {
 			uk: 'Увімкніть екранний читач (Windows: Ctrl+Win+Enter) і пройдіть шапку. Кожна кнопка мусить називатися тим, що вона робить — «Тема», «Мова», «Налаштування». Назви виду «кнопка», «зображення» або сам символ іконки означають дефект.',
@@ -207,6 +224,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_18',
 		tab: 'common',
+		category: { uk: 'Прохід клавіатурою', en: 'Keyboard pass' },
 		coverage: 'manual',
 		negative: true,
 		text: {
@@ -217,6 +235,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_19',
 		tab: 'common',
+		category: { uk: 'Вибір теми', en: 'Picking a theme' },
 		coverage: 'manual',
 		testid: 'settings-theme-dark-btn',
 		text: {
@@ -227,6 +246,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_20',
 		tab: 'common',
+		category: { uk: 'Смуга прокрутки', en: 'Scrollbar' },
 		coverage: 'manual',
 		testid: 'scrollbar-context-menu',
 		text: {
@@ -237,6 +257,7 @@ export const COMMON_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'common_21',
 		tab: 'common',
+		category: { uk: 'Смуга прокрутки', en: 'Scrollbar' },
 		coverage: 'manual',
 		negative: true,
 		text: {

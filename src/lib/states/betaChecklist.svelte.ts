@@ -110,21 +110,45 @@ class BetaChecklistState {
 	requestClear(): boolean {
 		if (!this.clearArmed) {
 			this.clearArmed = true;
+			this.rearm();
 			return false;
 		}
 		this.clear();
 		return true;
 	}
 
+	/**
+	 * Зведення знімається САМО через п'ять секунд (§ 6.3.1, `BETA-CLEAR-DISARM`).
+	 *
+	 * Доти `disarmClear()` існував і його не кликав ніхто: кнопка лишалася
+	 * зведеною до перезавантаження, тобто наступний прихід на сторінку
+	 * починався з того, що між усією роботою і порожнім списком стоїть ОДНЕ
+	 * натискання. П'ять секунд — більше, ніж треба прочитати «Точно стерти?» і
+	 * натиснути вдруге, і значно менше, ніж пауза між двома відвідуваннями.
+	 */
+	private armTimer: ReturnType<typeof setTimeout> | undefined;
+
+	private rearm() {
+		clearTimeout(this.armTimer);
+		this.armTimer = setTimeout(() => (this.clearArmed = false), 5000);
+	}
+
 	/** Знімає зведення, нічого не стираючи: кнопка не лишається зарядженою. */
 	disarmClear() {
+		clearTimeout(this.armTimer);
 		this.clearArmed = false;
+	}
+
+	/** Версія збірки — показується на сторінці (§ 8.5.1) і в позначці (§ 3.1). */
+	get version(): string {
+		return VERSION;
 	}
 
 	clear() {
 		this.marks.clear();
 		this.persist();
 		this.reportFallback = '';
+		clearTimeout(this.armTimer);
 		this.clearArmed = false;
 	}
 

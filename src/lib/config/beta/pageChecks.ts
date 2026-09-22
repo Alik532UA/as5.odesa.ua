@@ -12,6 +12,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'home_1',
 		tab: 'home',
+		category: { uk: 'Відділи', en: 'Departments' },
 		coverage: 'covered',
 		test: 'scripts/check-build.mjs',
 		text: {
@@ -22,6 +23,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'home_2',
 		tab: 'home',
+		category: { uk: 'Піаніно', en: 'The piano' },
 		coverage: 'manual',
 		testid: 'footer-piano-btn',
 		text: {
@@ -32,6 +34,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'home_3',
 		tab: 'home',
+		category: { uk: 'Піаніно', en: 'The piano' },
 		coverage: 'manual',
 		testid: 'piano-key-*-btn',
 		text: {
@@ -42,6 +45,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'home_4',
 		tab: 'home',
+		category: { uk: 'Піаніно', en: 'The piano' },
 		coverage: 'manual',
 		negative: true,
 		testid: 'piano-modal',
@@ -53,6 +57,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'home_5',
 		tab: 'home',
+		category: { uk: 'Галерея', en: 'The gallery' },
 		coverage: 'testable',
 		text: {
 			uk: 'Прокрутіть галерею на головній до кінця. Кожна з шести світлин мусить показатися; порожніх сірих прямокутників лишатися не мусить.',
@@ -62,6 +67,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_1',
 		tab: 'pages',
+		category: { uk: 'Заголовок сторінки', en: 'Page title' },
 		coverage: 'covered',
 		test: 'scripts/check-build.mjs',
 		text: {
@@ -72,6 +78,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_2',
 		tab: 'pages',
+		category: { uk: 'Меню', en: 'The menu' },
 		coverage: 'manual',
 		testid: 'nav-*-link',
 		text: {
@@ -82,6 +89,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_3',
 		tab: 'pages',
+		category: { uk: 'Вузький екран', en: 'Narrow screen' },
 		coverage: 'manual',
 		negative: true,
 		text: {
@@ -92,6 +100,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_4',
 		tab: 'pages',
+		category: { uk: 'Конкурси', en: 'Competitions' },
 		coverage: 'manual',
 		testid: 'competitions-modern-view-link',
 		text: {
@@ -102,6 +111,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_5',
 		tab: 'pages',
+		category: { uk: 'Для вступу', en: 'Admission' },
 		coverage: 'manual',
 		testid: 'header-admission-btn',
 		text: {
@@ -112,6 +122,7 @@ export const PAGE_CHECKS: readonly BetaCheck[] = [
 	{
 		id: 'pages_6',
 		tab: 'pages',
+		category: { uk: 'Сторінка помилки', en: 'Error page' },
 		coverage: 'testable',
 		negative: true,
 		text: {
