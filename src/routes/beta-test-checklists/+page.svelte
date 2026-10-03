@@ -323,6 +323,30 @@
 		color: var(--color-deep-ocean);
 	}
 
+	.beta__home {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 44px;
+		min-height: 44px;
+		padding: 0.4rem 0.85rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-white);
+		color: var(--color-body-text);
+		text-decoration: none;
+		font-size: 0.85rem;
+		margin-left: var(--space-sm);
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	}
+
+	.beta__home:hover {
+		border-color: var(--color-deep-ocean);
+		background: color-mix(in srgb, var(--color-white), var(--color-deep-ocean) 12%);
+		color: var(--color-deep-ocean);
+	}
+
 	.beta__tabs {
 		display: flex;
 		flex-wrap: wrap;
