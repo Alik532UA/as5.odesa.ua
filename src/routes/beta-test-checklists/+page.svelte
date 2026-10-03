@@ -128,34 +128,6 @@
 		</p>
 
 		<!--
-			КУДИ ЙТИ ПО ЦЮ ВКЛАДКУ (§ 8.4, `BETA-SCREEN-LINKS`).
-
-			Перелік маршрутів вкладки лежав у даних невикористаним: його читав лише
-			інваріант § 5.1. Показаний той САМИЙ перелік, тож розійтися з дійсністю
-			непоміченим він не може — на відміну від окремого списку «корисних
-			посилань», який поповнити забувають.
-
-			У вкладки «Спільне для сайту» маршрутів немає навмисно (шапка, підвал і
-			теми живуть на КОЖНІЙ сторінці), і тоді рядка просто немає.
-		-->
-		{#if activeRoutes.length > 0}
-			<div class="beta__screens" data-sveltekit-preload-data="off">
-				<span class="beta__screens-label">{$t('beta.screens')}</span>
-				<div class="beta__screens-list">
-					{#each activeRoutes as route (route)}
-						<a
-							class="beta__screen"
-							href={resolve(route)}
-							data-testid="beta-screen-{screenTid(route)}-link"
-						>
-							{route}
-						</a>
-					{/each}
-				</div>
-			</div>
-		{/if}
-
-		<!--
 			ЗВИЧАЙНІ КНОПКИ, А НЕ ARIA-ТАБИ (§ 8.2, `BETA-TABS-NOT-ARIA`).
 
 			Доти тут стояли `role="tablist"` і `role="tab"` — і це було гірше за
@@ -188,6 +160,34 @@
 				</button>
 			{/each}
 		</nav>
+
+		<!--
+			КУДИ ЙТИ ПО ЦЮ ВКЛАДКУ (§ 8.4, `BETA-SCREEN-LINKS`).
+
+			Перелік маршрутів вкладки лежав у даних невикористаним: його читав лише
+			інваріант § 5.1. Показаний той САМИЙ перелік, тож розійтися з дійсністю
+			непоміченим він не може — на відміну від окремого списку «корисних
+			посилань», який поповнити забувають.
+
+			У вкладки «Спільне для сайту» маршрутів немає навмисно (шапка, підвал і
+			теми живуть на КОЖНІЙ сторінці), і тоді рядка просто немає.
+		-->
+		{#if activeRoutes.length > 0}
+			<div class="beta__screens" data-sveltekit-preload-data="off">
+				<span class="beta__screens-label">{$t('beta.screens')}</span>
+				<div class="beta__screens-list">
+					{#each activeRoutes as route (route)}
+						<a
+							class="beta__screen"
+							href={resolve(route)}
+							data-testid="beta-screen-{screenTid(route)}-link"
+						>
+							{route}
+						</a>
+					{/each}
+				</div>
+			</div>
+		{/if}
 
 		{#each groups as group, levelIndex (group.coverage)}
 			<!--
@@ -282,7 +282,7 @@
 	}
 
 	.beta__screens {
-		margin-bottom: var(--space-md);
+		margin-bottom: var(--space-xl);
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
@@ -351,7 +351,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: var(--space-xs);
-		margin-bottom: var(--space-xl);
+		margin-bottom: var(--space-md);
 	}
 
 	.beta__tab {
