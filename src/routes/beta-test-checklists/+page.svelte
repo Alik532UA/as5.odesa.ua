@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte';
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { t, locale } from 'svelte-i18n';
 	import BetaCheckItem from '$lib/components/beta/BetaCheckItem.svelte';
 	import { betaChecklist } from '$lib/states/betaChecklist.svelte';
-	import { BETA_TABS, checksByCoverage } from '$lib/config/beta';
+	import { BETA_TABS, checksByCoverage, type BetaTabId } from '$lib/config/beta';
 
 	/**
 	 * Сторінка чеклиста бета-тестування (BETA-CHECKLIST-v8 § 4).
@@ -43,6 +44,22 @@
 	 * однозначно виходить із самої адреси, тож другим іменем це не стає.
 	 */
 	const screenTid = (route: string) => route.replace(/^\/|\/$/g, '').replace(/\//g, '-') || 'root';
+
+	$effect(() => {
+		const tabParam = page.url.searchParams.get('tab');
+		if (tabParam && BETA_TABS.some((t) => t.id === tabParam) && betaChecklist.activeTab !== tabParam) {
+			betaChecklist.activeTab = tabParam as BetaTabId;
+		}
+	});
+
+	function selectTab(id: BetaTabId) {
+		betaChecklist.activeTab = id;
+		if (typeof window !== 'undefined') {
+			const url = new URL(window.location.href);
+			url.searchParams.set('tab', id);
+			window.history.replaceState(window.history.state, '', url.href);
+		}
+	}
 
 	let copied = $state(false);
 
@@ -122,18 +139,20 @@
 			теми живуть на КОЖНІЙ сторінці), і тоді рядка просто немає.
 		-->
 		{#if activeRoutes.length > 0}
-			<p class="beta__screens">
+			<div class="beta__screens" data-sveltekit-preload-data="off">
 				<span class="beta__screens-label">{$t('beta.screens')}</span>
-				{#each activeRoutes as route (route)}
-					<a
-						class="beta__screen"
-						href={resolve(route)}
-						data-testid="beta-screen-{screenTid(route)}-link"
-					>
-						{route}
-					</a>
-				{/each}
-			</p>
+				<div class="beta__screens-list">
+					{#each activeRoutes as route (route)}
+						<a
+							class="beta__screen"
+							href={resolve(route)}
+							data-testid="beta-screen-{screenTid(route)}-link"
+						>
+							{route}
+						</a>
+					{/each}
+				</div>
+			</div>
 		{/if}
 
 		<!--
@@ -159,7 +178,7 @@
 					class="beta__tab"
 					class:active={betaChecklist.activeTab === tab.id}
 					aria-pressed={betaChecklist.activeTab === tab.id}
-					onclick={() => (betaChecklist.activeTab = tab.id)}
+					onclick={() => selectTab(tab.id)}
 					data-testid="beta-tab-{tab.id}-btn"
 				>
 					{$locale === 'uk' ? tab.title.uk : tab.title.en}
@@ -260,6 +279,48 @@
 		line-height: 1.7;
 		margin-bottom: var(--space-md);
 		max-width: 60ch;
+	}
+
+	.beta__screens {
+		margin-bottom: var(--space-md);
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.beta__screens-label {
+		font-size: 0.85rem;
+		color: var(--color-muted-text);
+	}
+
+	.beta__screens-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.beta__screen {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 44px;
+		min-height: 44px;
+		padding: 0.4rem 0.85rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius-sm);
+		background: var(--color-white);
+		color: var(--color-body-text);
+		text-decoration: none;
+		font-family: monospace;
+		font-size: 0.85rem;
+		cursor: pointer;
+		transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+	}
+
+	.beta__screen:hover {
+		border-color: var(--color-deep-ocean);
+		background: color-mix(in srgb, var(--color-white), var(--color-deep-ocean) 12%);
+		color: var(--color-deep-ocean);
 	}
 
 	.beta__tabs {

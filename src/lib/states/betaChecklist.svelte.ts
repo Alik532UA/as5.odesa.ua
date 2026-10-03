@@ -25,13 +25,13 @@ const VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'unknown
  * як звіт про теперішнє. Стара позначка не зникає — вона все ще щось означає, —
  * але підписується й НЕ рахується в поступі.
  */
-const VOTES: readonly Vote[] = ['fail', 'weird', 'ok'];
+const VOTES: readonly Vote[] = ['ok', 'fail', 'unclear', 'skip'];
 
 /** Позначка — це саме позначка, а не будь-що зі сховища (§ 8.6). */
-function isMark(value: unknown): value is Mark {
-	if (typeof value !== 'object' || value === null) return false;
-	const m = value as Record<string, unknown>;
-	return VOTES.includes(m.vote as Vote) && typeof m.version === 'string';
+function normalizeVote(rawVote: unknown): Vote | null {
+	if (rawVote === 'weird') return 'unclear';
+	if (typeof rawVote === 'string' && VOTES.includes(rawVote as Vote)) return rawVote as Vote;
+	return null;
 }
 
 class BetaChecklistState {
@@ -60,8 +60,14 @@ class BetaChecklistState {
 		// Склад ЗВІРЯЄТЬСЯ зі списком, а ФОРМА — з типом (§ 8.6). Перше було тут
 		// із самого початку; другого — ні, а позначка старого формату проходила б
 		// і рахувалася в поступі нарівні зі справжньою.
-		for (const [id, mark] of Object.entries(this.read())) {
-			if (BETA_CHECKS.some((c) => c.id === id) && isMark(mark)) this.marks.set(id, mark);
+		for (const [id, rawMark] of Object.entries(this.read())) {
+			if (BETA_CHECKS.some((c) => c.id === id) && typeof rawMark === 'object' && rawMark !== null) {
+				const m = rawMark as Record<string, unknown>;
+				const vote = normalizeVote(m.vote);
+				if (vote && typeof m.version === 'string') {
+					this.marks.set(id, { vote, version: m.version });
+				}
+			}
 		}
 	}
 
@@ -69,12 +75,12 @@ class BetaChecklistState {
 	 * Читає збережене, не кидаючи. Пошкоджений JSON у сховищі — не привід
 	 * покласти сторінку: гірше за втрачені позначки лише втрачена сторінка.
 	 */
-	private read(): Record<string, Mark> {
+	private read(): Record<string, unknown> {
 		const raw = storage.get(STORAGE_KEY);
 		if (!raw) return {};
 		try {
 			const parsed: unknown = JSON.parse(raw);
-			return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, Mark>) : {};
+			return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : {};
 		} catch (e) {
 			console.warn('[beta] збережені позначки не читаються — починаємо з чистого', e);
 			return {};
@@ -173,11 +179,16 @@ class BetaChecklistState {
 
 	private line(check: BetaCheck): string {
 		const mark = this.marks.get(check.id);
-		const label = { fail: 'НЕ ПРАЦЮЄ', weird: 'ПРАЦЮЄ, АЛЕ ДИВНО', ok: 'ПРАЦЮЄ' }[mark!.vote];
+		const label: Record<Vote, string> = {
+			ok: 'ПРАЦЮЄ',
+			fail: 'НЕ ПРАЦЮЄ',
+			unclear: 'НЕ ЗРОЗУМІЛО',
+			skip: 'ПРОПУЩЕНО'
+		};
 		const tab = BETA_TABS.find((t) => t.id === check.tab)?.title.uk ?? check.tab;
 		const stale = mark!.version === VERSION ? '' : `  (позначено на версії ${mark!.version})`;
 
-		let line = `[${label}] ${check.id} (${tab})${stale}\n    ${check.text.uk}`;
+		let line = `[${label[mark!.vote]}] ${check.id} (${tab})${stale}\n    ${check.text.uk}`;
 		// Помилка в покритому місці — звіт про дефект ТЕСТА, а не сайту, і вона
 		// знецінює всі зелені прогони. У звіті вона мусить бути видна окремо.
 		if (mark!.vote === 'fail' && check.coverage === 'covered') {
@@ -191,7 +202,7 @@ class BetaChecklistState {
 	 * звіт нечитним рівно тоді, коли його читають.
 	 */
 	buildReport(): string {
-		const order: Record<Vote, number> = { fail: 0, weird: 1, ok: 2 };
+		const order: Record<Vote, number> = { fail: 0, unclear: 1, ok: 2, skip: 3 };
 		const marked = BETA_CHECKS.filter((c) => this.marks.has(c.id)).sort(
 			(a, b) => order[this.marks.get(a.id)!.vote] - order[this.marks.get(b.id)!.vote]
 		);

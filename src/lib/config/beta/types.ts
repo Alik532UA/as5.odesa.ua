@@ -148,8 +148,8 @@ export const BETA_UNCOVERED_ROUTES: readonly string[] = [
  */
 export const COVERAGE_ORDER: readonly Coverage[] = ['manual', 'testable', 'covered'];
 
-/** Чотири стани відповіді. `unset` — не перевірено. */
-export type Vote = 'fail' | 'weird' | 'ok';
+/** Чотири стани відповіді. Без позначки — не перевірено. */
+export type Vote = 'ok' | 'fail' | 'unclear' | 'skip';
 
 /**
  * Позначка несе версію збірки.

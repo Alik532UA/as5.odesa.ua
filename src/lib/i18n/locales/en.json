@@ -224,9 +224,10 @@
     "home": "Home",
     "screens": "Where to look:",
     "vote": {
+      "ok": "Works",
       "fail": "Does not work",
-      "weird": "Works, but oddly",
-      "ok": "Works"
+      "unclear": "Unclear",
+      "skip": "Skip"
     },
     "level": {
       "manual": {

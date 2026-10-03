@@ -161,10 +161,18 @@ describe('позначка чеклиста несе версію збірки (
 	it('позначки переживають перезавантаження сторінки', async () => {
 		const store = makeMemoryStorage();
 		const first = await freshChecklist(store);
-		first.vote(anyCheck.id, 'weird');
+		first.vote(anyCheck.id, 'unclear');
 
 		const second = await freshChecklist(store);
-		expect(second.markOf(anyCheck.id)).toEqual({ vote: 'weird', version: VERSION });
+		expect(second.markOf(anyCheck.id)).toEqual({ vote: 'unclear', version: VERSION });
+	});
+
+	it('стара позначка weird нормалізується до unclear', async () => {
+		const store = makeMemoryStorage({
+			[STORAGE_KEY]: JSON.stringify({ [anyCheck.id]: { vote: 'weird', version: VERSION } })
+		});
+		const checklist = await freshChecklist(store);
+		expect(checklist.markOf(anyCheck.id)).toEqual({ vote: 'unclear', version: VERSION });
 	});
 
 	it('пошкоджене сховище не кладе сторінку', async () => {

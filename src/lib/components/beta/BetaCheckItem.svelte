@@ -20,9 +20,10 @@
 	let { check, position }: Props = $props();
 
 	const VOTES: { vote: Vote; key: string }[] = [
+		{ vote: 'ok', key: 'beta.vote.ok' },
 		{ vote: 'fail', key: 'beta.vote.fail' },
-		{ vote: 'weird', key: 'beta.vote.weird' },
-		{ vote: 'ok', key: 'beta.vote.ok' }
+		{ vote: 'unclear', key: 'beta.vote.unclear' },
+		{ vote: 'skip', key: 'beta.vote.skip' }
 	];
 
 	const mark = $derived(betaChecklist.markOf(check.id));
@@ -49,8 +50,9 @@
 <li
 	class="beta-item"
 	class:beta-item--fail={mark?.vote === 'fail'}
-	class:beta-item--weird={mark?.vote === 'weird'}
+	class:beta-item--unclear={mark?.vote === 'unclear'}
 	class:beta-item--ok={mark?.vote === 'ok'}
+	class:beta-item--skip={mark?.vote === 'skip'}
 	class:beta-item--stale={stale}
 	data-testid="beta-check-{tid}-item"
 >
@@ -104,31 +106,24 @@
 
 <style>
 	.beta-item {
-		/* Рамка ліворуч — носій стану поряд із кольором: її товщина видима і в
-		   градаціях сірого, і на монохромному екрані. */
-		border-left: 4px solid var(--color-border);
+		--vote-fail: light-dark(#dc2626, #ef4444);
+		--vote-unclear: light-dark(#b45309, #fbbf24);
+		--vote-ok: light-dark(#15803d, #22c55e);
+		--vote-skip: light-dark(#0284c7, #38bdf8);
+
+		border: 1px solid var(--color-border);
 		background: var(--theme-dynamic-card-bg);
 		border-radius: var(--radius-md);
 		padding: var(--space-md);
 		margin-bottom: var(--space-md);
 		list-style: none;
+		transition: border 0.15s ease;
 	}
 
-	.beta-item--fail {
-		border-left-width: 10px;
-		border-left-color: #b3261e;
-	}
-
-	.beta-item--weird {
-		border-left-width: 10px;
-		border-left-style: dashed;
-		border-left-color: var(--color-golden);
-	}
-
-	.beta-item--ok {
-		border-left-width: 10px;
-		border-left-color: #1b5e20;
-	}
+	.beta-item--fail { border: 2px solid var(--vote-fail); }
+	.beta-item--unclear { border: 2px solid var(--vote-unclear); }
+	.beta-item--ok { border: 2px solid var(--vote-ok); }
+	.beta-item--skip { border: 2px solid var(--vote-skip); }
 
 	.beta-item--stale {
 		opacity: 0.75;
@@ -141,7 +136,7 @@
 	}
 
 	.beta-item--fail .beta-item__text,
-	.beta-item--weird .beta-item__text {
+	.beta-item--unclear .beta-item__text {
 		font-weight: 700;
 	}
 
@@ -201,7 +196,7 @@
 		min-width: 44px;
 		flex: 1 1 auto;
 		padding: 0.5rem 1rem;
-		border: 2px solid var(--color-border);
+		border: 1px solid var(--color-border);
 		border-radius: var(--radius-sm);
 		background: var(--color-white);
 		color: var(--color-body-text);
@@ -210,15 +205,26 @@
 		transition: all var(--transition-fast);
 	}
 
-	.beta-item__vote:hover {
-		border-color: var(--color-deep-ocean);
+	.beta-item__vote--ok { background: color-mix(in srgb, var(--color-white), var(--vote-ok) 8%); border-color: color-mix(in srgb, var(--color-border), var(--vote-ok) 35%); }
+	.beta-item__vote--ok:hover { background: color-mix(in srgb, var(--color-white), var(--vote-ok) 14%); border-color: var(--vote-ok); }
+
+	.beta-item__vote--fail { background: color-mix(in srgb, var(--color-white), var(--vote-fail) 8%); border-color: color-mix(in srgb, var(--color-border), var(--vote-fail) 35%); }
+	.beta-item__vote--fail:hover { background: color-mix(in srgb, var(--color-white), var(--vote-fail) 14%); border-color: var(--vote-fail); }
+
+	.beta-item__vote--unclear { background: color-mix(in srgb, var(--color-white), var(--vote-unclear) 8%); border-color: color-mix(in srgb, var(--color-border), var(--vote-unclear) 35%); }
+	.beta-item__vote--unclear:hover { background: color-mix(in srgb, var(--color-white), var(--vote-unclear) 14%); border-color: var(--vote-unclear); }
+
+	.beta-item__vote--skip { background: color-mix(in srgb, var(--color-white), var(--vote-skip) 8%); border-color: color-mix(in srgb, var(--color-border), var(--vote-skip) 35%); }
+	.beta-item__vote--skip:hover { background: color-mix(in srgb, var(--color-white), var(--vote-skip) 14%); border-color: var(--vote-skip); }
+
+	/* Обраний стан несе товсту кольорову рамку, накреслення й акцентний колір */
+	.beta-item__vote.active {
+		border-width: 4px;
+		font-weight: 700;
 	}
 
-	/* Обраний стан несе і рамку, і накреслення — не лише колір. */
-	.beta-item__vote.active {
-		border-width: 3px;
-		border-color: var(--color-deep-ocean);
-		background: var(--color-ice-blue);
-		font-weight: 800;
-	}
+	.beta-item__vote--ok.active { border-color: var(--vote-ok); color: var(--vote-ok); background: color-mix(in srgb, var(--color-white), var(--vote-ok) 18%); }
+	.beta-item__vote--fail.active { border-color: var(--vote-fail); color: var(--vote-fail); background: color-mix(in srgb, var(--color-white), var(--vote-fail) 18%); }
+	.beta-item__vote--unclear.active { border-color: var(--vote-unclear); color: var(--vote-unclear); background: color-mix(in srgb, var(--color-white), var(--vote-unclear) 18%); }
+	.beta-item__vote--skip.active { border-color: var(--vote-skip); color: var(--vote-skip); background: color-mix(in srgb, var(--color-white), var(--vote-skip) 18%); }
 </style>
