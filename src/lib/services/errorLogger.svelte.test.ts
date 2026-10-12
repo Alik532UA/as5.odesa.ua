@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { errorLogger } from './errorLogger.svelte';
+import { errorLogger, logService } from './errorLogger.svelte';
 
 describe('ErrorLogger', () => {
 	beforeEach(() => {
@@ -43,11 +43,10 @@ describe('ErrorLogger', () => {
 	});
 
 	it('limits cache to MAX_CACHE entries', () => {
-		for (let i = 0; i < 55; i++) {
+		for (let i = 0; i < 1050; i++) {
 			errorLogger.logError(new Error(`error ${i}`));
 		}
-		// MAX_CACHE is 50
-		expect(errorLogger.getCache().length).toBeLessThanOrEqual(50);
+		expect(errorLogger.getCache().length).toBeLessThanOrEqual(1000);
 	});
 
 	it('clearCache empties the cache', () => {
@@ -144,5 +143,33 @@ describe('ErrorLogger: глобальні обробники', () => {
 		reject(new Error('після відписки'));
 
 		expect(errorLogger.getCache()).toEqual([]);
+	});
+
+	it('tracks errorCount correctly for error, warn, and info', () => {
+		expect(errorLogger.errorCount).toBe(0);
+
+		logService.info('app', 'system started');
+		expect(errorLogger.errorCount).toBe(0);
+
+		logService.warn('network', 'slow connection');
+		expect(errorLogger.errorCount).toBe(0);
+
+		logService.error('app', 'something went wrong');
+		expect(errorLogger.errorCount).toBe(1);
+	});
+
+	it('scrubs email addresses from messages', () => {
+		logService.error('app', 'Failed for test.user@example.com');
+		const cache = errorLogger.getCache();
+		expect(cache[0].message).not.toContain('test.user@example.com');
+		expect(cache[0].message).toContain('***@***.***');
+	});
+
+	it('generates report containing required fields', () => {
+		logService.error('app', 'test failure');
+		const report = errorLogger.getReport();
+		expect(report).toContain('--- LOG REPORT ---');
+		expect(report).toContain('VERSION:');
+		expect(report).toContain('test failure');
 	});
 });

@@ -18,6 +18,7 @@
  */
 export interface LoggedError {
 	id: string;
+	level?: string;
 	message: string;
 	stack?: string;
 	context: {
@@ -31,7 +32,9 @@ export interface LoggedError {
 	severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
-const SESSION_STORAGE_KEY = 'as5_logs_history';
+import { session } from './storage';
+
+const SESSION_STORAGE_KEY = 'logs_history';
 const EMAIL_REGEX = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g;
 const SENSITIVE_PARAM = /^(token|access_token|code|state|key|api_?key|password|email)$/i;
 
@@ -60,23 +63,22 @@ class ErrorLogger {
 	private mirrorEnabled = true;
 
 	constructor() {
-		if (typeof window !== 'undefined') {
-			try {
-				const saved = window.sessionStorage?.getItem(SESSION_STORAGE_KEY);
-				if (saved) {
-					const parsed = JSON.parse(saved);
-					if (Array.isArray(parsed)) this.cache = parsed;
-				}
-			} catch {
-				// Ignore storage failure on init
+		try {
+			const saved = session.get(SESSION_STORAGE_KEY);
+			if (saved) {
+				const parsed = JSON.parse(saved);
+				if (Array.isArray(parsed)) this.cache = parsed;
 			}
+		} catch {
+			// Ignore storage failure on init
 		}
 	}
 
 	private mirror(): void {
-		if (typeof window === 'undefined' || !this.mirrorEnabled) return;
+		if (!this.mirrorEnabled) return;
 		try {
-			window.sessionStorage?.setItem(SESSION_STORAGE_KEY, JSON.stringify(this.cache));
+			const ok = session.set(SESSION_STORAGE_KEY, JSON.stringify(this.cache));
+			if (!ok) this.mirrorEnabled = false;
 		} catch {
 			this.mirrorEnabled = false;
 		}
@@ -87,7 +89,7 @@ class ErrorLogger {
 
 	/** Скільки помилок у кеші. Реактивне — саме це малює табло. */
 	get errorCount(): number {
-		return this.cache.filter(e => e.severity === 'high' || e.severity === 'critical' || !('level' in e) || (e as any).level === 'error').length;
+		return this.cache.filter(e => e.severity === 'high' || e.severity === 'critical' || !e.level || e.level === 'error').length;
 	}
 
 	/** Версія збірки. Одне джерело для звіту й для табла. */
@@ -106,6 +108,7 @@ class ErrorLogger {
 	private recordEntry(level: string, severity: LoggedError['severity'], component: string, rawMessage: string) {
 		const event: LoggedError = {
 			id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `log-${Date.now()}`,
+			level,
 			message: maskText(rawMessage),
 			context: {
 				timestamp: new Date().toISOString(),
@@ -116,7 +119,6 @@ class ErrorLogger {
 			},
 			severity,
 		};
-		(event as any).level = level;
 
 		this.cache.push(event);
 		if (this.cache.length > this.MAX_CACHE) this.cache.shift();

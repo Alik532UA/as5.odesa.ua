@@ -131,3 +131,46 @@ export const storage = {
 		}
 	}
 };
+
+function ss(): Storage | null {
+	if (!available || !browser) return null;
+	try {
+		return typeof sessionStorage !== 'undefined' ? sessionStorage : null;
+	} catch (e) {
+		fail('access-session', '—', e);
+		return null;
+	}
+}
+
+export const session = {
+	get(key: string): string | null {
+		const store = ss();
+		if (!store) return null;
+		try {
+			return store.getItem(getStorageKey(key)) ?? null;
+		} catch (e) {
+			fail('session.get', key, e);
+			return null;
+		}
+	},
+	set(key: string, value: string): boolean {
+		const store = ss();
+		if (!store) return false;
+		try {
+			store.setItem(getStorageKey(key), value);
+			return true;
+		} catch (e) {
+			fail('session.set', key, e);
+			return false;
+		}
+	},
+	remove(key: string): void {
+		const store = ss();
+		if (!store) return;
+		try {
+			store.removeItem(getStorageKey(key));
+		} catch (e) {
+			fail('session.remove', key, e);
+		}
+	}
+};
