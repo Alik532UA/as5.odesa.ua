@@ -61,6 +61,7 @@ const config = {
     },
   },
   kit: {
+		version: { pollInterval: 60000 },
     adapter: adapter({
       pages: "build",
       assets: "build",
