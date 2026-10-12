@@ -31,27 +31,97 @@ export interface LoggedError {
 	severity: 'low' | 'medium' | 'high' | 'critical';
 }
 
+const SESSION_STORAGE_KEY = 'as5_logs_history';
+const EMAIL_REGEX = /[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+/g;
+const SENSITIVE_PARAM = /^(token|access_token|code|state|key|api_?key|password|email)$/i;
+
+function maskText(str: string): string {
+	return str.replace(EMAIL_REGEX, '***@***.***');
+}
+
+function scrubUrl(raw: string): string {
+	try {
+		const url = new URL(raw);
+		for (const name of [...url.searchParams.keys()]) {
+			if (SENSITIVE_PARAM.test(name)) url.searchParams.set(name, '[REDACTED]');
+		}
+		return url.toString();
+	} catch {
+		return maskText(raw);
+	}
+}
+
 class ErrorLogger {
 	/**
 	 * `$state`, бо довжину цього масиву читає табло на екрані.
-	 *
-	 * Масив, а не окремий лічильник: два поля розійшлися б рівно в той момент, коли
-	 * кеш обрізається по `MAX_CACHE`, і на екрані лишилося б число, якого в кеші
-	 * більше немає.
 	 */
 	private cache = $state<LoggedError[]>([]);
-	private readonly MAX_CACHE = 50;
+	private readonly MAX_CACHE = 1000;
+	private mirrorEnabled = true;
+
+	constructor() {
+		if (typeof window !== 'undefined') {
+			try {
+				const saved = window.sessionStorage?.getItem(SESSION_STORAGE_KEY);
+				if (saved) {
+					const parsed = JSON.parse(saved);
+					if (Array.isArray(parsed)) this.cache = parsed;
+				}
+			} catch {
+				// Ignore storage failure on init
+			}
+		}
+	}
+
+	private mirror(): void {
+		if (typeof window === 'undefined' || !this.mirrorEnabled) return;
+		try {
+			window.sessionStorage?.setItem(SESSION_STORAGE_KEY, JSON.stringify(this.cache));
+		} catch {
+			this.mirrorEnabled = false;
+		}
+	}
 
 	/** Слухачі вікна ставляться один раз: два комплекти писали б кожну помилку двічі. */
 	private globalHandlersInstalled = false;
 
 	/** Скільки помилок у кеші. Реактивне — саме це малює табло. */
 	get errorCount(): number {
-		return this.cache.length;
+		return this.cache.filter(e => e.severity === 'high' || e.severity === 'critical' || !('level' in e) || (e as any).level === 'error').length;
 	}
 
 	/** Версія збірки. Одне джерело для звіту й для табла. */
 	readonly appVersion = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__ : 'unknown';
+
+	warn(component: string, message: string, cause?: unknown): void {
+		const detail = cause instanceof Error ? cause.message : cause != null ? String(cause) : '';
+		const msg = detail ? `${message}: ${detail}` : message;
+		this.recordEntry('warn', 'medium', component, msg);
+	}
+
+	info(component: string, message: string): void {
+		this.recordEntry('info', 'low', component, message);
+	}
+
+	private recordEntry(level: string, severity: LoggedError['severity'], component: string, rawMessage: string) {
+		const event: LoggedError = {
+			id: typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : `log-${Date.now()}`,
+			message: maskText(rawMessage),
+			context: {
+				timestamp: new Date().toISOString(),
+				version: this.appVersion,
+				userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+				component,
+				page: typeof window !== 'undefined' ? scrubUrl(window.location.pathname) : 'unknown',
+			},
+			severity,
+		};
+		(event as any).level = level;
+
+		this.cache.push(event);
+		if (this.cache.length > this.MAX_CACHE) this.cache.shift();
+		this.mirror();
+	}
 
 	/**
 	 * Log an error. Returns the generated error ID.
@@ -63,8 +133,8 @@ class ErrorLogger {
 
 		const event: LoggedError = {
 			id,
-			message: error.message,
-			stack: error.stack,
+			message: maskText(error.message),
+			stack: error.stack ? maskText(error.stack) : undefined,
 			context: {
 				timestamp: new Date().toISOString(),
 				// Не хардкод: значення підставляє Vite зі package.json
@@ -155,6 +225,7 @@ class ErrorLogger {
 
 	clearCache(): void {
 		this.cache = [];
+		this.mirror();
 	}
 
 	/**
@@ -179,10 +250,10 @@ class ErrorLogger {
 			'--- LOG REPORT ---',
 			`DATE: ${new Date().toISOString()}`,
 			`VERSION: ${this.appVersion}`,
-			`URL: ${inBrowser ? window.location.href : 'SSR'}`,
+			`URL: ${inBrowser ? scrubUrl(window.location.href) : 'SSR'}`,
 			`DEVICE: ${inBrowser ? navigator.userAgent : 'SSR'}`,
 			`ONLINE: ${inBrowser ? navigator.onLine : 'n/a'}`,
-			`ERRORS: ${this.cache.length}`,
+			`ERRORS: ${this.errorCount}`,
 			'---'
 		].join('\n');
 
@@ -200,3 +271,25 @@ class ErrorLogger {
 }
 
 export const errorLogger = new ErrorLogger();
+
+export const logService = {
+	get errorCount(): number {
+		return errorLogger.errorCount;
+	},
+	get appVersion(): string {
+		return errorLogger.appVersion;
+	},
+	info(category: string, message: string): void {
+		errorLogger.info(category, message);
+	},
+	warn(category: string, message: string, cause?: unknown): void {
+		errorLogger.warn(category, message, cause);
+	},
+	error(category: string, message: string, ...args: unknown[]): string {
+		const err = args[0] instanceof Error ? args[0] : new Error(message);
+		return errorLogger.logError(err, { component: category });
+	},
+	getReport(): string {
+		return errorLogger.getReport();
+	}
+};

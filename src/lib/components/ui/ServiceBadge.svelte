@@ -48,27 +48,39 @@
 	 */
 	const isVisible = $derived(urlDebug || debugMode.enabled);
 
+	let fallbackReport = $state<string | null>(null);
+
 	onDestroy(() => {
 		if (copyTimer) clearTimeout(copyTimer);
 	});
 
 	async function copyReport() {
+		const report = errorLogger.getReport();
 		try {
-			await navigator.clipboard.writeText(errorLogger.getReport());
+			await navigator.clipboard.writeText(report);
+			fallbackReport = null;
 			copied = true;
 			copyTimer = setTimeout(() => (copied = false), 1500);
 		} catch (error) {
 			/*
-			 * `console.warn`, а не `errorLogger.logError`: рівень «помилка» тут крутив би
-			 * рівно той лічильник, який малює ця сама кнопка — невдала спроба скопіювати
-			 * звіт створювала б привід показати кнопку копіювання звіту. А відмова буфера
-			 * обміну взагалі не збій застосунку: поза HTTPS і без дозволу вона очікувана
-			 * (ERROR-HANDLING-v8 § 1.4).
+			 * `warn`, а не `logError`: рівень «помилка» тут крутив би
+			 * лічильник. А відмова буфера обміну очікувана поза HTTPS і без дозволу.
 			 */
-			console.warn('[ServiceBadge] не вдалося скопіювати звіт', error);
+			errorLogger.warn('ServiceBadge', 'не вдалося скопіювати звіт', error);
+			fallbackReport = report;
 		}
 	}
 </script>
+
+{#if fallbackReport}
+	<textarea
+		class="log-fallback"
+		readonly
+		value={fallbackReport}
+		aria-label="Debug report fallback"
+		data-testid="debug-log-fallback-input"
+	></textarea>
+{/if}
 
 {#if isVisible}
 	<button
@@ -194,5 +206,22 @@
 		.badge__version {
 			font-size: 12px;
 		}
+	}
+
+	.log-fallback {
+		position: fixed;
+		bottom: 76px;
+		left: 16px;
+		width: min(38rem, calc(100vw - 32px));
+		height: min(40dvh, 20rem);
+		z-index: 9999;
+		padding: 8px;
+		font-family: monospace;
+		font-size: 0.75rem;
+		background: #1e1e1e;
+		color: #ffffff;
+		border: 2px solid #ef4444;
+		border-radius: 8px;
+		resize: none;
 	}
 </style>
