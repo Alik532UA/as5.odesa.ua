@@ -23,6 +23,7 @@
 	import { trackPageView } from '$lib/services/analytics';
 	import { webVitals } from '$lib/controllers/webVitals.svelte';
 	import { afterNavigate } from '$app/navigation';
+	import { logService } from '$lib/services/errorLogger.svelte';
 
 	let { children, data } = $props();
 
@@ -35,7 +36,19 @@
 	afterNavigate(() => trackPageView());
 
 	onMount(() => {
+		const onRejection = (e: PromiseRejectionEvent) =>
+			logService.error('app', `Unhandled rejection: ${String(e.reason)}`);
+		const onWindowError = (e: ErrorEvent) =>
+			logService.error('app', `${e.message} at ${e.filename}:${e.lineno}`);
+		window.addEventListener('unhandledrejection', onRejection);
+		window.addEventListener('error', onWindowError);
+
 		migrateStorageKeys();
+
+		return () => {
+			window.removeEventListener('unhandledrejection', onRejection);
+			window.removeEventListener('error', onWindowError);
+		};
 	});
 
 	$effect(() => {

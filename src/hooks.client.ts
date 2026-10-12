@@ -1,5 +1,6 @@
 import type { HandleClientError } from "@sveltejs/kit";
-import { errorLogger } from "$lib/services/errorLogger.svelte";
+import { errorLogger, logService } from "$lib/services/errorLogger.svelte";
+import { errorToMessageKey } from "$lib/errors";
 
 /**
  * Неперехоплені помилки клієнта (ERROR-HANDLING-v8 § 2.4).
@@ -22,10 +23,12 @@ export const handleError: HandleClientError = ({ error, event, status }) => {
   if (status === 404) return;
 
   const normalized = error instanceof Error ? error : new Error(String(error));
+  const key = errorToMessageKey(error);
   const errorId = errorLogger.logError(normalized, {
     component: "client-unhandled",
     page: event?.url?.pathname,
   });
+  logService.error("client-unhandled", `${normalized.message} (${key})`, normalized);
 
   // Ключ, а не текст: сторінка помилки перекладає його сама. `errorId`
   // дає людині що назвати у зверненні, не показуючи нутрощів застосунку.
