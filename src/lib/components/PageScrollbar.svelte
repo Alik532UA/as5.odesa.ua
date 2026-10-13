@@ -172,7 +172,7 @@
 
 		// Висота сторінки змінюється не лише від resize: довантажуються
 		// зображення, відкриваються блоки, приходить контент із Firestore.
-		const observer = new ResizeObserver(measure);
+		const observer = new ResizeObserver(() => requestAnimationFrame(measure));
 		observer.observe(document.documentElement);
 
 		return () => {

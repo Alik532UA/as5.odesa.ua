@@ -38,8 +38,10 @@
 	onMount(() => {
 		const onRejection = (e: PromiseRejectionEvent) =>
 			logService.error('app', `Unhandled rejection: ${String(e.reason)}`);
-		const onWindowError = (e: ErrorEvent) =>
+		const onWindowError = (e: ErrorEvent) => {
+			if (e.message && e.message.includes('ResizeObserver loop')) return;
 			logService.error('app', `${e.message} at ${e.filename}:${e.lineno}`);
+		};
 		window.addEventListener('unhandledrejection', onRejection);
 		window.addEventListener('error', onWindowError);
 

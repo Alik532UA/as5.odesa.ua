@@ -129,6 +129,7 @@ class ErrorLogger {
 	 * Log an error. Returns the generated error ID.
 	 */
 	logError(error: Error, context: Partial<LoggedError['context']> = {}): string {
+		if (error.message && error.message.includes('ResizeObserver loop')) return '';
 		const id = typeof crypto !== 'undefined'
 			? crypto.randomUUID()
 			: `err-${Date.now()}`;
@@ -206,6 +207,7 @@ class ErrorLogger {
 
 		// `WindowEventMap['error']` — саме подія DOM, а не запис кеша вище.
 		const onError = (event: WindowEventMap['error']) => {
+			if (event.message && event.message.includes('ResizeObserver loop')) return;
 			// `event.error` буває порожнім: так приходять помилки зі стороннього
 			// скрипта (`Script error.`). Тоді лишається хоч місце й повідомлення.
 			const error =

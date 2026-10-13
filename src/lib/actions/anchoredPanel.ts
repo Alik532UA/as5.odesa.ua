@@ -140,7 +140,7 @@ export function anchoredPanel(node: HTMLElement, params: AnchoredPanelParams) {
 
 	// `ResizeObserver` є не в кожному середовищі, де компонент монтують (jsdom
 	// без поліфіла). Відсутність спостерігача не мусить ламати саму панель.
-	const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure);
+	const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => requestAnimationFrame(measure));
 	observer?.observe(node);
 
 	measure();

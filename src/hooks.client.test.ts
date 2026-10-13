@@ -20,8 +20,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const logError = vi.fn(
   (_error: Error, _context: Record<string, unknown>): string => "err-1",
 );
+const logServiceError = vi.fn();
 vi.mock("$lib/services/errorLogger.svelte", () => ({
   errorLogger: { logError },
+  logService: { error: logServiceError },
 }));
 
 const event = { url: new URL("https://example.com/history") } as never;
