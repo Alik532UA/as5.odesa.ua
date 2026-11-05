@@ -5,6 +5,7 @@ on:
     branches: ['main']
   pull_request:
     branches: ['main']
+  workflow_dispatch:
 
 # CI-CD-AND-TOOLS-v8 § 1.3. `cancel-in-progress: false` — не деталь смаку.
 # Без групи пуш пачкою комітів дає стільки паралельних прогонів, скільки
