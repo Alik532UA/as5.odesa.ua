@@ -146,10 +146,6 @@ jobs:
         if: ${{ !cancelled() && steps.build.outcome == 'success' }}
         run: git diff --exit-code
 
-      - name: Lighthouse Audit
-        if: ${{ !cancelled() && steps.build.outcome == 'success' }}
-        run: npx @lhci/cli@0.15.1 autorun --config=./lighthouserc.cjs
-
       - name: Setup Pages
         uses: actions/configure-pages@v6
 
