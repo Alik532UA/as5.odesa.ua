@@ -168,7 +168,7 @@
 
 	h2 {
 		color: #fff;
-		font-size: clamp(16px, 3vw, 24px);
+		font-size: clamp(1rem, 0.85rem + 0.8vw, 1.5rem);
 		font-style: italic;
 		font-weight: 400;
 		margin: 0 0 clamp(8px, 3dvh, 30px);
@@ -176,12 +176,11 @@
 	}
 
 	/*
-	 * `min(10vw, 13dvh)` — обидві осі, а не лише ширина. На телефоні в
-	 * ландшафті `10vw` дає 84 px там, де по висоті лишилося менше: назва ноти
-	 * розпирала блок рівно в тій орієнтації, де місця найменше.
+	 * `min(5vw, 6.5dvh)` у сумі з rem — обидві осі за FLUID-SIZING-v10 § 2.1,
+	 * верхня межа <= 2.5x нижньої, щоб не ламати масштаб тексту.
 	 */
 	.nowplaying {
-		font-size: clamp(32px, min(10vw, 13dvh), 120px);
+		font-size: clamp(2rem, 1.5rem + min(5vw, 6.5dvh), 5rem);
 		line-height: 1;
 		color: #eee;
 		transition: all .07s ease;

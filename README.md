@@ -1,4 +1,4 @@
-# as5.odesa.ua
+﻿# as5.odesa.ua
 
 Офіційний вебсайт **Мистецької школи №5 м. Одеси**.
 
@@ -62,6 +62,6 @@ Canonical, `og:url`, `sitemap.xml` і `robots.txt` ведуть на основ�
 
 ## Стандарти
 
-Загальні правила — у пакеті [`sveltekit-canon/selection_criteria/v8`](../sveltekit-canon/selection_criteria/v8/README.md).
+Загальні правила — у пакеті [`sveltekit-canon/selection_criteria/v8`](../../sveltekit-canon/selection_criteria/v8/README.md).
 Специфіка цього проєкту — в [PROJECT-CONTEXT.md](PROJECT-CONTEXT.md).
 Інструкції для AI-асистентів — в [AGENTS.md](AGENTS.md).
