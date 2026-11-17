@@ -16,7 +16,7 @@ on:
 # (AI-AGENT-PITFALLS-v8 § 1.4). Тут прогони шикуються в чергу й виконуються
 # всі, тому кожен новий крок хоч раз, та побачать.
 concurrency:
-  group: pages
+  group: pages-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
