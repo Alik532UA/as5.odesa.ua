@@ -33,7 +33,7 @@ export interface NavItem {
 	/** Стабільний сегмент для `id` та `data-testid`. Не залежить від адреси. */
 	key: string;
 	/** `route.id` сторінки — ним і тільки ним визначається активний пункт. */
-	routeId: '/' | '/about' | '/history' | '/competitions';
+	routeId: '/' | '/about' | '/history' | '/competitions' | '/documents';
 	/** Ключ у словнику; переклад бере компонент. */
 	labelKey: string;
 }
@@ -51,5 +51,6 @@ export const NAV_ITEMS: readonly NavItem[] = [
 	{ key: 'home', routeId: '/', labelKey: 'nav.home' },
 	{ key: 'about', routeId: '/about', labelKey: 'nav.about' },
 	{ key: 'history', routeId: '/history', labelKey: 'nav.history' },
-	{ key: 'competitions', routeId: '/competitions', labelKey: 'nav.contests' }
+	{ key: 'competitions', routeId: '/competitions', labelKey: 'nav.contests' },
+	{ key: 'documents', routeId: '/documents', labelKey: 'nav.documents' }
 ];

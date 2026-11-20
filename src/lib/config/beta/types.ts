@@ -94,7 +94,7 @@ export type BetaTabId = 'common' | 'home' | 'pages';
  * сторінка або потрапляє під чиюсь вкладку, або йде у виняток нижче — мовчки
  * лишитися без перевірок вона не може.
  */
-export type BetaRoute = '/' | '/about' | '/history' | '/competitions' | '/admission';
+export type BetaRoute = '/' | '/about' | '/history' | '/competitions' | '/admission' | '/documents';
 
 export interface BetaTab {
 	id: BetaTabId;
@@ -120,7 +120,7 @@ export const BETA_TABS: readonly BetaTab[] = [
 	{
 		id: 'pages',
 		title: { uk: 'Внутрішні сторінки', en: 'Content pages' },
-		routes: ['/about', '/history', '/competitions', '/admission']
+		routes: ['/about', '/history', '/competitions', '/admission', '/documents']
 	}
 ];
 

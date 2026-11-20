@@ -148,6 +148,7 @@ const config = {
         "/history",
         "/competitions",
         "/admission",
+        "/documents",
         "/test",
         // Чеклист бета-тестування. Краулер його не знайде: у меню й у
         // sitemap його немає навмисно (BETA-CHECKLIST-v8 § 4), тож без

@@ -33,10 +33,10 @@ export function dynamicRoutes(): string[] {
 }
 
 /**
- * Скільки сторінок у проєкті на 2026-08-27.
+ * Скільки сторінок у проєкті на 2026-08-27 (додано /documents).
  *
  * Число, а не `toBeGreaterThan(0)`: зникнення маршруту з перебору мусить бути
  * видно так само, як поява. Гейт, який мовчки почав міряти менше, читається як
  * гейт, що міряє все.
  */
-export const EXPECTED_ROUTE_COUNT = 7;
+export const EXPECTED_ROUTE_COUNT = 8;

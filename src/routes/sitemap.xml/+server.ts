@@ -21,7 +21,7 @@ import { SITE_ROOT } from '$lib/config/site';
 export const prerender = true;
 
 /** Адреси від кореня сайту — базу додає `SITE_ROOT`. */
-const ROUTES = ['/', '/about', '/history', '/competitions', '/admission'];
+const ROUTES = ['/', '/about', '/history', '/competitions', '/admission', '/documents'];
 
 export const GET: RequestHandler = async () => {
 	// Дата збірки, а не дата запиту: під час prerender запит один, і всі

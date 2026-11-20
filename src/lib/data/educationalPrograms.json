@@ -1,0 +1,286 @@
+[
+  {
+    "id": "elementary-2025",
+    "level": "elementary",
+    "year": 2025,
+    "isCurrent": true,
+    "title": {
+      "uk": "Освітня програма: Музичне мистецтво (Елементарний підрівень)",
+      "en": "Educational Program: Musical Arts (Elementary Level)"
+    },
+    "duration": {
+      "uk": "4 роки навчання (початковий цикл)",
+      "en": "4 years of study (initial cycle)"
+    },
+    "weeklyHours": "5.5 – 6.5 год/тиждень",
+    "instruments": {
+      "uk": "Фортепіано, скрипка, віолончель, гітара, бандура, баян, акордеон, сольний спів, естрадний вокал, саксофон, труба, тромбон, флейта, електрогітара, ударні інструменти",
+      "en": "Piano, violin, cello, guitar, bandura, accordion, vocal, saxophone, trumpet, flute, electric guitar, drums"
+    },
+    "pdfUrl": "/documents/educational-program-music-elementary-2025.pdf",
+    "pdfSize": "650 КБ",
+    "pdfPages": 25,
+    "stampScanUrl": "/documents/scans/stamp-elementary-2025.webp",
+    "curriculum": [
+      {
+        "subject": "Фах (інструмент, сольний/естрадний спів)",
+        "h1": "2",
+        "h2": "2",
+        "h3": "2",
+        "h4": "2"
+      },
+      {
+        "subject": "Музична грамота та практичне музикування",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "1.5"
+      },
+      {
+        "subject": "Бесіди про мистецтво",
+        "h1": "—",
+        "h2": "—",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Хор / Інструментальний ансамбль / Сценічний рух",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Предмет за вибором",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Разом годин на тиждень",
+        "h1": "5.5",
+        "h2": "5.5",
+        "h3": "6.5",
+        "h4": "6.5",
+        "isTotal": true
+      }
+    ]
+  },
+  {
+    "id": "basic-2025",
+    "level": "basic",
+    "year": 2025,
+    "isCurrent": true,
+    "title": {
+      "uk": "Освітня програма: Музичне мистецтво (Базовий підрівень)",
+      "en": "Educational Program: Musical Arts (Basic Level)"
+    },
+    "duration": {
+      "uk": "5 років навчання (середній базовий цикл)",
+      "en": "5 years of study (intermediate basic cycle)"
+    },
+    "weeklyHours": "7.5 – 8.5 год/тиждень",
+    "instruments": {
+      "uk": "Фортепіано, скрипка, віолончель, гітара, бандура, баян, акордеон, сольний спів, естрадний спів, саксофон, труба, тромбон, флейта, електрогітара, ударні інструменти",
+      "en": "Piano, violin, cello, guitar, bandura, accordion, vocal, saxophone, trumpet, flute, electric guitar, drums"
+    },
+    "pdfUrl": "/documents/educational-program-music-basic-2025.pdf",
+    "pdfSize": "672 КБ",
+    "pdfPages": 21,
+    "stampScanUrl": "/documents/scans/stamp-basic-2025.webp",
+    "curriculum": [
+      {
+        "subject": "Фах (інструмент, сольний/естрадний спів)",
+        "h1": "2",
+        "h2": "2",
+        "h3": "2",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Сольфеджіо",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Музична література",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Хор / Ансамбль / Сценічний рух",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "1.5",
+        "h5": "1.5"
+      },
+      {
+        "subject": "Предмет за вибором",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1",
+        "h5": "1"
+      },
+      {
+        "subject": "Разом годин на тиждень",
+        "h1": "7.5",
+        "h2": "7.5",
+        "h3": "7.5",
+        "h4": "8.0",
+        "h5": "8.5",
+        "isTotal": true
+      }
+    ]
+  },
+  {
+    "id": "elementary-2021",
+    "level": "elementary",
+    "year": 2021,
+    "isCurrent": false,
+    "title": {
+      "uk": "Освітня програма: Музичне мистецтво (Елементарний підрівень, архів 2021)",
+      "en": "Educational Program: Musical Arts (Elementary Level, archive 2021)"
+    },
+    "duration": {
+      "uk": "4 роки навчання",
+      "en": "4 years of study"
+    },
+    "weeklyHours": "5.5 – 6.5 год/тиждень",
+    "instruments": {
+      "uk": "Фортепіано, скрипка, віолончель, гітара, баян, акордеон, сольний спів, естрадний спів, духові та ударні інструменти",
+      "en": "Piano, violin, cello, guitar, accordion, solo singing, brass and percussion"
+    },
+    "pdfUrl": "/documents/educational-program-music-elementary-2021.pdf",
+    "pdfSize": "610 КБ",
+    "pdfPages": 25,
+    "stampScanUrl": "/documents/scans/stamp-elementary-2021.webp",
+    "curriculum": [
+      {
+        "subject": "Фах (музичний інструмент, сольний спів)",
+        "h1": "2",
+        "h2": "2",
+        "h3": "2",
+        "h4": "2"
+      },
+      {
+        "subject": "Музична грамота та практичне музикування",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "1.5"
+      },
+      {
+        "subject": "Бесіди про мистецтво",
+        "h1": "—",
+        "h2": "—",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Хор / Інструментальний ансамбль",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Предмет за вибором",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1"
+      },
+      {
+        "subject": "Разом годин на тиждень",
+        "h1": "5.5",
+        "h2": "5.5",
+        "h3": "6.5",
+        "h4": "6.5",
+        "isTotal": true
+      }
+    ]
+  },
+  {
+    "id": "basic-2021",
+    "level": "basic",
+    "year": 2021,
+    "isCurrent": false,
+    "title": {
+      "uk": "Освітня програма: Музичне мистецтво (Базовий підрівень, архів 2021)",
+      "en": "Educational Program: Musical Arts (Basic Level, archive 2021)"
+    },
+    "duration": {
+      "uk": "5 років навчання",
+      "en": "5 years of study"
+    },
+    "weeklyHours": "7.5 – 8.5 год/тиждень",
+    "instruments": {
+      "uk": "Фортепіано, скрипка, віолончель, гітара, баян, акордеон, сольний спів, естрадний спів, духові та ударні інструменти",
+      "en": "Piano, violin, cello, guitar, accordion, solo singing, brass and percussion"
+    },
+    "pdfUrl": "/documents/educational-program-music-basic-2021.pdf",
+    "pdfSize": "670 КБ",
+    "pdfPages": 21,
+    "stampScanUrl": "/documents/scans/stamp-basic-2021.webp",
+    "curriculum": [
+      {
+        "subject": "Фах (музичний інструмент, спів)",
+        "h1": "2",
+        "h2": "2",
+        "h3": "2",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Сольфеджіо",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Музична література",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "2",
+        "h5": "2"
+      },
+      {
+        "subject": "Хор / Ансамбль",
+        "h1": "1.5",
+        "h2": "1.5",
+        "h3": "1.5",
+        "h4": "1.5",
+        "h5": "1.5"
+      },
+      {
+        "subject": "Предмет за вибором",
+        "h1": "1",
+        "h2": "1",
+        "h3": "1",
+        "h4": "1",
+        "h5": "1"
+      },
+      {
+        "subject": "Разом годин на тиждень",
+        "h1": "7.5",
+        "h2": "7.5",
+        "h3": "7.5",
+        "h4": "8.0",
+        "h5": "8.5",
+        "isTotal": true
+      }
+    ]
+  }
+]

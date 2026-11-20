@@ -74,7 +74,7 @@
 	 * маршрут без запису тут червоніє замість того, щоб тихо успадкувати
 	 * головну.
 	 */
-	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission' | 'test' | 'beta';
+	type SeoPageKey = 'home' | 'about' | 'history' | 'competitions' | 'admission' | 'documents' | 'test' | 'beta';
 	type SeoLangKey = 'uk' | 'en';
 	const FALLBACK_LANG: SeoLangKey = 'uk';
 
@@ -108,6 +108,11 @@
 					title: 'Для вступу',
 					description:
 						'Інформація для вступу до Одеської школи мистецтв №5: документи, контакти та умови навчання.'
+				},
+				documents: {
+					title: 'Офіційні документи',
+					description:
+						'Офіційні документи та освітні програми Одеської школи мистецтв №5: навчальні плани, підрівні та нормативи.'
 				},
 				test: {
 					title: 'Чернетка',
@@ -149,6 +154,11 @@
 					description:
 						'Admission information for Odesa School of Arts №5: documents, contacts, and study conditions.'
 				},
+				documents: {
+					title: 'Official Documents',
+					description:
+						'Official documents and educational programs of Odesa School of Arts №5: curriculums, levels and regulations.'
+				},
 				test: {
 					title: 'Draft',
 					description: 'Service page for manual comparisons. Out of the index.'
@@ -183,6 +193,8 @@
 				return 'competitions';
 			case '/admission':
 				return 'admission';
+			case '/documents':
+				return 'documents';
 			case '/test':
 				return 'test';
 			case '/beta-test-checklists':

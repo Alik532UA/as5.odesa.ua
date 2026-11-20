@@ -17,7 +17,8 @@
     "about": "About School",
     "history": "History",
     "contests": "Contests",
-    "admission": "ADMISSION"
+    "admission": "ADMISSION",
+    "documents": "Documents"
   },
   "footer": {
     "address": "18 Chornomorskoho Kozatstva St, Odesa",
@@ -178,6 +179,10 @@
       "beta": {
         "title": "Beta testing checklist",
         "description": "Service checklist for a human pass over the site. Out of the index."
+      },
+      "documents": {
+        "title": "Official Documents",
+        "description": "Official documents and educational programs of Odesa School of Arts №5: curriculums, levels and regulations."
       }
     }
   },
@@ -243,5 +248,33 @@
         "hint": "The control group. A failure here means the TEST was wrong — that is bigger news than an ordinary bug, and the report calls it out on its own line."
       }
     }
+  },
+  "documents": {
+    "title": "Official Documents",
+    "subtitle": "Educational programs, curriculums and regulatory information of the school",
+    "legalNotice": "Pursuant to Article 30 of the Law of Ukraine 'On Education' ('Transparency and information openness of educational institutions'), official educational programs and founding documents of Odesa School of Arts №5 are published on this page.",
+    "programsTitle": "Educational Programs",
+    "programsDesc": "Standard programs of primary specialized art education by levels and approval years",
+    "tabCurrent": "Current Programs (2025)",
+    "tabArchive": "Program Archive (2021)",
+    "originalNote": "Original document in Ukrainian",
+    "downloadPdf": "Download Full Program (PDF)",
+    "openPdf": "Open PDF",
+    "stampScan": "Title page with seal",
+    "curriculumTitle": "Curriculum Plan (weekly hours)",
+    "weeklyLoad": "Weekly workload:",
+    "duration": "Study duration:",
+    "instruments": "Specializations:",
+    "pages": "pages",
+    "constituentTitle": "Constituent Documents & Admission",
+    "statuteTitle": "School Statute",
+    "statuteDesc": "The foundational regulatory document governing the school's activities and legal status.",
+    "statuteNotice": "Edition in update",
+    "admissionTitle": "Admission Rules & Conditions",
+    "admissionDesc": "List of required documents, age requirements, and admissions contacts.",
+    "admissionBtn": "Admission Conditions",
+    "modalClose": "Close",
+    "subjectHeader": "Components (disciplines)",
+    "classHeader": "grade"
   }
 }
