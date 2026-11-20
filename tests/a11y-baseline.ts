@@ -59,6 +59,8 @@ export const A11Y_KNOWN: Record<A11yKey, readonly string[]> = {
 	'/beta-test-checklists dark': [],
 	'/competitions light': [],
 	'/competitions dark': [],
+	'/documents light': [],
+	'/documents dark': [],
 	'/history light': [],
 	'/history dark': [],
 	/*
@@ -98,6 +100,8 @@ export const A11Y_BASELINE: Record<A11yKey, number> = {
 	'/beta-test-checklists dark': 0,
 	'/competitions light': 0,
 	'/competitions dark': 0,
+	'/documents light': 0,
+	'/documents dark': 0,
 	'/history light': 0,
 	'/history dark': 0,
 	'/test light': 14,
