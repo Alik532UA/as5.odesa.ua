@@ -112,7 +112,8 @@ describe('WCAG SC 2.1.4: одиночну літеру можна вимкнут
 const NO_TEXT_GUARD_NEEDED: Record<string, string> = {
 	// Ловить рівно `Escape`, а він не клавіша-символ: у полі вводу він або
 	// нічого не робить, або скасовує ввід — жодного тексту він не з’їдає.
-	'src/lib/components/MobileMenu.svelte': 'обробляє лише Escape'
+	'src/lib/components/MobileMenu.svelte': 'обробляє лише Escape',
+	'src/lib/components/ui/ServiceBadge.svelte': 'обробляє лише Escape для закриття меню'
 };
 
 /** Слухачі саме на ВІКНІ чи документі: вони працюють, куди б не дивився фокус. */
