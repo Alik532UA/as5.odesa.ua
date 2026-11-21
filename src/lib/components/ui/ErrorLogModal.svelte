@@ -277,7 +277,7 @@
 		align-items: center;
 		justify-content: space-between;
 		padding: 12px 18px;
-		border-bottom: 1px solid var(--color-border));
+		border-bottom: 1px solid var(--color-border);
 		background: rgba(255, 255, 255, 0.03);
 	}
 	.header-left {
@@ -331,7 +331,7 @@
 		justify-content: space-between;
 		gap: 10px;
 		padding: 8px 18px;
-		border-bottom: 1px solid var(--color-border));
+		border-bottom: 1px solid var(--color-border);
 		background: rgba(0, 0, 0, 0.15);
 		flex-wrap: wrap;
 	}
@@ -361,7 +361,7 @@
 	.tab--active {
 		opacity: 1;
 		background: rgba(255, 255, 255, 0.1);
-		border-color: var(--color-border));
+		border-color: var(--color-border);
 		font-weight: 600;
 	}
 	.tab-badge {
@@ -393,7 +393,7 @@
 		gap: 6px;
 		padding: 4px 10px;
 		border-radius: 6px;
-		border: 1px solid var(--color-border));
+		border: 1px solid var(--color-border);
 		background: rgba(255, 255, 255, 0.05);
 		color: var(--color-body-text);
 		font-size: 0.8125rem;
@@ -448,7 +448,7 @@
 		padding: 10px 14px;
 		border-radius: 8px;
 		background: rgba(255, 255, 255, 0.03);
-		border: 1px solid var(--color-border));
+		border: 1px solid var(--color-border);
 		border-left-width: 4px;
 		display: flex;
 		flex-direction: column;
